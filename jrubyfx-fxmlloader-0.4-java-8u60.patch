@@ -1,0 +1,31 @@
+diff -urN gem/gems/jrubyfx-fxmlloader-0.4-java.orig/lib/fxmlloader/value_elts.rb gem/gems/jrubyfx-fxmlloader-0.4-java/lib/fxmlloader/value_elts.rb
+--- gem/gems/jrubyfx-fxmlloader-0.4-java.orig/lib/fxmlloader/value_elts.rb	2015-08-22 02:21:14.000000000 +0900
++++ gem/gems/jrubyfx-fxmlloader-0.4-java/lib/fxmlloader/value_elts.rb	2015-08-22 02:21:41.000000000 +0900
+@@ -146,7 +146,7 @@
+           "http://javafx.com/javafx/2.2"
+         end
+         if (parentLoader.compareJFXVersions(jfx_version, nsVersion) < 0)
+-          Logging.getJavaFXLogger().warning("Loading FXML document with JavaFX API of version " + nsVersion + " by JavaFX runtime of version " + FXL::JAVAFX_VERSION);
++          # Logging.getJavaFXLogger().warning("Loading FXML document with JavaFX API of version " + nsVersion + " by JavaFX runtime of version " + FXL::JAVAFX_VERSION);
+         end
+       end
+     end
+@@ -254,4 +254,4 @@
+     end
+   end
+ 
+-end
+\ No newline at end of file
++end
+diff -urN gem/gems/jrubyfx-fxmlloader-0.4-java.orig/lib/jrubyfx-fxmlloader.rb gem/gems/jrubyfx-fxmlloader-0.4-java/lib/jrubyfx-fxmlloader.rb
+--- gem/gems/jrubyfx-fxmlloader-0.4-java.orig/lib/jrubyfx-fxmlloader.rb	2015-08-22 02:21:14.000000000 +0900
++++ gem/gems/jrubyfx-fxmlloader-0.4-java/lib/jrubyfx-fxmlloader.rb	2015-08-22 02:21:29.000000000 +0900
+@@ -36,7 +36,7 @@
+ java_import 'javafx.fxml.JavaFXBuilderFactory'
+ java_import 'java.lang.InstantiationException', 'java.lang.IllegalAccessException'
+ 
+-java_import *%w[com.sun.javafx.Logging
++java_import *%w[
+ java.io.IOException
+ java.io.InputStream
+ java.io.InputStreamReader

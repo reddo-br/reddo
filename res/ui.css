@@ -1,0 +1,26 @@
+.toggle-button.top-pill {
+    -fx-background-radius: 3 3 0 0, 3 3 0 0, 2 2 0 0, 1 1 0 0;
+    -fx-background-insets: 0 0 0 -1 , 0, 1, 2;
+}
+.toggle-button.top-pill:focused {
+    -fx-background-insets: -0.2 -0.2 0 -0.2, 1, 2, -1.4 -1.4 0 -1.4, 2.6;
+    -fx-background-radius: 3 3 0 0, 2 2 0 0, 1 1 0 0, 4 4 0 0, 1 1 0 0;
+}
+.toggle-button:selected.top-pill:focused {
+    -fx-background-insets: -0.2 -0.2 0 -0.2, 1, -1.4 -1.4 0 -1.4, 2.6;
+    -fx-background-radius: 3 3 0 0, 2 2 0 0, 4 4 0 0, 0;
+}
+
+.toggle-button.bottom-pill {
+    -fx-background-radius: 0 0 3 3, 0 0 3 3, 0 0 2 2, 0 0 1 1;
+    -fx-background-insets: 0 0 0 -1, 0, 0 1 1 1, 1 2 2 2 ;
+}
+.toggle-button.bottom-pill:focused {
+    -fx-background-insets: -1 -0.2 -0.2 -0.2, 0 1 1 1, 1 2 2 2, -1 -1.4 -1.4 -1.4, 1.6 2.6 2.6 2.6;
+    -fx-background-radius: 0 0 3 3, 0 0 2 2, 0 0 1 1, 0 0 4 4, 0 0 1 1;
+}
+.toggle-button:selected.bottom-pill:focused {
+    -fx-background-insets: -1 -0.2 -0.2 -0.2, 0 1 1 1, -1 -1.4 -1.4 -1.4, 1.6 2.6 2.6 2.6;
+    -fx-background-radius: 0 0 3 3, 0 0 2 2, 0 0 4 4, 0;
+}
+

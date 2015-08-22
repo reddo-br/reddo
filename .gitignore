@@ -1,0 +1,13 @@
+
+package/
+working/
+nouse/
+sample_data/
+gem/
+gem-old/
+memo/
+tools/
+
+Info.plist
+
+lib/java/jruby-complete*.jar
