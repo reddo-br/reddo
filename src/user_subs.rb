@@ -23,7 +23,7 @@ class UserSubs
   end
 
   def load_thread( &load_cb )
-    cl = App.i.prepare_client( @account_name )
+    cl = App.i.client( @account_name )
     Thread.new{
       sub_thread = Thread.new{
         begin

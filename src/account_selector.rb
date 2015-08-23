@@ -30,9 +30,10 @@ class AccountSelector < Java::JavafxSceneControl::ChoiceBox
   def load_accounts()
     @enable_change_cb = false
     old = get_account
+    $stderr.puts "old account:#{old}"
     @selection = Account.list + [NOT_LOGIN]
     getItems.setAll( *@selection )
-    if Account.list.find{|a| a == (old || NOT_LOGIN ) }
+    if @selection.find{|a| a == ( old||NOT_LOGIN )  }
       set_account( old )
     else
       @change_cb.call if @change_cb
@@ -46,10 +47,18 @@ class AccountSelector < Java::JavafxSceneControl::ChoiceBox
 
   def set_account( name )
     if name
-      getSelectionModel.select( name )
+      if is_exist_account(name)
+        getSelectionModel.select( name )
+      else
+        getSelectionModel.select( NOT_LOGIN )
+      end
     else
       getSelectionModel.select( NOT_LOGIN )
     end
+  end
+
+  def is_exist_account( name )
+    getItems.find{|i| i == (name || NOT_LOGIN )}
   end
 
   def get_account

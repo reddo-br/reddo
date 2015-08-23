@@ -19,7 +19,8 @@ module Util
       when "macosx"
         Pathname.new(Dir.home) + "Library" + "Application Support" + USER_DIR_NAME
       when "windows"
-        Pathname.new(ENV['APPDATA']) + USER_DIR_NAME
+        # jruby-9.0.0.0 acturally utf-8
+        Pathname.new(ENV['APPDATA'].dup.force_encoding("utf-8")) + USER_DIR_NAME
       end
 
     FileUtils.mkdir_p( path )

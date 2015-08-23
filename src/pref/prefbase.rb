@@ -4,7 +4,7 @@ require 'pathname'
 
 class Prefbase
   def initialize( path )
-    @path = Pathname.new(path)
+    @path = Pathname.new(path) # jruby-9.0.0.0 windows problem
     @m    = Mutex.new
   end
   

@@ -14,6 +14,7 @@ require 'edit_widget'
 require 'html/html_entity'
 require  'read_comment_db'
 require 'app_color'
+require 'pref/account'
 
 import 'javafx.application.Platform'
 
@@ -42,6 +43,9 @@ class CommentPage < Page
     @link_id = @page_info[:name] # commentではid not fullname
     @top_comment = @page_info[:top_comment] # todo: 単独コメント機能
     @url_handler = UrlHandler.new( @page_info[:site] )
+    if not Account.exist?( @page_info[:account_name] )
+      @page_info[:account_name] = nil
+    end
     @account_name = @page_info[:account_name] # 今のところ切り変えはない
     # @site = site
     @default_sort = @page_info[:suggested_sort] || 'new'

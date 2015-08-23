@@ -7,6 +7,7 @@ require 'redd_patched'
 require 'client_params'
 require 'pref/preferences'
 require 'pref/session'
+require 'pref/account'
 
 require 'singleton'
 
@@ -88,6 +89,11 @@ class FXApp < JRubyFX::Application
       # App.i.open_by_page_info( {type:"sub" , name:"../" , account_name:an} , false )
       # App.i.open_by_page_info( {type:"comment" , name:"3gx3l5" , account_name:an} , false )
       # App.i.open_by_page_info( {type:"config" } , false )
+
+      an = App.i.pref["current_account"]
+      if not Account.list.find{|a| a == an }
+        App.i.pref["current_account"] = nil
+      end
 
       # セッション再生
       infos = App.i.session.get_page_infos
@@ -334,6 +340,9 @@ class App
     load( 'thumbnail_plugins/youtube.rb' , true )
     # todo ユーザーディレクトリからロード
 
+    if splash = java.awt.SplashScreen.getSplashScreen()
+      splash.close()
+    end
 
     FXApp.launch
   end

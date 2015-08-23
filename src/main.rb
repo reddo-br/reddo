@@ -4,9 +4,10 @@ module Kernel
    alias require gem_original_require 
 end
 
+require 'jruby_patch'
+
 $stderr.puts "#{$LOAD_PATH}"
 $stderr.puts
-
 require 'drb_wrapper'
 begin
   if s = DRbObject.new_with_uri( DrbWrapper::DRB_URI )

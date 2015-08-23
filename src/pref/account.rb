@@ -50,6 +50,10 @@ class Account < Prefbase
     accounts_with_token
   end
 
+  def self.exist?(name )
+    self.list.find{ |a| a == name }
+  end
+
   def self.delete( name )
     File.unlink( name_to_path( name ) )
   end

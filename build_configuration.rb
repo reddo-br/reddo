@@ -61,7 +61,7 @@ configuration do |c|
 	# A list of files that will be copied into the `<output_dir>/jar` folder.  Note that the files maintain their directory path when copied. 
 	# default value: []
 	#
-	# c.files_to_copy = Dir.glob('gem/gems/*/lib')
+	c.files_to_copy = [ 'splash.png' ]
 
 	# Undocumented option 'source_jvm_version'
 	# default value: 1.7
@@ -76,7 +76,7 @@ configuration do |c|
 	# Undocumented option 'jvm_arguments'
 	# default value: ""
 	#
-	#c.jvm_arguments = ""
+	c.jvm_arguments = "-splash:splash.png -Dfile.encoding=utf-8"
 
 	# Undocumented option 'java_library_path'
 	# default value: ""

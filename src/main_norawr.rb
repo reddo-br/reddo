@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+require 'jruby_patch'
+
 require 'java'
 require 'jrubyfx'
 

@@ -5,6 +5,7 @@ require 'jrubyfx'
 
 require 'pref/preferences'
 require 'pref/subs'
+require 'pref/account'
 require 'app'
 require 'util'
 
@@ -38,7 +39,7 @@ class SubPage < Page
 
     @url_handler = UrlHandler.new( @page_info[:site] )
     $stderr.puts "sub_page @page_info[:name] = #{@page_info[:name]}"
-    pref_subname = if @page_info[:name].to_s == ""
+    pref_subname = if @page_info[:name].to_s == "../"
                      "_"
                    else
                      # subの場合,idではない
@@ -48,6 +49,12 @@ class SubPage < Page
     @pref = Subs.new( pref_subname )
     setSpacing(3.0)
     @thread_pool = []
+    if not Account.exist?( @pref['account_name'] )
+      @pref['account_name'] = nil
+    end
+    if not Account.exist?( @page_info[:account_name] )
+      @page_info[:account_name] = nil
+    end
     @account_name = @pref['account_name'] || @page_info[:account_name] # ページごとの記録が優先
     @pref['account_name'] = @account_name
     @sub_info = nil
@@ -1170,7 +1177,7 @@ class SubPage < Page
 
   def submission_comment_fetched( subm_id , count )
     target = nil
-    @subms.each{|obj|
+    @subms.to_a.each{|obj|
       if obj[:id] == subm_id
         obj[:num_comments] = count
         set_num_comments_new( obj )
