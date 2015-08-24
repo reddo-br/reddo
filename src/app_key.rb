@@ -66,6 +66,8 @@ module AppKey
       when [ KeyCode::Q , false , true ]
         App.i.stage.close()
         
+      # when [ KeyCode::I , false , false ]
+      #   key_send( page , :key_input )
         
       end
       
@@ -88,7 +90,11 @@ module AppKey
   module_function :set_key
   
   def key_send( tab , name )
-    tab.send( name ) if tab and tab.respond_to?( name )
+    if tab and tab.respond_to?( name )
+      Platform.runLater{
+        tab.send( name ) 
+      }
+    end
   end
   module_function :key_send
 end

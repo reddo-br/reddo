@@ -8,6 +8,8 @@ import 'javafx.concurrent.Worker'
 import 'javafx.scene.web.WebView'
 
 require 'app_color'
+require 'html/html_entity'
+require 'util'
 
 class WebViewWrapper
 
@@ -34,7 +36,7 @@ class WebViewWrapper
     }
     
     # @e.loadContent( base_html() )
-    
+
   end 
   attr_reader :webview
 
@@ -47,12 +49,13 @@ class WebViewWrapper
     f = App.res("/res/jquery-2.1.4.min.js").to_io
     @e.executeScript( f.read )
     f.close
+      
     f = App.res("/res/jquery.highlight-5.js").to_io
     @e.executeScript( f.read )
     f.close
 
     @e.executeScript( SCROLL_SCRIPT )
-    
+
     @dom_prepared_cb.call if @dom_prepared_cb
   end
 
@@ -77,7 +80,11 @@ class WebViewWrapper
 
   def link_clicked(ev,href) # module WevViewLinkHook
     # link = ev.getTarget().getAttribute("href")
-    @link_cb.call( href ) if @link_cb
+    if @link_cb
+      Platform.runLater{
+        @link_cb.call( href )
+      }
+    end
     ev.preventDefault
   end
   
@@ -111,7 +118,8 @@ class WebViewWrapper
   CSS_PATH = Util.get_appdata_pathname + "webview/comment.css"
   JS_PATH  = Util.get_appdata_pathname + "webview/jquery-2.1.4.min.js"
   
-  def html_decode( enc_str )
+  # 廃止: 完了までの時間がわからない
+  def html_decode_by_dom( enc_str )
     if enc_str
       @enc ||= @doc.createElement("div")
       @enc.setMember( "innerHTML" , enc_str )
@@ -119,6 +127,10 @@ class WebViewWrapper
     else
       nil
     end
+  end
+
+  def html_decode( enc_str )
+    Html_entity.decode( enc_str )
   end
 
   def empty( selector )
@@ -211,6 +223,8 @@ EOF
     if is_scroll_bottom and forward
       $stderr.puts "scroll_to_next_position: 先頭から再開"
       start_pos = 0
+    elsif is_scroll_top and not forward
+      start_pos = poses.last + 1
     end
 
     $stderr.puts "scroll_to_next_position"

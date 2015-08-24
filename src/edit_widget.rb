@@ -13,7 +13,8 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     # Submission#add_comment
     # Commnet#reply (inboxable)
     super()
-    
+    @account_name = account_name
+    @url_handler = UrlHandler.new( account_name:account_name )
     @text_mode_button = ToggleButton.new("Text")
     @md_mode_button =   ToggleButton.new("Markdown")
     mode_buttons = [ @text_mode_button , @md_mode_button ]
@@ -59,6 +60,12 @@ class EditWidget < Java::JavafxSceneLayout::VBox
       # prepared
       $stderr.puts "プレビューwebview 準備完了"
     }
+    @preview.set_link_cb{|link|
+      page_info = @url_handler.url_to_page_info( link )
+      page_info[:account_name] = @account_name
+      App.i.open_by_page_info( page_info )
+    }
+
     @preview_label = Label.new("プレビュー")
     add( @preview_label)
     add( @preview.webview )
@@ -73,10 +80,12 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     }
 
     @text_area.textProperty.addListener{|ov|
-      show_preview
+      Platform.runLater{ # js対策
+        show_preview
+      }
     }
     @mode = nil
-  end
+  end # initialize
 
   def set_text( text , mode:"reply" )
     @text_area.setText( text )

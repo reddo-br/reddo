@@ -2,6 +2,7 @@
 require 'java'
 require 'jrubyfx'
 require 'reddit_web_view_wrapper'
+require 'html/html_entity'
 
 class CommentWebViewWrapper < RedditWebViewWrapper
 
@@ -21,8 +22,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     super(ov)
     @div_submission = @doc.getElementById("submission")
     @div_comments   = @doc.getElementById("comments")
-
-    @e.executeScript( JS_SCROLL_ELEMENT_IN_VIEW )
+    
+    # @e.executeScript( JS_SCROLL_ELEMENT_IN_VIEW )
   end
 
   def set_vote_cb
@@ -204,7 +205,9 @@ class CommentWebViewWrapper < RedditWebViewWrapper
           set_event(more_button , 'click',false){
             if @more_cb
               more_button.setAttribute("disabled" , "disabled" )
-              @more_cb.call( obj , more )
+              Platform.runLater{
+                @more_cb.call( obj , more )
+              }
             end
           }
         else # 自分自信がchildであるようなmore
@@ -385,7 +388,11 @@ class CommentWebViewWrapper < RedditWebViewWrapper
         # inboxable#reply(text) -> obj, message
         # submission#add_comment(text)
         # editable#edit(text) -> thing | submission と comment
-        @reply_cb.call( obj ) if @reply_cb
+        if @reply_cb
+          Platform.runLater{ # js engineのcall stack溢れ対策
+            @reply_cb.call( obj )
+          }
+        end
       }
       comment_foot.appendChild( comment_foot_reply )
     end
@@ -398,7 +405,11 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       comment_foot_edit.setTextContent("編集")
       comment_foot_edit.setAttribute("href" , "#" )
       set_event( comment_foot_edit , 'click' , false ){
-        @edit_cb.call( obj ) if @edit_cb
+        if @edit_cb
+          Platform.runLater{ # js engineのcall stack溢れ対策
+            @edit_cb.call( obj )
+          }
+        end
       }
       comment_foot.appendChild( @doc.createTextNode(" "))
       comment_foot.appendChild( comment_foot_edit )
@@ -564,7 +575,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
   end
 
   ### ハイライト
-  def set_replying( name , edit:false )
+  def set_replying( name , edit:false , move:true)
     if @replying
       clear_replying( @replying )
     end
@@ -583,17 +594,26 @@ class CommentWebViewWrapper < RedditWebViewWrapper
               "#BBFFDD"
             end
 
+    move_script = <<EOF
+    if(comm.hasClass("comment_this")){
+      // scrollElementInView( comm );  // うまくいかない
+      $('html,body').animate({
+        scrollTop: comm.offset().top + 'px'
+      });
+    }
+EOF
+
+    move_script_insert = if move
+                           move_script
+                         else
+                           ""
+                         end
+
     @e.executeScript( <<EOF )
 var comm = $("#{selector}");
 if(comm){
   comm.css( "background-color" , "#{color}");
-
-  if(comm.hasClass("comment_this")){
-  // scrollElementInView( comm );  // うまくいかない
-    $('html,body').animate({
-      scrollTop: comm.offset().top + 'px'
-    });
-  }
+  #{move_script_insert}
 }
 EOF
 

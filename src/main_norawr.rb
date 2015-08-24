@@ -21,6 +21,7 @@ end
 require 'java'
 require './lib/java/controlsfx-8.40.9.jar'
 require './lib/java/mapdb-1.0.8.jar'
+require './lib/java/commons-lang3-3.4.jar'
 
 require 'app'
 App.instance.run

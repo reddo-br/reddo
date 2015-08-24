@@ -8,6 +8,7 @@ class PreviewWebViewWrapper < RedditWebViewWrapper
   
   def initialize( sjis_art:true , &cb )
     super(sjis_art:true , &cb)
+
   end
   attr_reader :webview
 
@@ -33,19 +34,19 @@ EOF
 
   def dom_prepared(ov)
     super(ov)
-
+    
     f= App.res("/res/snuownd.js").to_io
     @e.executeScript( f.read )
     f.close
 
     @e.executeScript("var mdParser = SnuOwnd.getParser();")
-
+    
   end
 
   def set_md( md )
     #sample_area = @doc.getElementById("sample")
     #sample_area.setMember("innerHTML" , html)
-    @e.executeScript("mdParser;").setMember("reddo_md" , md )
+    @e.executeScript("mdParser").setMember("reddo_md" , md )
     @e.executeScript('$("#sample").html(mdParser.render(mdParser.reddo_md));')
   end
 

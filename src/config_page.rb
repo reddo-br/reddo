@@ -37,16 +37,29 @@ class ConfigPage < Page
     }
 
     bold_label = Label.new("太字フォントをcss shadowで再現する(太字が表示できない場合に試してください)")
-    bold_label.setWrapText(true)
     items << [ bold_label ,
                @bold_check 
              ]
     
+    browser_label = Label.new("外部ブラウザを開く別の方法を試す(うまくいかない場合に)")
+    @browser_check = CheckBox.new
+    @browser_check.setSelected( App.i.pref["browse_alternative_method"] )
+    @browser_check.selectedProperty().addListener{|ev|
+      App.i.pref["browse_alternative_method"] = ev.getValue()
+    }
+    items << [ browser_label , @browser_check ]
+
     items.each_with_index{|row , rownum|
       row.each_with_index{|control , colnum|
         GridPane.setColumnIndex( control , colnum )
         GridPane.setRowIndex( control , rownum )
         
+        if colnum == 0
+          #labels
+          control.setWrapText(true)
+          control.setStyle("-fx-word-wrap:break-word")
+        end
+
         GridPane.setMargin( control , Insets.new( 5 , 5 , 5 , 5))
         grid_pane.getChildren().add( control )
       }
@@ -56,7 +69,7 @@ class ConfigPage < Page
     column_2 = ColumnConstraints.new(350)
     #column_1.setPercentWidth( 50 )
     #column_2.setPercentWidth( 50 )
-    column_1.setHalignment( HPos::RIGHT )
+    column_1.setHalignment( HPos::LEFT )
     column_2.setHalignment( HPos::LEFT  )
     grid_pane.getColumnConstraints().addAll(column_1, column_2)
 

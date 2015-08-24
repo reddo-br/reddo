@@ -61,7 +61,7 @@ module Kernel
         $stderr.puts "patched load: try #{enc}"
         load_orig( path.force_encoding(enc) , priv)
       else
-        require_orig( path )
+        load_orig( path , priv)
       end
     rescue Exception
       if candidate_encodes.length > 0

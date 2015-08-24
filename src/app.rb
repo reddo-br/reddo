@@ -229,11 +229,19 @@ class App
   end
 
   def open_external_browser(url)
-    if @fxapp
-      @fxapp.getHostServices().showDocument(url.to_s)
+    if @pref['browse_alternative_method']
+      begin
+        java.awt.Desktop.getDesktop().browse(java.net.URI.new(url.to_s))
+      rescue
+        $stderr.puts $!
+        $stderr.puts $@
+      end
+    else
+      if @fxapp
+        @fxapp.getHostServices().showDocument(url.to_s)
+      end
     end
   end
-
 
   def open_by_page_info( page_info , selection = true)
     if page_info[:type] == 'other'

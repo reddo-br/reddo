@@ -145,20 +145,30 @@ class CommentPage < Page
     btns3 << Label.new(" ")
     btns3 << @find_word_count = Label.new()
     
-    @find_new_button.setOnAction{|ev| scroll_to_new( true ) }
-    @find_new_r_button.setOnAction{|ev| scroll_to_new( false ) }
+    @find_new_button.setOnAction{|ev| 
+      Platform.runLater{scroll_to_new( true ) }
+    }
+    @find_new_r_button.setOnAction{|ev| 
+      Platform.runLater{scroll_to_new( false ) }
+    }
 
     @find_word_box.textProperty().addListener{|ev|
-      highlight_word()
+      Platform.runLater{
+        highlight_word()
+      }
     }
     @find_word_box.setOnKeyPressed{|ev|
       if ev.getCode() == KeyCode::ENTER
-        @comment_view.scroll_to_highlight(true)
+        Platform.runLater{@comment_view.scroll_to_highlight(true)}
       end
     }
     @find_word_clear_button.setOnAction{|ev| @find_word_box.setText("") }
-    @find_word_button.setOnAction{|ev| @comment_view.scroll_to_highlight( true ) }
-    @find_word_r_button.setOnAction{|ev| @comment_view.scroll_to_highlight( false ) }
+    @find_word_button.setOnAction{|ev| 
+      Platform.runLater{@comment_view.scroll_to_highlight( true ) }
+    }
+    @find_word_r_button.setOnAction{|ev| 
+      Platform.runLater{@comment_view.scroll_to_highlight( false ) }
+    }
 
     @button_area3 = HBox.new()
     @button_area3.setAlignment( Pos::CENTER_LEFT )
@@ -247,7 +257,8 @@ class CommentPage < Page
 
       @split_edit_area.set_text( "" , mode:"reply" )
 
-      @comment_view.set_replying( @replying[:name] , edit:false)
+      highlight_replying
+
     }
 
     @comment_view.set_edit_cb{|obj|
@@ -264,8 +275,9 @@ class CommentPage < Page
       md_html_encoded = obj[:body] || obj[:selftext]
       md = Html_entity.decode( md_html_encoded.to_s )
       @split_edit_area.set_text( md , mode:"edit" )
+      
+      highlight_replying
 
-      @comment_view.set_replying( @editing[:name] , edit:true)
     }
 
     @split_comment_area.getChildren().add( @comment_view.webview )
@@ -389,6 +401,14 @@ class CommentPage < Page
 
   end # initialize
   
+  def highlight_replying( move:true )
+    if @editing
+      @comment_view.set_replying( @editing[:name] , edit:true , move:move)
+    elsif @replying
+      @comment_view.set_replying( @replying[:name] , edit:false , move:move)
+    end
+  end
+
   def start_autoreload
     if not @autoreload_thread
       @autoreload_thread = Thread.new{
@@ -399,10 +419,7 @@ class CommentPage < Page
             $stderr.puts "autoreload sleep #{interval} sec"
             sleep( interval )
             $stderr.puts "autoreload thread loop #{@title} #{Time.now}"
-            if @editing or @replying
-              interval = 60 # 編集中は延期
-
-            elsif @last_reload and (@last_reload + target_interval ) < Time.now
+            if @last_reload and (@last_reload + target_interval ) < Time.now
               start_reload( user_present:false )
               interval = target_interval + rand(15)
             else
@@ -667,6 +684,7 @@ class CommentPage < Page
 
       set_status(App.i.now + " 更新")
       highlight_word()
+      highlight_replying(move:false)
     }
   end
 

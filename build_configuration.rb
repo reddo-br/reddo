@@ -66,12 +66,12 @@ configuration do |c|
 	# Undocumented option 'source_jvm_version'
 	# default value: 1.7
 	#
-	c.source_jvm_version = 1.8
+	# c.source_jvm_version = 1.8
 
 	# Undocumented option 'target_jvm_version'
 	# default value: 1.7
 	#
-	c.target_jvm_version = 1.8
+	# c.target_jvm_version = 1.8
 
 	# Undocumented option 'jvm_arguments'
 	# default value: ""
