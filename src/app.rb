@@ -130,6 +130,10 @@ class FXApp < JRubyFX::Application
         App.i.finish_tabs
       }
       
+      if splash = java.awt.SplashScreen.getSplashScreen()
+        splash.close()
+      end
+
     end # with
 
   end
@@ -347,10 +351,6 @@ class App
     load( 'thumbnail_plugins/imgur.rb' , true )
     load( 'thumbnail_plugins/youtube.rb' , true )
     # todo ユーザーディレクトリからロード
-
-    if splash = java.awt.SplashScreen.getSplashScreen()
-      splash.close()
-    end
 
     FXApp.launch
   end
