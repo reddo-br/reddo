@@ -77,6 +77,9 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     subreddit_info.appendChild( @doc.createTextNode("]"))
 
     subm = @doc.getElementById("submission")
+    $stderr.puts "*** selfテキスト表示"
+    $stderr.puts obj[:selftext_html]
+
     subm.setMember( "innerHTML" , html_decode( obj[:selftext_html].to_s ))
     if thumb = make_thumbnail_element( subm )
       subm.appendChild( thumb )
