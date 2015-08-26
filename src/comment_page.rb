@@ -520,6 +520,7 @@ class CommentPage < Page
     if target
       @comment_view.clear_replying( target[:name] )
     end
+    @replying = @editing = nil
   end
 
   class OneshotChangeListener
