@@ -180,6 +180,8 @@ class CommentPage < Page
     @find_word_box.setOnKeyPressed{|ev|
       if ev.getCode() == KeyCode::ENTER
         Platform.runLater{@comment_view.scroll_to_highlight(true)}
+      elsif ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+        ev.consume
       end
     }
     @find_word_clear_button.setOnAction{|ev| @find_word_box.setText("") }

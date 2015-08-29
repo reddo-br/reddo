@@ -402,4 +402,12 @@ class App
     clip.setContent( content )
   end
 
+  def suppress_printable_key_event( node )
+    node.setOnKeyPressed{|ev|
+      if ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+        ev.consume
+      end
+    }
+  end
+
 end

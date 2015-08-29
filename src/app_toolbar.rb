@@ -81,6 +81,8 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     @url_text.setOnKeyPressed{|ev|
       if ev.getCode() == KeyCode::ENTER
         open_text
+      elsif ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+        ev.consume
       end
     }
     # @url_text.setPrefWidth( 8000 )

@@ -204,6 +204,7 @@ class SubPage < Page
     @filter_area = HBox.new()
     @filter_area.setAlignment( Pos::CENTER_LEFT )
     @filter_text = TextField.new()
+    App.i.suppress_printable_key_event( @filter_text )
     @filter_text.setPromptText("単語でフィルタ")
     @filter_text.setPrefWidth( 160 )
     @filter_text.textProperty().addListener{

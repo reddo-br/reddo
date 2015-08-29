@@ -53,6 +53,7 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     self.class.setMargin( @toolbar , Insets.new( 3 , 3 , 3 , 3 ))
 
     @text_area = TextArea.new
+    App.i.suppress_printable_key_event( @text_area )
     @text_area.setWrapText(true)
     add( @text_area )
 
