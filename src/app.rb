@@ -28,6 +28,8 @@ require 'app_key'
 
 import 'javafx.scene.layout.Region'
 import 'javafx.application.Platform'
+import 'javafx.scene.input.Clipboard'
+import 'javafx.scene.input.ClipboardContent'
 
 class FXApp < JRubyFX::Application
   def start(stage)
@@ -163,14 +165,15 @@ class App
   
 
   CLIENTS = {}
-
   def initialize
     @pref = Preferences.new
     @session = Session.new
+    @user_subs_hash = {}
+    @subs_data_hash = {}
   end
   attr_reader :pref , :session
   # widget
-  attr_accessor :fxapp , :stage , :scene
+  attr_accessor :fxapp , :stage , :scene , :user_subs_hash , :subs_data_hash
 
   def root
     @scene.getRoot()
@@ -218,7 +221,7 @@ class App
     cl
   end
   
-  def mes(mes)
+  def mes(mes , err = false)
     Platform.runLater{
       @scene.lookup("#" + ID_MESSAGE_AREA).set_message(mes)
     }
@@ -269,12 +272,17 @@ class App
                       end
         if target_page
           target_tab = target_page.tab_widget
-          tabpane.getTabs().add( target_tab )
+          if @pref['new_tab_after_current']
+            cur = tabpane.getSelectionModel.getSelectedIndex || -1
+            tabpane.getTabs().add( cur + 1 , target_tab )
+          else
+            tabpane.getTabs().add( target_tab )
+          end
         end
         save_tabs
       else # 既に存在
-        if page_info[:top_comment]
-          target_tab.getContent().set_top_comment( page_info[:top_comment] )
+        if page_info[:type] == 'comment'
+          target_tab.getContent().set_new_page_info( page_info )
         end
       end
     
@@ -385,6 +393,13 @@ class App
     else
       nil
     end
+  end
+
+  def copy(str)
+    clip = Clipboard.getSystemClipboard()
+    content = ClipboardContent.new()
+    content.putString( str )
+    clip.setContent( content )
   end
 
 end

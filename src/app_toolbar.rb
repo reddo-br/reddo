@@ -7,6 +7,9 @@ require 'auth_window'
 
 require 'pref/account'
 require 'url_handler'
+require 'inbox_button'
+require 'sub_menu_button'
+require 'user_subs'
 
 # class AppToolbar < Java::JavafxSceneLayout::HBox
 class AppToolbar < Java::JavafxSceneLayout::BorderPane
@@ -56,12 +59,14 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     @current_account = App.i.pref["current_account"]
     @account_selector = AccountSelector.new( @current_account )
     @account_selector.valueProperty().addListener{|ev|
-      
-      App.i.pref["current_account"] = @account_selector.get_account
-      
+      ac = @account_selector.get_account
+      App.i.pref["current_account"] = ac
+      @submenu_button.set_account_name( ac )
     }
     l_controls << @account_selector
     
+    l_controls << Label.new(" ")
+    l_controls << @submenu_button = SubMenuButton.new( account_name:App.i.pref["current_account"] )
 
     left = HBox.new
     left.setAlignment( Pos::CENTER_LEFT )
@@ -71,6 +76,7 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     # l_controls << Label.new(" ")
     
     @url_text = TextField.new()
+    @url_text.setId("url-text")
     @url_text.setPromptText("urlか、subreddit名を指定して開きます")
     @url_text.setOnKeyPressed{|ev|
       if ev.getCode() == KeyCode::ENTER
@@ -109,6 +115,9 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
 
     ##
     App.i.make_pill_buttons( [ @url_text ] + r_controls )
+
+    r_controls << Label.new(" ")
+    r_controls << InboxButton.new
 
     right = HBox.new
     right.setAlignment( Pos::CENTER_LEFT )

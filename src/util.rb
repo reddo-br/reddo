@@ -11,6 +11,8 @@ require 'html/html_entity'
 
 module Util
   USER_DIR_NAME = ClientParams::APP_NAME.downcase
+
+  module_function
   def get_appdata_pathname
     path = 
       case get_os
@@ -19,7 +21,6 @@ module Util
       when "macosx"
         Pathname.new(Dir.home) + "Library" + "Application Support" + USER_DIR_NAME
       when "windows"
-        # jruby-9.0.0.0 acturally utf-8
         Pathname.new(ENV['APPDATA'].dup.force_encoding("utf-8")) + USER_DIR_NAME
       end
 
@@ -29,7 +30,6 @@ module Util
     #end
     path
   end
-  module_function :get_appdata_pathname
 
   # 
   def get_os
@@ -43,7 +43,6 @@ module Util
       "unixlike"
     end
   end
-  module_function :get_os
 
   def toggle_group_set_listener_force_selected( toggle , default )
     cb = Proc.new
@@ -62,7 +61,6 @@ module Util
       end
     }
   end
-  module_function :toggle_group_set_listener_force_selected
 
   def set_user_dir_permission( dir )
     begin
@@ -81,7 +79,6 @@ module Util
       $stderr.puts $@
     end
   end
-  module_function :set_user_dir_permission
 
   def find_submission_preview( obj , min_height:nil , max_height:nil , 
                                min_width:nil , max_width:nil ,
@@ -110,6 +107,21 @@ module Util
       nil
     end
   end
-  module_function :find_submission_preview
+  
+  def mobile_url(url)
+    "http://www.readability.com/m?url=" + URI.encode( url.to_s )
+  end
 
+  def to_text( html )
+    html.gsub(/<[^>]*>/,'').gsub(/\n/ , " ")
+  end
+
+  # todo:プラグイン化
+  def translate_url( text )
+    "https://translate.google.com/#auto/ja/" + URI.encode( text )
+  end
+  
+  def search_url( text )
+    "https://www.google.com/search?q=" + URI.encode( text )
+  end
 end # module

@@ -5,7 +5,8 @@ require 'jrubyfx'
 import 'org.controlsfx.glyphfont.Glyph'
 
 module GlyphAwesome
-  def ga( name ,size:nil , gradient:false , hover:true , color:nil)
+  module_function
+  def make( name ,size:12 , gradient:false , hover:true , color:nil)
     glyph_name = name.to_s
     glyph = Glyph.new( 'FontAwesome' , glyph_name )
     glyph.size( size ) if size

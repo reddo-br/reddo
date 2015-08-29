@@ -15,7 +15,7 @@ rawrが必要です。
 リポジトリに入ってない、必要なファイルを取得します。
 
     jruby -S rake rawr:get:current-jruby
-    # 手動で再審のjruby-complete-*.jar を探してきて、lib/javaに入れた方がいいかも
+    # 手動で最新のjruby-complete-9.*.jar を探してきて、lib/javaに入れた方がいいかも
 
     jruby -S gem install -i ./gem jrubyfx --version "= 1.1.1" --no-rdoc --no-ri
     jruby -S gem install -i ./gem redd --version "= 0.7.5" --no-rdoc --no-ri

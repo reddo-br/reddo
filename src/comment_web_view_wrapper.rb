@@ -77,10 +77,15 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     subreddit_info.appendChild( @doc.createTextNode("]"))
 
     subm = @doc.getElementById("submission")
-    $stderr.puts "*** selfテキスト表示"
-    $stderr.puts obj[:selftext_html]
+    if obj[:is_self] and obj[:selftext_html].to_s.length > 0
+      # $stderr.puts "*** selfテキスト表示"
+      # $stderr.puts obj[:selftext_html]
+      subm.setAttribute("style","display:block")
+      subm.setMember( "innerHTML" , html_decode( obj[:selftext_html].to_s ))
+    else
+      subm.setAttribute( "style","display:none")
+    end
 
-    subm.setMember( "innerHTML" , html_decode( obj[:selftext_html].to_s ))
     if thumb = make_thumbnail_element( subm )
       subm.appendChild( thumb )
     end
@@ -169,7 +174,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     if not parent or obj.is_a?(Redd::Objects::MoreComments) # moreは階層の中に入ってないこともある
       if obj.kind_of?(Hash)
         parent_id = obj[:parent_id]
-        if parent_id =~ /t3/
+        if parent_id =~ /^t3/
           parent = @doc.getElementById("comments")
         else
           parent = @doc.getElementById( parent_id )
@@ -178,15 +183,13 @@ class CommentWebViewWrapper < RedditWebViewWrapper
         parent ||= @doc.getElementById("comments")
       else # MoreCommentなど
         parent_id = obj.parent_id
-        if parent_id =~ /t3/
+        if parent_id =~ /^t3/
           parent = @doc.getElementById("comments")
         else
           parent = @doc.getElementById(parent_id) # moreは階層の中に入ってないこともある
         end
       end
     end
-
-    # MoreCommentがただの配列で、parentなどの情報を消してしまうのは困る
 
     if parent
       if obj.kind_of?(Array)
@@ -371,18 +374,34 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     #  comment_foot.setAttribute("style", "font-size:90%;")
     #end
 
+    parmalink_this = if obj[:kind] == 't1'
+                       @permalink + obj[:id]
+                     else
+                       @permalink
+                     end
+
     comment_foot_open = @doc.createElement("a")
     comment_foot_open.setTextContent("ここから表示")
     # partial comment pathを作れない問題
-    if obj[:kind] == 't1'
-      comment_foot_open.setAttribute("href" , @permalink + obj[:id] )
-    else
-      comment_foot_open.setAttribute("href" , @permalink )
-    end
+    comment_foot_open.setAttribute("href" , parmalink_this )
 
     comment_foot.appendChild( comment_foot_open )
     comment_foot.appendChild( @doc.createTextNode(" "))
     
+    if obj[:kind] == 't1'
+      comment_foot_open_ex = @doc.createElement("a")
+      comment_foot_open_ex.setTextContent("外部ブラウザ")
+      comment_foot_open_ex.setAttribute("href" , "#" )
+      set_event( comment_foot_open_ex , 'click' , false ){
+        url = @uh.linkpath_to_url( parmalink_this )
+        Platform.runLater{
+          App.i.open_external_browser( url )
+        }
+      }                           
+      comment_foot.appendChild( comment_foot_open_ex )
+      comment_foot.appendChild( @doc.createTextNode(" "))
+    end
+
     if @account_name
       comment_foot_reply = @doc.createElement("a")
       comment_foot_reply.setTextContent("返信")

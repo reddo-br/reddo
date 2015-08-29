@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-# -*- coding: utf-8 -*-
 require 'java'
 require 'jrubyfx'
 
@@ -30,6 +28,10 @@ class CommentPage < Page
                [ "Q&A","qa"]
               ]
 
+  def is_valid_sort_type(sort)
+    SORT_TYPE.rassoc( sort )
+  end
+
   def initialize( info , start_user_present:true)
     super()
     getStyleClass().add("comment-page")
@@ -42,20 +44,27 @@ class CommentPage < Page
 
     @link_id = @page_info[:name] # commentではid not fullname
     @top_comment = @page_info[:top_comment] # todo: 単独コメント機能
+    @comment_context = @page_info[:context]
     @url_handler = UrlHandler.new( @page_info[:site] )
     if not Account.exist?( @page_info[:account_name] )
       @page_info[:account_name] = nil
     end
     @account_name = @page_info[:account_name] # 今のところ切り変えはない
     # @site = site
-    @default_sort = @page_info[:suggested_sort] || 'new'
+    queried_sort = if is_valid_sort_type( @page_info[:sort] )
+              @page_info
+            else
+              nil
+            end
+    @default_sort = queried_sort || @page_info[:suggested_sort] || 'new'
 
     @split_comment_area = VBox.new
 
     @shown_to_user = true
 
-    @button_area = HBox.new()
-    @button_area.setAlignment( Pos::CENTER_LEFT )
+    # @button_area = HBox.new()
+    @button_area = BorderPane.new
+    # 13@button_area.setAlignment( Pos::CENTER_LEFT )
     # @button_area = ToolBar.new
     @reload_button = Button.new("リロード")
     @reload_button.setOnAction{|e|
@@ -73,6 +82,8 @@ class CommentPage < Page
 
     @sort_selector.valueProperty().addListener{|ov|
       start_reload( asread:false )
+      @page_info[:sort] = @sort_selector.getSelectionModel.getSelectedItem
+      App.i.save_tabs
     }
 
     @title = @page_info[:title] # 暫定タイトル / これはデコードされてる
@@ -80,7 +91,7 @@ class CommentPage < Page
     name = @account_name || "なし"
     @account_label = Label.new("アカウント:" + name)
 
-    @external_browser_button = Button.new("ブラウザで開く")
+    @external_browser_button = Button.new("webで開く")
     @external_browser_button.setOnAction{|e|
       if @links and @links[0] and perm = @links[0][:permalink]
         comment_link = @url_handler.linkpath_to_url( perm )
@@ -96,12 +107,19 @@ class CommentPage < Page
     }
 
     @load_status = Label.new("")
-
-    @button_area.getChildren().setAll( 
-                                      @account_label ,
-                                      Label.new(" "),
-                                      @external_browser_button
-                                      )
+    
+    @title_label = Label.new( @title )
+    @title_label.setStyle("-fx-font-size:14pt")
+    button_area_left = HBox.new
+    button_area_left.setAlignment( Pos::CENTER_LEFT )
+    button_area_left.getChildren.setAll( @account_label , Separator.new( Orientation::VERTICAL ))
+    
+    @button_area.setLeft( button_area_left )
+    @button_area.setCenter( @title_label )
+    @button_area.setRight( @external_browser_button )
+    [ button_area_left , @title_label , @external_browser_button ].each{|e|
+      BorderPane.setAlignment( e , Pos::CENTER_LEFT )
+    }
 
     @split_comment_area.getChildren().add( @button_area )
     self.class.setMargin( @button_area , Insets.new( 3.0 , 3.0 , 3.0 , 3.0 ))
@@ -128,8 +146,10 @@ class CommentPage < Page
     btns3 << Label.new(" ")
     btns3 << @count_new_label = Label.new()
     find1 = []
-    find1 << @find_new_r_button = Button.new("◀")
-    find1 << @find_new_button = Button.new("▶")
+    #find1 << @find_new_r_button = Button.new("◀")
+    #find1 << @find_new_button = Button.new("▶")
+    find1 << @find_new_r_button = Button.new("",GlyphAwesome.make("CHEVRON_LEFT"))
+    find1 << @find_new_button = Button.new("",GlyphAwesome.make("CHEVRON_RIGHT"))
     App.i.make_pill_buttons( find1 )
     btns3 += find1
     btns3 << Label.new(" ")
@@ -138,8 +158,8 @@ class CommentPage < Page
     @find_word_box.setPromptText("検索語")
     @find_word_box.setPrefWidth( 160 )
     find2 << @find_word_clear_button = Button.new("消")
-    find2 << @find_word_r_button = Button.new("◀")
-    find2 << @find_word_button = Button.new("▶")
+    find2 << @find_word_r_button = Button.new("",GlyphAwesome.make("CHEVRON_LEFT"))
+    find2 << @find_word_button = Button.new("",GlyphAwesome.make("CHEVRON_RIGHT"))
     App.i.make_pill_buttons( find2 )
     btns3 += find2
     btns3 << Label.new(" ")
@@ -186,6 +206,9 @@ class CommentPage < Page
       @top_comment = nil
       show_single_thread_bar( false )
       start_reload( asread:false )
+      @page_info[:top_comment] = nil
+      @page_info[:context] = nil
+      App.i.save_tabs
     }
     @button_area4.getChildren().add( @clear_partial_thread_button )
     self.class.setMargin( @button_area4 , Insets.new( 3.0 , 3.0 , 3.0 , 3.0 ))
@@ -300,8 +323,13 @@ class CommentPage < Page
                      @replying = nil
                    }
                  },
-                 Proc.new {
-                   $stderr.puts "投稿エラー"
+                 Proc.new {|e|
+                   # $stderr.puts "投稿エラー"
+                   if e.class == Redd::Error::RateLimited 
+                     App.i.mes("投稿エラー 投稿間隔が制限されています")
+                   else
+                     App.i.mes("投稿エラー")
+                   end
                  }
                  )
 
@@ -314,8 +342,12 @@ class CommentPage < Page
                      @editing = nil
                    }
                  },
-                 Proc.new {
-                   $stderr.puts "編集エラー"
+                 Proc.new {|e|
+                   if e.class == Redd::Error::RateLimited 
+                     App.i.mes("編集エラー 投稿間隔が制限されています")
+                   else
+                     App.i.mes("編集エラー")
+                   end
                  }
                  )
       end
@@ -460,10 +492,38 @@ class CommentPage < Page
     }
   end
 
-  def set_top_comment( top_comment_id )
+  def set_top_comment( top_comment_id , context = nil)
     @top_comment = top_comment_id
+    @comment_context = context
     show_single_thread_bar( true )
     start_reload( asread:false )
+    @page_info[:top_comment] = @top_comment
+    @page_info[:context] = @comment_context
+  end
+
+  def set_new_page_info( info )
+    # 上書きできるのは、top_commentとsortだけにしとく
+    changed = (@top_comment != info[:top_comment]) or (@comment_context != info[:context] )
+    if changed
+      @top_comment = info[:top_comment]
+      @comment_context = info[:context]
+      if @top_comment
+        show_single_thread_bar( true )
+      else
+        show_single_thread_bar( false )
+      end
+    end
+    
+    if info[:sort] and is_valid_sort_type( info[:sort] )
+      current_sort = @sort_selector.getSelectionModel.getSelectedItem
+      if current_sort != info[:sort]
+        @sort_selector.getSelectionModel.select( info[:sort] ) # listenerでリロードさせる
+      else
+        start_reload( asread:false ) if changed
+      end
+    else
+      start_reload( asread:false ) if changed
+    end
   end
 
   def show_single_thread_bar( show = true )
@@ -627,7 +687,7 @@ class CommentPage < Page
     # submission#get では、コメントが深いレベルまでオブジェクト化されない問題
     sort_type = @sort_selector.getSelectionModel.getSelectedItem
     res = if @top_comment
-            App.i.client(@account_name).get( "/comments/#{@link_id}/-/#{@top_comment}.json" , limit:200 , sort:sort_type).body
+            App.i.client(@account_name).get( "/comments/#{@link_id}/-/#{@top_comment}.json" , limit:200 , sort:sort_type , context:@comment_context).body
           else
             App.i.client(@account_name).get( "/comments/#{@link_id}.json" , limit:200 , sort:sort_type).body
           end
@@ -678,7 +738,7 @@ class CommentPage < Page
       else
         set_tab_text( title )
       end
-      
+      @title_label.setText( title )
       @comments.each{|c| @comment_view.add_comment( c ) }
       # puts @comment_view.dump
       @comment_view.set_link_hook
@@ -788,9 +848,15 @@ class CommentPage < Page
     @comment_view.screen_down(0.6)
   end
   def key_previous
-    @find_new_r_button.fire() if not @find_new_r_button.isDisable()
+    @comment_view.screen_up(1.0)
   end
   def key_next
+    @comment_view.screen_down(1.0)
+  end
+  def key_previous_paragrah
+    @find_new_r_button.fire() if not @find_new_r_button.isDisable()
+  end
+  def key_next_paragraph
     @find_new_button.fire() if not @find_new_button.isDisable()
   end
   def key_space
@@ -799,6 +865,18 @@ class CommentPage < Page
   def key_find
     @find_word_box.requestFocus()
     @find_word_box.selectRange( 0 , @find_word_box.getText().length  )
+  end
+
+  def key_open_link
+    if url = @links && @links[0] && @links[0][:url]
+      App.i.open_external_browser(url)
+    end
+  end
+
+  def key_open_link_alt
+    if url = @links && @links[0] && @links[0][:url]
+      App.i.open_external_browser(Util.mobile_url(url))
+    end
   end
 
 end

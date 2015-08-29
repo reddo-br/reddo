@@ -24,14 +24,34 @@ module AppKey
         key_send( page , :key_up )
 
       when [ KeyCode::H, false , false ] #,  [ KeyCode::A, false , false ]
-        App.i.tab_pane.getSelectionModel().selectPrevious()
+        model = App.i.tab_pane.getSelectionModel()
+        if model.getSelectedIndex == 0
+          model.selectLast
+        else
+          model.selectPrevious()
+        end
       when [ KeyCode::L, false , false ] #,  [ KeyCode::D, false , false ]
-        App.i.tab_pane.getSelectionModel().selectNext()
+        model = App.i.tab_pane.getSelectionModel()
+        if model.getSelectedIndex == model.getItemCount() - 1
+          model.selectFirst()
+        else
+          model.selectNext()
+        end
         
+      when [ KeyCode::H, true , false ] 
+        page.tab_move( -1 )
+      when [ KeyCode::L, true , false ] 
+        page.tab_move(  1 )
+
       when [ KeyCode::F, false , true ]
         key_send( page , :key_next )
       when [ KeyCode::B, false , true ]
         key_send( page , :key_previous)
+        
+      when [ KeyCode::CLOSE_BRACKET, false , false ]
+        key_send( page , :key_next_paragraph )
+      when [ KeyCode::OPEN_BRACKET, false , false ]
+        key_send( page , :key_previous_paragrah)
         
       when [ KeyCode::SPACE, false , false ]
         key_send( page,  :key_space )
@@ -39,11 +59,17 @@ module AppKey
       when [ KeyCode::P, false , false ]
         key_send( page,  :key_open_link )
 
+      when [ KeyCode::P, true , false ]
+        key_send( page,  :key_open_link_alt )
+
       when [ KeyCode::O, false , false ]
         key_send( page,  :key_open_comment )
 
       when [ KeyCode::C, false , false ]
         key_send( page,  :key_close )
+
+      when [ KeyCode::C, true , false ]
+        key_send( page,  :key_close_focus_next )
 
       when [ KeyCode::A , false , false ]
         key_send( page, :key_add )
@@ -56,7 +82,9 @@ module AppKey
         
       when [ KeyCode::ESCAPE , false , false ]
         page.requestFocus
-        
+        if btn = App.i.root.lookup(".inbox-button")
+          btn.setSelected(false)
+        end
       when [ KeyCode::U , false , false ]
         key_send( page , :key_upvote )
 

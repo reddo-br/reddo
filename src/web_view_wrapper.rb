@@ -11,12 +11,36 @@ require 'app_color'
 require 'html/html_entity'
 require 'util'
 
+import 'javafx.scene.control.MenuItem'
+import 'javafx.scene.control.ContextMenu'
+import 'javafx.geometry.Side'
+
 class WebViewWrapper
 
   def initialize(sjis_art:true , &cb)
 
     @dom_prepared_cb = cb
     @webview = WebView.new
+    @webview.setOnMousePressed{|ev|
+      if ev.isPopupTrigger() # プラットフォームにより、pressで来るときとreleaseで来るときがある
+        # $stderr.puts "popup検出"
+        Platform.runLater{ popup( ev.getScreenX , ev.getScreenY , ev.getX , ev.getY) }
+        ev.consume
+      else
+        if @menu
+          @menu.hide
+          @menu = nil
+        end
+      end
+    }
+    @webview.setOnMouseReleased{|ev|
+      if ev.isPopupTrigger()
+        # $stderr.puts "popup検出"
+        Platform.runLater{ popup( ev.getScreenX , ev.getScreenY , ev.getX , ev.getY) }
+        ev.consume
+      end
+    }
+    @webview.setContextMenuEnabled( false )
     @webview.setStyle("-fx-font-smoothing-type:gray")
     # base html
     @e = @webview.getEngine()
@@ -39,6 +63,71 @@ class WebViewWrapper
 
   end 
   attr_reader :webview
+
+  def popup( x , y , rx , ry)
+    sel = get_selected_text.to_s
+    href = get_href_text( rx , ry ).to_s
+    
+    if sel.length > 0
+      item_copy = MenuItem.new("選択をコピー")
+      item_copy.setOnAction{|ev|
+        App.i.copy( sel )
+      }
+      item_search = MenuItem.new("選択をgoogle検索")
+      item_search.setOnAction{|ev|
+        url = Util.search_url( sel )
+        Platform.runLater{
+          App.i.open_external_browser( url )
+        }
+      }
+      item_translate = MenuItem.new("選択をgoogle翻訳")
+      item_translate.setOnAction{|ev|
+        url = Util.translate_url( sel )
+        Platform.runLater{
+          App.i.open_external_browser( url )
+        }
+      }
+
+      ###
+      @menu = ContextMenu.new
+      @menu.getItems.addAll( item_copy , item_search , item_translate)
+      
+      @menu.show( @webview , x , y )
+      true
+
+    elsif href.length > 0 and not href == "#"
+      item_copy = MenuItem.new("リンクをコピー")
+      item_copy.setOnAction{|ev|
+        App.i.copy( href )
+      }
+
+      @menu = ContextMenu.new
+      @menu.getItems.addAll( item_copy )
+      
+      @menu.show( @webview , x , y )
+
+      true
+    else
+      false
+    end
+  end
+
+
+  def get_selected_text
+    @e.executeScript("window.getSelection().toString()")
+  end
+
+  def get_href_text( x , y )
+    if elem = @e.executeScript("document.elementFromPoint(#{x},#{y})")
+      if href = elem.getAttribute("href")
+        href.to_s
+      else
+        nil
+      end
+    else
+      nil
+    end
+  end
 
   def dom_prepared( obs )
     @doc = @e.getDocument()

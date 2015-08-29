@@ -19,10 +19,10 @@ class MessageArea < Java::JavafxSceneLayout::HBox
     @mutex = Mutex.new
   end
 
-  def set_message( mes )
+  def set_message( mes , err = false)
     @mutex.synchronize{
-      @message_string = mes
-      @message.setText(mes)
+      @message_string = App.i.now + " " + mes
+      @message.setText(@message_string)
     }
   end
 

@@ -237,10 +237,14 @@ a#linked_title:hover {
   border-radius: 3px;
   border-style: solid;
   border-color: #888888;
+  display:none; // 開始時
 }
+
+/*
 #submission:empty{
   display:none;
 }
+*/
 
 #submission_command {
   margin: 8px;

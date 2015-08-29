@@ -55,7 +55,7 @@ class SubPage < Page
     if not Account.exist?( @page_info[:account_name] )
       @page_info[:account_name] = nil
     end
-    @account_name = @pref['account_name'] || @page_info[:account_name] # ページごとの記録が優先
+    @account_name = @pref['account_name'] || @page_info[:account_name] || App.i.pref['current_account'] # ページごとの記録が優先
     @pref['account_name'] = @account_name
     @sub_info = nil
 
@@ -86,7 +86,7 @@ class SubPage < Page
 
     @active_label = Label.new()
 
-    @external_browser_button = Button.new("ブラウザで開く")
+    @external_browser_button = Button.new("webで開く")
     @external_browser_button.setOnAction{|e|
       url = get_sub_url
       if url.to_s.length > 0
@@ -310,7 +310,7 @@ class SubPage < Page
 
     # @table.setColumnResizePolicy(TableView::CONSTRAINED_RESIZE_POLICY)
     @table.setPrefHeight( 10000 )
-    @table.getColumns.setAll( rank_column , vote_column , score_column , thumb_column , comm_column , comm_new_column , title_column)
+    @table.getColumns.setAll( rank_column , vote_column , score_column , comm_column , comm_new_column , thumb_column , title_column)
 
     @subs_observable = FXCollections.synchronizedObservableList(FXCollections.observableArrayList)
     @table.setItems( @subs_observable )
@@ -370,7 +370,6 @@ class SubPage < Page
     else
       start_load_sub_info
     end
-
     start_reload
   end # initialize
   
@@ -440,7 +439,10 @@ class SubPage < Page
              Proc.new{ 
                set_load_button_enable( true ) 
                if not add
-                 Platform.runLater{ @table.scrollTo(0) }
+                 Platform.runLater{ 
+                   @table.scrollTo(0) 
+                   select_row( 0 )
+                 }
                end
              } , 
              Proc.new{ |e| 
@@ -641,6 +643,7 @@ class SubPage < Page
     if vf = get_virtual_flow
       vf.setOnScroll{|ev|
         screen_scroll( ev.getDeltaY() < 0 , 0.6) # -1なら↓
+        ev.consume
       }
     end
   end
@@ -704,12 +707,14 @@ class SubPage < Page
 
   class VoteCell < Java::JavafxSceneControl::TableCell
     include JRubyFX::DSLControl
-
+    STYLE_BASE = "-fx-font-size:12px;"
     def initialize()
       super()
       @upvote_button = ToggleButton.new("▲")
+      @upvote_button.setStyle(STYLE_BASE)
       @upvote_button.getStyleClass().add("upvote-button")
       @downvote_button = ToggleButton.new("▼")
+      @downvote_button.setStyle(STYLE_BASE)
       @downvote_button.getStyleClass().add("downvote-button")
 
       App.i.make_pill_buttons( [ @upvote_button , @downvote_button ] , true )
@@ -723,15 +728,15 @@ class SubPage < Page
         vote_score = 0
         if @upvote_button.isSelected
           vote_score = 1
-          @upvote_button.setStyle("-fx-text-fill:orange")
+          @upvote_button.setStyle("#{STYLE_BASE} -fx-text-fill:orange")
         else
-          @upvote_button.setStyle("")
+          @upvote_button.setStyle(STYLE_BASE)
         end
         if @downvote_button.isSelected
           vote_score = -1
-          @downvote_button.setStyle("-fx-text-fill:blue")
+          @downvote_button.setStyle("#{STYLE_BASE} -fx-text-fill:blue")
         else
-          @downvote_button.setStyle("")
+          @downvote_button.setStyle(STYLE_BASE)
         end
         
         it = getTableRow().getItem
@@ -825,17 +830,21 @@ class SubPage < Page
 
   class ThumbCell < Java::JavafxSceneControl::TableCell
     include JRubyFX::DSLControl
-    IMAGE_SIZE = 70
+    IMAGE_WIDTH = 74
+    IMAGE_HEIGHT = 54
     # IMAGE_SIZE = 50
     def initialize
       super()
+      setPadding( Insets.new( 2, 2, 2, 2 ))
       @image_view = ImageView.new
       @image_view.setSmooth(true)
       # @image_view.setCache(true)
-      # @image_view.setFitWidth( IMAGE_SIZE )
-      # @image_view.setFitHeight( IMAGE_SIZE )
+      @image_view.setPreserveRatio(true)
+      @image_view.setFitWidth( IMAGE_WIDTH )
+      @image_view.setFitHeight( IMAGE_HEIGHT )
       setAlignment( Pos::CENTER )
-      setMinHeight(IMAGE_SIZE + 10)
+      setMinHeight(IMAGE_HEIGHT + 6)
+      setMinWidth(IMAGE_WIDTH + 6)
       setGraphic( @image_view)
     end
 
@@ -846,7 +855,8 @@ class SubPage < Page
       if data and not is_empty_col
         url = data
         # p url
-        i = @@cache[ url ] || Image.new( url, IMAGE_SIZE, IMAGE_SIZE, true,true,true) # ratio,smooth,background
+        # i = @@cache[ url ] || Image.new( url, IMAGE_SIZE, IMAGE_SIZE, true,true,true) # ratio,smooth,background
+        i = @@cache[ url ] || Image.new( url ,true) # background
         @@cache[ url ] = i
         @image_view.setImage( i )
       else
@@ -854,6 +864,11 @@ class SubPage < Page
       end
       
     end
+    
+    def resize_keep_ratio( target_width , target_height , width , height )
+
+    end
+
   end
 
   class NumberCell < Java::JavafxSceneControl::TableCell
@@ -921,9 +936,9 @@ class SubPage < Page
       # @subm_title.setWrapText(true)
       if artificial_bold
         # drowshadow ( blur-type , color , radius , spread, offset_x , offset_y )
-        @subm_title.setStyle( "-fx-font-size:16px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
+        @subm_title.setStyle( "-fx-font-size:14px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
       else
-        @subm_title.setStyle( "-fx-font-size:16px; -fx-font-weight: bold; -fx-word-wrap:break-word")
+        @subm_title.setStyle( "-fx-font-size:14px; -fx-font-weight: bold; -fx-word-wrap:break-word")
       end
 
       if @show_subreddit
@@ -1111,7 +1126,7 @@ class SubPage < Page
         
         page_info = @url_handler.url_to_page_info( url )
         if page_info[:type] == 'other'
-          url_r = "http://www.readability.com/m?url=" + URI.encode( url )
+          url_r = Util.mobile_url( url )
           App.i.open_external_browser(url_r)
         else
           App.i.open_by_page_info( page_info )
@@ -1261,9 +1276,9 @@ class SubPage < Page
   end
   
   def select_row( index )
-    # @table.getFocusModel().focus( index )
     # @table.getSelectionModel().setSelectedIndex( index )
     @table.requestFocus()
+    @table.getFocusModel().focus( index )
     @table.getSelectionModel().select( index ) # TableView.TableViewSelectionModel#
   end
 
@@ -1272,10 +1287,16 @@ class SubPage < Page
   #
 
   def key_open_link
-    $stderr.puts "sub_page.rb:key_p()"
     if item = @table.getSelectionModel().getSelectedItem()
       url = item[:url]
       App.i.open_external_browser(url)
+    end
+  end
+  
+  def key_open_link_alt
+    if item = @table.getSelectionModel().getSelectedItem()
+      url = item[:url]
+      App.i.open_external_browser(Util.mobile_url(url))
     end
   end
   

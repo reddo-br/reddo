@@ -68,7 +68,14 @@ class UrlHandler
     base_url.merge( pe(path) )
   end
 
-  
+  def parse_query(q )
+    query_hash = {}
+    q.split(/&/).map{|kv| 
+      k,v = kv.split(/\=/)
+      query_hash[ k ] = v
+    }
+    query_hash
+  end
 
   def url_to_page_info( url )
     url = url.to_s
@@ -89,31 +96,39 @@ class UrlHandler
       site = rxp_site[1]
       is_short = rxp_site[2]
       
-      if is_short
-        if m = url_o.path.match( %r!^/(\w+)/?$! )
-          {:site => site , :type => 'comment' , :name => m[1] }
+      info = 
+        if is_short
+          if m = url_o.path.match( %r!^/(\w+)/?$! )
+            {:site => site , :type => 'comment' , :name => m[1] }
+          else
+            {:type => "other" , :url => abs_url_o.to_s }
+          end
         else
-          {:type => "other" , :url => abs_url_o.to_s }
+          # todo: /r/ が固定であるし
+          if m = url_o.path.match( %r!^/r/([\w\+]+)/?$!uo )
+            {:site => site , :type => "sub" , :name => m[1] }
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/m/(\w+)/?$!uo )
+            {:site => site , :type => "sub" , :name => ".." + url_o.path }
+          elsif @account_name and m = url_o.path.match( %r!^/me/m/(\w+)/?$!uo )
+            {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] }
+          elsif m = url_o.path.match( %r!^/r/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
+            {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
+          elsif m = url_o.path.match( %r!^/r/(\w+)/comments/(\w+)!uo )
+            {:site => site ,:type=> "comment" , :name => m[2] }
+          elsif url_o.path == '/'
+            {:site => site , :type => "sub" , :name => "../" } # front
+          else # 非対応パス
+            {:type => "other" , :url => abs_url_o.to_s }
+          end
         end
-      else
-        # todo: /r/ が固定であるし
-        if m = url_o.path.match( %r!^/r/(\w+)/?$!uo )
-          {:site => site , :type => "sub" , :name => m[1] }
-        elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/m/(\w+)/?$!uo )
-          {:site => site , :type => "sub" , :name => ".." + url_o.path }
-        elsif @account_name and m = url_o.path.match( %r!^/me/m/(\w+)/?$!uo )
-          {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] }
-        elsif m = url_o.path.match( %r!^/r/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
-          {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
-        elsif m = url_o.path.match( %r!^/r/(\w+)/comments/(\w+)!uo )
-          {:site => site ,:type=> "comment" , :name => m[2] }
-        elsif url_o.path == '/'
-          {:site => site , :type => "sub" , :name => "../" } # front
-        else # 非対応パス
-          {:type => "other" , :url => abs_url_o.to_s }
-        end
+
+      if url_o.query
+        q = parse_query( url_o.query )
+        info[:context] = q["context"] if q["context"]
+        info[:sort]    = q["sort"] if q["sort"]
       end
       
+      info
     else # 非対応サイト
       {:type => "other" , :url => abs_url_o.to_s }
     end

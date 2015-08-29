@@ -33,12 +33,7 @@ class Page < Java::JavafxSceneLayout::VBox
       @tab_close_button.setPadding( Insets.new( 1.0 , 1.0 , 1.0 , 1.0 ))
       @tab_close_button.setOnAction{
         # http://stackoverflow.com/questions/17047000/javafx-closing-a-tab-in-tabpane-dynamically
-        Event.fireEvent(@tab, Event.new(Tab::CLOSED_EVENT))
-        if @tab.isSelected()
-          @tab.getTabPane().getSelectionModel().selectNext()
-        end
-        @tab.getTabPane().getTabs.remove( @tab )
-        App.i.save_tabs
+        close( true )
       }
     end
 
@@ -102,18 +97,26 @@ class Page < Java::JavafxSceneLayout::VBox
     @tab.setContent( self )
   end
 
+  def close( focus_next = false )
+    Event.fireEvent(@tab, Event.new(Tab::CLOSED_EVENT))
+    if focus_next and @tab.isSelected()
+      @tab.getTabPane().getSelectionModel().selectNext()
+    end
+    @tab.getTabPane().getTabs.remove( @tab )
+    App.i.save_tabs
+  end
+
   def tab_move( move )
     tabs = @tab.getTabPane().getTabs
     index = tabs.find_index{|i| i == @tab}
     selected = @tab.isSelected
-    if 0 <= (index + move) and (index + move) < tabs.length
-      # swap = tabs[ index - 1 ]
-      # tabs.subList( index - 1 , index + 1 ).setAll( [@tab , swap] )
-      tabs.remove( @tab )
-      tabs.add( index + move , @tab )
-      if selected
-        @tab.getTabPane().getSelectionModel().select( @tab )
-      end
+
+    new_pos = (index + move) % tabs.length
+
+    tabs.remove( @tab )
+    tabs.add( new_pos , @tab )
+    if selected
+      @tab.getTabPane().getSelectionModel().select( @tab )
     end
   end
 
@@ -183,7 +186,10 @@ class Page < Java::JavafxSceneLayout::VBox
   #####
 
   def key_close
-    @tab_close_button.fire() if not @tab_close_button.isDisable()
+    close(false)
   end
 
+  def key_close_focus_next
+    close(true)
+  end
 end

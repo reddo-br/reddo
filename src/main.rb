@@ -18,8 +18,8 @@ begin
     end
   end
 rescue
-  $stderr.puts $!
-  $stderr.puts $@
+  # $stderr.puts $!
+  # $stderr.puts $@
 end
 
 require 'app'
