@@ -467,9 +467,6 @@ class SubPage < Page
   def reload( add:false , count:100)
     $stderr.puts "reload"
     set_load_button_enable( false )
-    Platform.runLater{ 
-      requestFocus() 
-    }
     cl = App.i.client(@account_name)
     $stderr.puts cl.access.to_json ########
 
@@ -679,8 +676,14 @@ class SubPage < Page
       @sort_buttons.each{|b| b.setDisable( false ) }
       @subm_add_button.setDisable(false)
 
+      if @load_stop_button.isFocused
+        Platform.runLater{requestFocus}
+      end
       @load_stop_button.setDisable( true )
     else
+      if @reload_button.isFocused
+        Platform.runLater{requestFocus}
+      end
       @reload_button.setDisable( true )
       @account_selector.setDisable(true)
       @sort_buttons.each{|b| b.setDisable( true ) }

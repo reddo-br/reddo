@@ -606,8 +606,14 @@ class CommentPage < Page
       @clear_partial_thread_button.setDisable( false )
       @sort_selector.setDisable( false )
 
+      if @load_stop_button.isFocused
+        Platform.runLater{ requestFocus }
+      end
       @load_stop_button.setDisable( true )
     else
+      if @reload_button.isFocused
+        Platform.runLater{ requestFocus }
+      end
       @reload_button.setDisable( true )
       @split_edit_area.set_post_disable
       @clear_partial_thread_button.setDisable( true )
@@ -685,7 +691,6 @@ class CommentPage < Page
 
   def reload( asread:false , user_present:true)
     set_load_button_enable( false )
-    Platform.runLater{ requestFocus() }
     # submission#get では、コメントが深いレベルまでオブジェクト化されない問題
     sort_type = @sort_selector.getSelectionModel.getSelectedItem
     res = if @top_comment
