@@ -165,6 +165,11 @@ class CommentPage < Page
     btns3 << Label.new(" ")
     btns3 << @find_word_count = Label.new()
     
+    # awesome 高さ揃え
+    [ @find_new_r_button, @find_new_button, @find_word_r_button, @find_word_button ].each{|b|
+      b.prefHeightProperty.bind( @find_word_clear_button.heightProperty )
+    }
+
     @find_new_button.setOnAction{|ev| 
       Platform.runLater{scroll_to_new( true ) }
     }
@@ -600,26 +605,28 @@ class CommentPage < Page
   end
 
   def set_load_button_enable( enable )
-    if enable
-      @reload_button.setDisable( false )
-      @split_edit_area.set_post_enable
-      @clear_partial_thread_button.setDisable( false )
-      @sort_selector.setDisable( false )
+    start_buttons = [ @reload_button , @split_edit_area.post_button , 
+                      @clear_partial_thread_button , @sort_selector ]
+    stop_buttons  = [ @load_stop_button ]
 
-      if @load_stop_button.isFocused
+    if enable
+
+      start_buttons.each{|b| b.setDisable(false) }
+
+      if stop_buttons.find{|b| b.isFocused }
         Platform.runLater{ requestFocus }
       end
-      @load_stop_button.setDisable( true )
+      stop_buttons.each{|b| b.setDisable(true)}
+
     else
-      if @reload_button.isFocused
+
+      if start_buttons.find{|b| b.isFocused }
         Platform.runLater{ requestFocus }
       end
-      @reload_button.setDisable( true )
-      @split_edit_area.set_post_disable
-      @clear_partial_thread_button.setDisable( true )
-      @sort_selector.setDisable( true )
+      start_buttons.each{|b| b.setDisable(true) }
+
+      stop_buttons.each{|b| b.setDisable(false )}
       
-      @load_stop_button.setDisable( false )
     end
   end
 

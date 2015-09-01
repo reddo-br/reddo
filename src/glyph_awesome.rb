@@ -6,7 +6,7 @@ import 'org.controlsfx.glyphfont.Glyph'
 
 module GlyphAwesome
   module_function
-  def make( name ,size:12 , gradient:false , hover:true , color:nil)
+  def make( name ,size:(11.5) , gradient:false , hover:true , color:nil)
     glyph_name = name.to_s
     glyph = Glyph.new( 'FontAwesome' , glyph_name )
     glyph.size( size ) if size

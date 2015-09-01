@@ -670,26 +670,27 @@ class SubPage < Page
   end
 
   def set_load_button_enable( enable )
-    if enable
-      @reload_button.setDisable( false )
-      @account_selector.setDisable(false)
-      @sort_buttons.each{|b| b.setDisable( false ) }
-      @subm_add_button.setDisable(false)
+    start_buttons = [ @reload_button , @account_selector , @subm_add_button ] + @sort_buttons
+    stop_buttons  = [ @load_stop_button ]
 
-      if @load_stop_button.isFocused
-        Platform.runLater{requestFocus}
+    if enable
+
+      start_buttons.each{|b| b.setDisable(false) }
+
+      if stop_buttons.find{|b| b.isFocused }
+        Platform.runLater{ requestFocus }
       end
-      @load_stop_button.setDisable( true )
+      stop_buttons.each{|b| b.setDisable(true)}
+
     else
-      if @reload_button.isFocused
-        Platform.runLater{requestFocus}
+
+      if start_buttons.find{|b| b.isFocused }
+        Platform.runLater{ requestFocus }
       end
-      @reload_button.setDisable( true )
-      @account_selector.setDisable(true)
-      @sort_buttons.each{|b| b.setDisable( true ) }
-      @subm_add_button.setDisable(true)
+      start_buttons.each{|b| b.setDisable(true) }
+
+      stop_buttons.each{|b| b.setDisable(false )}
       
-      @load_stop_button.setDisable( false )
     end
   end
 

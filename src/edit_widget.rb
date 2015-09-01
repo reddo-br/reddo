@@ -182,5 +182,8 @@ class EditWidget < Java::JavafxSceneLayout::VBox
   def set_post_enable
     @post_button.setDisable(false)
   end
+  
+  attr_reader :post_button
+
 end
 
