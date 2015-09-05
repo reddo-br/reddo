@@ -27,27 +27,22 @@ class ConfigPage < Page
     @font_selector.valueProperty.addListener{|ev|
       set_font( ev.getValue )
     }
-
     items << [ Label.new("フォント") , @font_selector ]
 
-    @bold_check = CheckBox.new
-    @bold_check.setSelected( App.i.pref["artificial_bold"] )
-    @bold_check.selectedProperty().addListener{|ev|
-      App.i.pref["artificial_bold"] = ev.getValue()
-    }
-
+    @bold_check = checkbox_with_pref( "artificial_bold" )
     bold_label = Label.new("太字フォントをcss shadowで再現する(太字が表示できない場合に試してください)")
-    items << [ bold_label ,
-               @bold_check 
-             ]
+    items << [ bold_label , @bold_check ]
     
     browser_label = Label.new("外部ブラウザを開く別の方法を試す(うまくいかない場合に)")
-    @browser_check = CheckBox.new
-    @browser_check.setSelected( App.i.pref["browse_alternative_method"] )
-    @browser_check.selectedProperty().addListener{|ev|
-      App.i.pref["browse_alternative_method"] = ev.getValue()
-    }
+    @browser_check = checkbox_with_pref( "browse_alternative_method" )
     items << [ browser_label , @browser_check ]
+
+
+    @new_tab_check = checkbox_with_pref( "new_tab_after_current" )
+    items << [ Label.new("新規タブを現在のタブの直後に挿入する") ,
+               @new_tab_check ]
+
+    ########## itemをgridpaneに入れる
 
     items.each_with_index{|row , rownum|
       row.each_with_index{|control , colnum|
@@ -79,6 +74,15 @@ class ConfigPage < Page
     getChildren.add( scroll_pane )
 
     prepare_tab( "設定" )
+  end
+
+  def checkbox_with_pref( pref_name )
+    check = CheckBox.new
+    check.setSelected( App.i.pref[ pref_name ] )
+    check.selectedProperty().addListener{|ev|
+      App.i.pref[ pref_name ] = ev.getValue()
+    }
+    check
   end
 
   def get_font
