@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# from http://stackoverflow.com/questions/17546355/java-appbundler-application-pointing-to-jre-defined-by-java-home
+
+PRG=$0
+
+while [ -h "$PRG" ]; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
+    if expr "$link" : '^/' 2> /dev/null >/dev/null; then
+        PRG="$link"
+    else
+        PRG="`dirname "$PRG"`/$link"
+    fi
+done
+
+progdir=`dirname "$PRG"`
+
+# sample
+# /Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home
+# /System/Library/Frameworks/JavaVM.framework/Home
+
+if [ -n "$JAVA_HOME" ]; then
+  JAVACMD="$JAVA_HOME/bin/java"
+elif [ -x /usr/libexec/java_home ]; then
+    JDK_HOME="`/usr/libexec/java_home --failfast -v 1.8+`"
+    if [ -n "$JDK_HOME" ]; then
+        JAVACMD="$JDK_HOME/bin/java"
+    fi
+fi
+
+DEFAULT_JRE_JAVA_PATH="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java"
+
+if [ -z "$JAVACMD" ]; then
+    if [ -x "$DEFAULT_JRE_JAVA_PATH" ]; then
+        JAVACMD="$DEFAULT_JRE_JAVA_PATH"
+    else
+        JAVACMD="java"
+    fi
+fi
+
+cd "$progdir/../Resources/Java"
+exec "$JAVACMD" -splash:splash.png -Dfile.encoding=utf-8 -Xmx1g \
+       -Dapple.laf.useScreenMenuBar=true \
+       -Xdock:icon=./../app_icon.icns \
+       -jar reddo.jar
