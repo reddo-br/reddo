@@ -50,7 +50,7 @@ EOF
                  else
                    ""
                  end
-    base_font = App.i.pref["fonts"] || '"DejaVu Sans",Tahoma,Arial,"Helvetica Neue","Lucida Grande",sans-serif'
+    base_font = "\"#{App.i.pref["fonts"]}\",sans-serif" || '"DejaVu Sans",Tahoma,Arial,"Helvetica Neue","Lucida Grande",sans-serif'
 
     style = <<EOF
 html {
@@ -112,6 +112,7 @@ div.comment p {
 
 .comment_footer {
   padding:0px 3px 0px 3px;
+  color:#444444;
 }
 
 #comments > .comment > .comment_this > .comment_footer {

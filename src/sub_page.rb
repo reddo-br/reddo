@@ -564,7 +564,6 @@ class SubPage < Page
     else
       @subs_observable.setAll( filter(@subms) ) # eventを発行しない
     end
-    set_scroll_amount
     Platform.runLater{
       @subm_count_label.setText("#{@subms.length}件")
       @table.scrollTo(old_top)
@@ -572,6 +571,7 @@ class SubPage < Page
       if @table.getSelectionModel().getSelectedIndex == -1
         @table.getSelectionModel().select( old_top )
       end
+      set_scroll_amount
     }
   end
 

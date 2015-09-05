@@ -402,44 +402,51 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       comment_foot.appendChild( @doc.createTextNode(" "))
     end
 
-    if @account_name
-      comment_foot_reply = @doc.createElement("a")
-      comment_foot_reply.setTextContent("返信")
-      comment_foot_reply.setAttribute("href" , "#" )
-      set_event( comment_foot_reply , 'click' , false ){
-        # inboxable#reply(text) -> obj, message
-        # submission#add_comment(text)
-        # editable#edit(text) -> thing | submission と comment
-        if @reply_cb
-          Platform.runLater{ # js engineのcall stack溢れ対策
-            @reply_cb.call( obj )
-          }
-        end
-      }
-      comment_foot.appendChild( comment_foot_reply )
-    end
-    
-    # if obj[:author] == obj.client.me[:name] # 時間かかる
-    if obj[:author] == @account_name and ( obj[:kind] == 't1' or obj[:is_self] )
-      # todo: submissionならselfかどうかもチェックする
-      # if obj[:author] == @account_name
-      comment_foot_edit = @doc.createElement("a")
-      comment_foot_edit.setTextContent("編集")
-      comment_foot_edit.setAttribute("href" , "#" )
-      set_event( comment_foot_edit , 'click' , false ){
-        if @edit_cb
-          Platform.runLater{ # js engineのcall stack溢れ対策
-            @edit_cb.call( obj )
-          }
-        end
-      }
-      comment_foot.appendChild( @doc.createTextNode(" "))
-      comment_foot.appendChild( comment_foot_edit )
-    end
+    if obj[:archived]
+      comment_foot_archived = @doc.createElement("span")
+      comment_foot_archived.setTextContent("[アーカイブ済み]")
+      comment_foot.appendChild( comment_foot_archived )
+    elsif is_deleted( obj )
+      #
+    else
+      
+      if @account_name
+        comment_foot_reply = @doc.createElement("a")
+        comment_foot_reply.setTextContent("返信")
+        comment_foot_reply.setAttribute("href" , "#" )
+        set_event( comment_foot_reply , 'click' , false ){
+          # inboxable#reply(text) -> obj, message
+          # submission#add_comment(text)
+          # editable#edit(text) -> thing | submission と comment
+          if @reply_cb
+            Platform.runLater{ # js engineのcall stack溢れ対策
+              @reply_cb.call( obj )
+            }
+          end
+        }
+        comment_foot.appendChild( comment_foot_reply )
+      end
+      
+      # if obj[:author] == obj.client.me[:name] # 時間かかる
+      if obj[:author] == @account_name and ( obj[:kind] == 't1' or obj[:is_self] )
+        # todo: submissionならselfかどうかもチェックする
+        # if obj[:author] == @account_name
+        comment_foot_edit = @doc.createElement("a")
+        comment_foot_edit.setTextContent("編集")
+        comment_foot_edit.setAttribute("href" , "#" )
+        set_event( comment_foot_edit , 'click' , false ){
+          if @edit_cb
+            Platform.runLater{ # js engineのcall stack溢れ対策
+              @edit_cb.call( obj )
+            }
+          end
+        }
+        comment_foot.appendChild( @doc.createTextNode(" "))
+        comment_foot.appendChild( comment_foot_edit )
+      end
 
-    # comment_this.appendChild( comment_foot )
-    # comment.appendChild( comment_this )
-    
+    end # archived?
+
     # event
     if( mouseover_element )
       comment_foot.setAttribute("style" , "visibility:hidden")
@@ -454,6 +461,11 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
     
     comment_foot
+  end
+
+  def is_deleted( obj )
+    # とりあえず
+    obj[:author] == "[deleted]"
   end
 
   def element_vote_score( element )

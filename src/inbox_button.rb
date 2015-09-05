@@ -66,7 +66,6 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
   def get_inbox_unread
     all_account_messages = []
     Account.list.each{|account_name|
-    # ["z8Qx-z1Xs"].each{|account_name|
       cl = App.i.client( account_name )
       all_account_messages += cl.my_messages( "unread" , count:100 )
     }
@@ -124,17 +123,20 @@ class UnreadPopOver < PopOver
       App.i.open_external_browser( "https://www.reddit.com/message/inbox/" )
     }
     @read_button.setOnAction{|ev|
+      users = @items_observable.to_a.map{|m| m[:dest] }.uniq
       if @items_observable.length > 0
         set_items( [] )
         getOwnerNode.set_num( 0 )
         
         Thread.new{
-          Account.list.each{|an|
+          users.each{|an|
             cl = App.i.client(an)
-            begin
-              cl.read_all_messages
-            rescue
-              
+            if cl
+              begin
+                cl.read_all_messages
+              rescue
+                
+              end
             end
           }
         } # thread
