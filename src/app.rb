@@ -20,6 +20,7 @@ require 'sub_page'
 require 'comment_page'
 require 'message_area'
 require 'config_page'
+require 'google_search_page'
 
 require 'app_toolbar'
 
@@ -269,6 +270,8 @@ class App
                         SubPage.new( page_info )
                       when 'config'
                         ConfigPage.new(page_info)
+                      when 'google_search'
+                        GoogleSearchPage.new( page_info )
                       end
         if target_page
           target_tab = target_page.tab_widget
@@ -281,7 +284,7 @@ class App
         end
         save_tabs
       else # 既に存在
-        if page_info[:type] == 'comment'
+        if page_info[:type] == 'comment' or page_info[:type] == 'google_search'
           target_tab.getContent().set_new_page_info( page_info )
         end
       end
@@ -406,6 +409,17 @@ class App
     node.setOnKeyPressed{|ev|
       if ev.getText.to_s.length > 0 and ev.getText.ord >= 32
         ev.consume
+      end
+    }
+  end
+
+  def adjust_height(  nodes , base = nil)
+    if not base
+      base = nodes[0]
+    end
+    nodes.each{|n|
+      if n != base
+        n.prefHeightProperty.bind( base.heightProperty)
       end
     }
   end

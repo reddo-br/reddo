@@ -21,6 +21,10 @@ class UrlHandler
     end
   end
   
+  def sub_top
+    "/r"
+  end
+
   attr_accessor :account_name
 
   def percent_encode_only_not_ascii( string_utf8 )
@@ -57,11 +61,8 @@ class UrlHandler
   end
   
   def subname_to_url(subname)
-    subtop = case @site
-             when 'reddit'
-               base_url.merge('/r/')
-             end
-    subtop.merge( pe(subname) ) # multiへの相対パスの場合もあり
+    abs_sub_top = base_url.merge(sub_top + "/" )
+    abs_sub_top.merge( pe(subname) ) # multiへの相対パスの場合もあり
   end
 
   def linkpath_to_url( path )
@@ -104,16 +105,15 @@ class UrlHandler
             {:type => "other" , :url => abs_url_o.to_s }
           end
         else
-          # todo: /r/ が固定であるし
-          if m = url_o.path.match( %r!^/r/([\w\+]+)/?$!uo )
+          if m = url_o.path.match( %r!^#{sub_top}/([\w\+]+)/?$!uo )
             {:site => site , :type => "sub" , :name => m[1] }
           elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/m/(\w+)/?$!uo )
             {:site => site , :type => "sub" , :name => ".." + url_o.path }
           elsif @account_name and m = url_o.path.match( %r!^/me/m/(\w+)/?$!uo )
             {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] }
-          elsif m = url_o.path.match( %r!^/r/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
+          elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
             {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
-          elsif m = url_o.path.match( %r!^/r/(\w+)/comments/(\w+)!uo )
+          elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)!uo )
             {:site => site ,:type=> "comment" , :name => m[2] }
           elsif url_o.path == '/'
             {:site => site , :type => "sub" , :name => "../" } # front

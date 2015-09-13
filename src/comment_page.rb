@@ -157,7 +157,7 @@ class CommentPage < Page
     find2 << @find_word_box = TextField.new()
     @find_word_box.setPromptText("検索語")
     @find_word_box.setPrefWidth( 160 )
-    find2 << @find_word_clear_button = Button.new("消")
+    find2 << @find_word_clear_button = Button.new("",GlyphAwesome.make("TIMES_CIRCLE"))
     find2 << @find_word_r_button = Button.new("",GlyphAwesome.make("CHEVRON_LEFT"))
     find2 << @find_word_button = Button.new("",GlyphAwesome.make("CHEVRON_RIGHT"))
     App.i.make_pill_buttons( find2 )
@@ -166,9 +166,11 @@ class CommentPage < Page
     btns3 << @find_word_count = Label.new()
     
     # awesome 高さ揃え
-    [ @find_new_r_button, @find_new_button, @find_word_r_button, @find_word_button ].each{|b|
-      b.prefHeightProperty.bind( @find_word_clear_button.heightProperty )
-    }
+    #[ @find_new_r_button, @find_new_button, 
+    #  @find_word_r_button, @find_word_button , @find_word_clear_button].each{|b|
+    #  b.prefHeightProperty.bind( @find_word_box.heightProperty )
+    #}
+    App.i.adjust_height( find1 + find2 , @find_word_box )
 
     @find_new_button.setOnAction{|ev| 
       Platform.runLater{scroll_to_new( true ) }

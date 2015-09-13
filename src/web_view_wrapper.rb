@@ -49,8 +49,13 @@ class WebViewWrapper
 
 
     @e.load_worker.state_property.add_listener{ |ov , s ,t |
-      if ov.getValue() == Worker::State::SUCCEEDED
-        dom_prepared(ov)
+      if ov.getValue() == Worker::State::RUNNING
+        @worker_running_cb.call if @worker_running_cb
+      else
+        if ov.getValue() == Worker::State::SUCCEEDED
+          dom_prepared(ov)
+        end
+        @worker_stop_cb.call if @worker_stop_cb
       end
     }
 
@@ -61,9 +66,22 @@ class WebViewWrapper
     
     # @e.loadContent( base_html() )
 
+    @webview.setOnKeyPressed{|ev|
+      if is_inputting and ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+        ev.consume
+      end
+    }
+    
   end 
   attr_reader :webview
 
+  def set_worker_running_cb( &cb )
+    @worker_running_cb = cb
+  end
+  def set_worker_stop_cb( &cb)
+    @worker_stop_cb = cb
+  end
+  
   def popup( x , y , rx , ry)
     sel = get_selected_text.to_s
     href = get_href_text( rx , ry ).to_s
@@ -332,6 +350,10 @@ EOF
       
     end # length > 0
 
+  end
+
+  def is_inputting
+    @e.executeScript('$(document.activeElement).is(":input")')
   end
 
   def is_scroll_bottom

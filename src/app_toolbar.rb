@@ -77,7 +77,7 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     
     @url_text = TextField.new()
     @url_text.setId("url-text")
-    @url_text.setPromptText("urlか、subreddit名を指定して開きます")
+    @url_text.setPromptText("urlか、subreddit名を指定して開きます。\"?キーワード\" でgoogle検索(reddit内)")
     @url_text.setOnKeyPressed{|ev|
       if ev.getCode() == KeyCode::ENTER
         open_text
@@ -141,7 +141,10 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
 
     uh = UrlHandler.new( (site || 'reddit') , account_name:account_name)
     
-    info = if text.index('/')
+    info = if text[0] == '?'
+             word = text[1..-1]
+             { :type => "google_search" , :subname => "../" , :word => word , :account_name => account_name }
+           elsif text.index('/')
              uh.url_to_page_info( text )
            elsif text == ""
              uh.url_to_page_info( uh.subname_to_url( "../" ))

@@ -18,7 +18,7 @@ class Page < Java::JavafxSceneLayout::VBox
   
   attr_accessor :page_info
 
-  def prepare_tab(label , icon_res_url = nil , close_button = true)
+  def prepare_tab(label , icon_res_url_or_im = nil , close_button = true)
     # tab
     @tab = Tab.new()
     #tabh = HBox.new()
@@ -48,8 +48,12 @@ class Page < Java::JavafxSceneLayout::VBox
     @tab_label.setMaxWidth( 150 )
     @tab_label.setMinWidth( 150 )
 
-    if icon_res_url
-      @im = Image.new( App.res( icon_res_url ),16,16,true,true)
+    if icon_res_url_or_im
+      if icon_res_url_or_im.is_a?( String)
+        @im = Image.new( App.res( icon_res_url_or_im ),16,16,true,true)
+      else
+        @im = icon_res_url_or_im
+      end
       @loading_im = Image.new( App.res( '/res/loading.png'), 16 ,16 , true , true)
       @iv = ImageView.new(@im)
       @iv.setPreserveRatio(true)

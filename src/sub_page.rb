@@ -17,6 +17,8 @@ require 'html/html_entity'
 
 require 'app_color'
 
+require 'glyph_awesome'
+
 import 'javafx.scene.control.cell.MapValueFactory'
 # import 'javafx.beans.property.SimpleStringProperty'
 import 'javafx.beans.property.SimpleMapProperty'
@@ -39,14 +41,8 @@ class SubPage < Page
 
     @url_handler = UrlHandler.new( @page_info[:site] )
     $stderr.puts "sub_page @page_info[:name] = #{@page_info[:name]}"
-    pref_subname = if @page_info[:name].to_s == "../"
-                     "_"
-                   else
-                     # subの場合,idではない
-                     @page_info[:site] + subname_to_pathname(@page_info[:name]).gsub(/\// , "." )
-                   end
     
-    @pref = Subs.new( pref_subname )
+    @pref = Subs.new( @page_info[:name] , site:@page_info[:site] )
     setSpacing(3.0)
     @thread_pool = []
     if not Account.exist?( @pref['account_name'] )
@@ -201,34 +197,79 @@ class SubPage < Page
 
     #### 第三列
     # filterバー
+    @filter_and_search_bar = BorderPane.new()
+    ###
     @filter_area = HBox.new()
     @filter_area.setAlignment( Pos::CENTER_LEFT )
-    @filter_text = TextField.new()
+    filters = []
+    filters << Label.new("フィルタ:")
+    f1 = []
+    f1 << @filter_text = TextField.new()
     App.i.suppress_printable_key_event( @filter_text )
     @filter_text.setPromptText("単語でフィルタ")
     @filter_text.setPrefWidth( 160 )
     @filter_text.textProperty().addListener{
       display_subms
     }
-    @filter_clear = Button.new("クリア")
+    f1 << @filter_clear = Button.new("" , GlyphAwesome.make("TIMES_CIRCLE"))
     @filter_clear.setOnAction{
       @filter_text.setText("")
     }
+    App.i.make_pill_buttons( f1 )
+    App.i.adjust_height( f1 )
+    filters += f1
+    filters << Label.new(" ")
+
     # todo : 一度見たもの db作成後
-    @filter_upvoted = ToggleButton.new("UPVOTED")
+    filters << @filter_upvoted = ToggleButton.new("UPVOTED")
     @filter_upvoted.setOnAction{
       display_subms
     }
-    @filter_read = ToggleButton.new("新着")
+    filters << @filter_read = ToggleButton.new("新着")
     @filter_read.setOnAction{
       display_subms
     }
+    
+    @filter_area.getChildren().addAll( filters )
+    
+    BorderPane.setAlignment( @filter_area , Pos::CENTER_LEFT )
+    @filter_and_search_bar.setLeft( @filter_area )
 
-    @filter_area.getChildren().addAll( Label.new("フィルタ:"), 
-                                       @filter_text , @filter_clear , 
-                                       Label.new(" "),
-                                       @filter_upvoted, @filter_read)
-    getChildren.add( @filter_area )
+    if not @is_multireddit
+      @google_search_area = HBox.new
+
+      parts = []
+
+      parts << @google_search_field = TextField.new
+      @google_search_field.setPromptText("Googleでsubreddit検索")
+      @google_search_field.setPrefWidth( 180 )
+      @google_search_field.setOnKeyPressed{|ev|
+        if ev.getCode() == KeyCode::ENTER
+          open_search
+        elsif ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+          ev.consume
+        end
+      }
+
+      parts << @google_search_clear_button = 
+        Button.new("" , GlyphAwesome.make("TIMES_CIRCLE"))
+      @google_search_clear_button.setOnAction{|ev|
+        @google_search_field.setText("")
+      }
+      parts << @google_search_button = Button.new("", GlyphAwesome.make("SEARCH"))
+      @google_search_button.setOnAction{|ev|
+        open_search
+      }
+      
+      App.i.adjust_height( parts )
+      App.i.make_pill_buttons( parts )
+      @google_search_area.getChildren.setAll( parts )
+      
+      BorderPane.setAlignment( @google_search_area , Pos::CENTER_RIGHT )
+      @filter_and_search_bar.setRight( @google_search_area )
+    end # is not multireddit
+    
+    getChildren.add( @filter_and_search_bar )
     
     #### table
 
@@ -355,7 +396,7 @@ class SubPage < Page
     # 本体
     self.class.setMargin( @button_area , Insets.new(3.0 , 3.0 , 0 , 3.0) ) # trbl
     self.class.setMargin( @sort_button_area , Insets.new(3.0 , 3.0 , 0 , 3.0) ) # trbl
-    self.class.setMargin( @filter_area , Insets.new(3.0 , 3.0 , 0 , 3.0) ) # trbl
+    self.class.setMargin( @filter_and_search_bar , Insets.new(3.0 , 3.0 , 0 , 3.0) ) # trbl
     self.class.setMargin( @table , Insets.new(3.0, 3.0 , 0 , 3.0) )
     
     # tab
@@ -374,6 +415,19 @@ class SubPage < Page
     start_reload
   end # initialize
   
+  def open_search
+    word = @google_search_field.getText().strip
+    if word.length > 0 
+      page_info = { 
+        :type => "google_search",
+        :subname => @page_info[:name] ,
+        :word => word,
+        :account_name => @account_name
+      }
+      App.i.open_by_page_info( page_info )
+    end
+  end
+
   def make_tab_name
     name = if @sub_info
              @sub_info[:display_name]
@@ -700,13 +754,13 @@ class SubPage < Page
     subm_id = item[:id]
     title   = item[:title_decoded]
     # App.i.open_comment( link_id:subm_id , title:title , account_name:@account_name )
-
+    comm_account = @account_name || false # falseではcomment側で自動でアカウントを設定しない
     App.i.open_by_page_info( { :site  => @page_info[:site] ,
                                :type  => 'comment',
                                :name  => subm_id , 
                                :title => title , # 暫定表示用
                                :suggested_sort => item[:suggested_sort],
-                               :account_name => @account_name })
+                               :account_name => comm_account })
     
   end
 
