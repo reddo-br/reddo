@@ -128,6 +128,7 @@ class UrlHandler
         info[:sort]    = q["sort"] if q["sort"]
       end
       
+      info[:account_name] = @account_name
       info
     else # 非対応サイト
       {:type => "other" , :url => abs_url_o.to_s }
