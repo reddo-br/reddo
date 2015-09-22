@@ -39,7 +39,6 @@ class SubPage < Page
     
     @artificial_bold = App.i.pref["artificial_bold"]
 
-    @url_handler = UrlHandler.new( @page_info[:site] )
     $stderr.puts "sub_page @page_info[:name] = #{@page_info[:name]}"
     
     @pref = Subs.new( @page_info[:name] , site:@page_info[:site] )
@@ -54,6 +53,7 @@ class SubPage < Page
     @account_name = @pref['account_name'] || @page_info[:account_name] || App.i.pref['current_account'] # ページごとの記録が優先
     @pref['account_name'] = @account_name
     @sub_info = nil
+    @url_handler = UrlHandler.new( @page_info[:site] , account_name:@account_name)
 
     @is_multireddit = @url_handler.path_is_multireddit( @page_info[:name] )
 

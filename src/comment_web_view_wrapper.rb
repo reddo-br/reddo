@@ -275,7 +275,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     #  t.setMember("innerHTML" , "")
     #end
     empty("#linked_title")
-
+    empty("#domain")
+    empty("#subreddit")
     # todo: submissionも複数に対応する
     # @doc.getElementById("subm_head").setMember("innerHTML","")
     if pv = @doc.getElementById("preview")
@@ -388,6 +389,14 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     comment_foot.appendChild( comment_foot_open )
     comment_foot.appendChild( @doc.createTextNode(" "))
     
+    if obj[:parent_id] =~ /^t1/
+      comment_foot_open_thread = @doc.createElement("a")
+      comment_foot_open_thread.setTextContent("このスレ")
+      comment_foot_open_thread.setAttribute("href" , parmalink_this + "?context=8")
+      comment_foot.appendChild( comment_foot_open_thread )
+      comment_foot.appendChild( @doc.createTextNode(" "))
+    end
+    
     if obj[:kind] == 't1'
       comment_foot_open_ex = @doc.createElement("a")
       comment_foot_open_ex.setTextContent("外部ブラウザ")
@@ -401,7 +410,11 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       comment_foot.appendChild( comment_foot_open_ex )
       comment_foot.appendChild( @doc.createTextNode(" "))
     end
-
+    
+    space1 = @doc.createElement("span")
+    space1.setAttribute("style" , "margin-right:0.5em;")
+    comment_foot.appendChild( space1 )
+    
     if obj[:archived]
       comment_foot_archived = @doc.createElement("span")
       comment_foot_archived.setTextContent("[アーカイブ済み]")
@@ -607,9 +620,19 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     
     user
   end
+  
+  def set_single_comment_highlight( name )
+    selector = "#t1_#{name} > .comment_this > .comment_text"
+    @e.executeScript( <<EOF )
+    var comm = $("#{selector}");
+    if(comm)
+      comm.css( "background-color" , "#ffffc0");
+EOF
+    
+  end # end
 
   ### ハイライト
-  def set_replying( name , edit:false , move:true)
+  def set_replying( name , mode:'reply' , move:true)
     if @replying
       clear_replying( @replying )
     end
@@ -621,13 +644,18 @@ class CommentWebViewWrapper < RedditWebViewWrapper
                  "#submission_command"
                end
 
-
-    color = if edit
-              "#FFBBDD"
-            else
+    color = if mode == 'reply'
+              "#FFCCDD"
+            elsif mode == 'edit'
               "#BBFFDD"
             end
-
+    
+    gradient = if name =~ /^t1/
+                 "-webkit-linear-gradient(bottom, rgba(0,0,0,0) 0.5em, #{color})"
+               else
+                 "-webkit-linear-gradient(bottom, rgba(0,0,0,0), #{color})"
+               end
+    
     move_script = <<EOF
     if(comm.hasClass("comment_this")){
       // scrollElementInView( comm );  // うまくいかない
@@ -644,13 +672,14 @@ EOF
                          end
 
     @e.executeScript( <<EOF )
-var comm = $("#{selector}");
-if(comm){
-  comm.css( "background-color" , "#{color}");
-  #{move_script_insert}
-}
+    var comm = $("#{selector}");
+    if(comm){
+      // comm.css( "background-color" , "#{color}");
+      comm.css( "background" , "#{gradient}");
+      #{move_script_insert}
+    }
 EOF
-
+    
   end
     
   def clear_replying( name )
@@ -665,11 +694,12 @@ EOF
 var comm = $("#{selector}");
 if(comm){
     comm.css( "background-color" , "");
+    comm.css( "background" , "");
 }
 EOF
     @replying = nil
   end
-  
+
 
   JS_SCROLL_ELEMENT_IN_VIEW = <<EOF
 function scrollElementInView( elem ){

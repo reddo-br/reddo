@@ -444,9 +444,9 @@ class CommentPage < Page
   
   def highlight_replying( move:true )
     if @editing
-      @comment_view.set_replying( @editing[:name] , edit:true , move:move)
+      @comment_view.set_replying( @editing[:name] , mode:"edit" , move:move)
     elsif @replying
-      @comment_view.set_replying( @replying[:name] , edit:false , move:move)
+      @comment_view.set_replying( @replying[:name] , mode:"reply" , move:move)
     end
   end
 
@@ -512,7 +512,10 @@ class CommentPage < Page
 
   def set_new_page_info( info )
     # 上書きできるのは、top_commentとsortだけにしとく
-    changed = (@top_comment != info[:top_comment]) or (@comment_context != info[:context] )
+    # p info
+    # p @top_comment
+    # p @comment_context
+    changed = ( (@top_comment != info[:top_comment]) or (@comment_context != info[:context] ) )
     if changed
       @top_comment = info[:top_comment]
       @comment_context = info[:context]
@@ -538,7 +541,10 @@ class CommentPage < Page
   def show_single_thread_bar( show = true )
     if show
       # @split_comment_area.getChildren().subList(0,3).add( @button_area4 )
-      @split_comment_area.getChildren().add( 3 , @button_area4 )
+      children = @split_comment_area.getChildren()
+      if children.indexOf( @button_area4 ) == -1
+        children.add( 3 , @button_area4 )
+      end
     else
       @split_comment_area.getChildren().remove( @button_area4 )
     end
@@ -758,6 +764,7 @@ class CommentPage < Page
       @comments.each{|c| @comment_view.add_comment( c ) }
       # puts @comment_view.dump
       @comment_view.set_link_hook
+      @comment_view.set_single_comment_highlight( @top_comment ) if @top_comment
 
       set_status(App.i.now + " 更新")
       highlight_word()
