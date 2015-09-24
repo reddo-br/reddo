@@ -116,7 +116,7 @@ class WebViewWrapper
     elsif href.length > 0 and not href == "#"
       item_copy = MenuItem.new("リンクをコピー")
       item_copy.setOnAction{|ev|
-        App.i.copy( href )
+        App.i.copy( make_absolute_url(href) )
       }
 
       @menu = ContextMenu.new
@@ -130,6 +130,23 @@ class WebViewWrapper
     end
   end
 
+  def make_absolute_url( url )
+    if @base_url
+      begin
+        url_o = URI.parse( url.to_s )
+        abs = @base_url.merge( url_o )
+        abs.to_s
+      rescue
+        url.to_s
+      end
+    else
+      url.to_s
+    end
+  end
+
+  def set_base_url( url )
+    @base_url = URI.parse( url.to_s )
+  end
 
   def get_selected_text
     @e.executeScript("window.getSelection().toString()")
@@ -161,7 +178,7 @@ class WebViewWrapper
     @e.executeScript( f.read )
     f.close
 
-    @e.executeScript( SCROLL_SCRIPT )
+    @e.executeScript( scroll_script )
 
     @dom_prepared_cb.call if @dom_prepared_cb
   end
@@ -189,7 +206,7 @@ class WebViewWrapper
     # link = ev.getTarget().getAttribute("href")
     if @link_cb
       Platform.runLater{
-        @link_cb.call( href )
+        @link_cb.call( make_absolute_url(href) )
       }
     end
     ev.preventDefault
@@ -384,11 +401,15 @@ EOF
   end
 
 ############# 加速度スクロール用スクリプト
+  def scroll_script
 
-SCROLL_SCRIPT = <<EOF
+    accel_max = App.i.pref['wheel_accel_max'] || 2.5
+    
+scr = <<EOF
 var lastScrollTime;
 var lastTargetPos = null;
 var nowAnim = false;
+var accel_max = #{accel_max};
 window.onmousewheel = function(e){
   var dy = e.wheelDeltaY
   // window.cb.log(dy.toString()); // 上4800 下-4800
@@ -408,10 +429,11 @@ window.onmousewheel = function(e){
 
     accel = 500 / dt;
 
-    if(accel > 5)
-      accel = 5;
+    if(accel > accel_max)
+      accel = accel_max;
     if(accel < 1)
       accel = 1;
+
   }
   lastScrollTime = e.timeStamp;
 
@@ -455,5 +477,7 @@ window.onscroll = function(){
 }
 
 EOF
+    scr
+  end
 
 end # class

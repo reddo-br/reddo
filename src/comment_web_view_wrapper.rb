@@ -613,7 +613,13 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
     user_flair = @doc.createElement("span")
     user_flair.setTextContent( flair_text )
-    user_flair.setAttribute("class" , "user_flair " + flair_class.to_s )
+    flair_class2 = flair_class.to_s.split.map{|c| "flair-" + c }.join(" ").strip
+    flair_class3 = if flair_class2.length > 0
+                     "user_flair_styled flair " + flair_class2
+                   else
+                     "user_flair"
+                   end
+    user_flair.setAttribute("class" , flair_class3 )
 
     user.appendChild( user_name )
     user.appendChild( user_flair )
@@ -691,15 +697,14 @@ EOF
                end
     
     @e.executeScript( <<EOF )
-var comm = $("#{selector}");
-if(comm){
-    comm.css( "background-color" , "");
-    comm.css( "background" , "");
-}
+    var comm = $("#{selector}");
+    if(comm){
+      comm.css( "background-color" , "");
+      comm.css( "background" , "");
+    }
 EOF
     @replying = nil
   end
-
 
   JS_SCROLL_ELEMENT_IN_VIEW = <<EOF
 function scrollElementInView( elem ){
@@ -749,6 +754,7 @@ html = <<EOF
 <style>
 #{style()}
 </style>
+<style id="additional-style"></style>
 </head>
 <body id="top">
 <div id="preview_box"><img src="" id="preview" /></div>

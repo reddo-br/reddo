@@ -4,16 +4,18 @@ require 'jrubyfx'
 
 require 'preview_web_view_wrapper'
 # require 'kramdown_reddit'
+require 'app'
 
 class EditWidget < Java::JavafxSceneLayout::VBox
   include JRubyFX::DSLControl
 
-  def initialize( account_name:nil , site:"reddit" , sjis_art:true )
+  def initialize( account_name:nil , site:"reddit" , sjis_art:true , subname:nil)
     # t3(submission) とt1(comment)の違い
     # Submission#add_comment
     # Commnet#reply (inboxable)
     super()
     @account_name = account_name
+    @subname = subname
     @url_handler = UrlHandler.new( account_name:account_name )
     @text_mode_button = ToggleButton.new("Text")
     @md_mode_button =   ToggleButton.new("Markdown")
@@ -61,6 +63,7 @@ class EditWidget < Java::JavafxSceneLayout::VBox
       # prepared
       $stderr.puts "プレビューwebview 準備完了"
     }
+    
     @preview.set_link_cb{|link|
       page_info = @url_handler.url_to_page_info( link )
       page_info[:account_name] = @account_name
@@ -104,6 +107,10 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     end
   end
 
+  def set_sub_link_style( style )
+    @preview.set_additional_style( style )
+  end
+  
   def set_close_cb(&cb)
     @close_cb = cb
   end

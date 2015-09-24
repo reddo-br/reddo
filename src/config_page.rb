@@ -7,6 +7,8 @@ require 'jrubyfx'
 require 'pref/preferences'
 require 'page'
 
+import 'javafx.scene.control.Spinner'
+
 class ConfigPage < Page
 
   def initialize(info)
@@ -29,19 +31,29 @@ class ConfigPage < Page
     }
     items << [ Label.new("フォント") , @font_selector ]
 
-    @bold_check = checkbox_with_pref( "artificial_bold" )
-    bold_label = Label.new("太字フォントをcss shadowで再現する(太字が表示できない場合に試してください)")
-    items << [ bold_label , @bold_check ]
+    items << make_bool_config( "太字フォントをcss shadowで再現する(太字が表示できない場合に試してください)" ,
+                               "artificial_bold" )
+
+    items << make_bool_config( "外部ブラウザを開く別の方法を試す(うまくいかない場合に)" ,
+                               "browse_alternative_method" )
+
+    items << make_bool_config( "新規タブを現在のタブの直後に挿入する",
+                               "new_tab_after_current" )
+
+    items << make_bool_config( "サブレディットのリンク(スタンプ)とフレアーのスタイルを適用する(試験的)",
+                               'use_sub_link_style')
+
+    items << make_bool_config( "コメントページを開いた時に自動更新を有効にする",
+                               'enable_autoreload' )
     
-    browser_label = Label.new("外部ブラウザを開く別の方法を試す(うまくいかない場合に)")
-    @browser_check = checkbox_with_pref( "browse_alternative_method" )
-    items << [ browser_label , @browser_check ]
-
-
-    @new_tab_check = checkbox_with_pref( "new_tab_after_current" )
-    items << [ Label.new("新規タブを現在のタブの直後に挿入する") ,
-               @new_tab_check ]
-
+    accel = App.i.pref['wheel_accel_max'] || 2.5
+    @accel_spinner = Spinner.new( 1.0 , 5.0 , accel , 0.5 )
+    @accel_spinner.getValueFactory.valueProperty.addListener{|ev|
+      App.i.pref['wheel_accel_max'] = ev.getValue
+    }
+    items << [ Label.new("コメントページでのマウスホイールスクロールの最大加速"),
+               @accel_spinner ]
+    
     ########## itemをgridpaneに入れる
 
     items.each_with_index{|row , rownum|
@@ -83,6 +95,12 @@ class ConfigPage < Page
       App.i.pref[ pref_name ] = ev.getValue()
     }
     check
+  end
+  
+  def make_bool_config( label_string , pref_name )
+    label = Label.new( label_string )
+    check = checkbox_with_pref( pref_name )
+    [ label , check ]
   end
 
   def get_font

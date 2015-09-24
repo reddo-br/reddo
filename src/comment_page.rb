@@ -13,6 +13,7 @@ require 'html/html_entity'
 require  'read_comment_db'
 require 'app_color'
 require 'pref/account'
+require 'sub_style'
 
 import 'javafx.application.Platform'
 
@@ -74,6 +75,29 @@ class CommentPage < Page
     @load_stop_button.setOnAction{|e|
       abort_loading
     }
+    
+    @autoreload_check = CheckBox.new()
+    enable_autoreload = if @page_info[:autoreload] == 'on'
+                          true
+                        elsif @page_info[:autoreload] == 'off'
+                          false
+                        else
+                          App.i.pref['enable_autoreload']
+                        end
+
+    if enable_autoreload
+      @autoreload_check.setSelected(true) # 初回のautoreload始動はinitialize内でやる
+    end
+    @autoreload_check.selectedProperty().addListener{|ev|
+      if ev.getValue
+        @page_info[:autoreload] = 'on'
+      else
+        @page_info[:autoreload] = 'off'
+      end
+      App.i.save_tabs
+      control_autoreload
+    }
+
     @autoreload_status = Label.new("")
     
     @sort_selector = ChoiceBox.new
@@ -93,8 +117,8 @@ class CommentPage < Page
 
     @external_browser_button = Button.new("webで開く")
     @external_browser_button.setOnAction{|e|
-      if @links and @links[0] and perm = @links[0][:permalink]
-        comment_link = @url_handler.linkpath_to_url( perm )
+      if @base_url
+        comment_link = @base_url
         if @top_comment
           comment_link += @top_comment
         end
@@ -130,6 +154,7 @@ class CommentPage < Page
     b_left.setAlignment( Pos::CENTER_LEFT )
     b_left.getChildren().setAll( @reload_button , @load_stop_button , 
                                  Label.new(" "),
+                                 @autoreload_check,
                                  @autoreload_status,
                                  Label.new(" ソート:"),
                                  @sort_selector,
@@ -496,7 +521,26 @@ class CommentPage < Page
       $stderr.puts $@
     end
     Platform.runLater{
-        @autoreload_status.setText("自動更新停止")
+        @autoreload_status.setText("自動更新中断")
+        @autoreload_status.setStyle("-fx-background-color:#{AppColor::DARK_YELLOW};-fx-text-fill:white;")
+    }
+  end
+
+  def disable_autoreload
+    begin
+      if @autoreload_thread
+        #if @autoreload_thread.alive?
+          @autoreload_thread.kill
+        #end
+        @autoreload_thread = nil
+      end
+    rescue
+      $stderr.puts "Thread kill error"
+      $stderr.puts $!
+      $stderr.puts $@
+    end
+    Platform.runLater{
+        @autoreload_status.setText("自動更新無効")
         @autoreload_status.setStyle("-fx-background-color:#{AppColor::DARK_RED};-fx-text-fill:white;")
     }
   end
@@ -661,10 +705,16 @@ class CommentPage < Page
   end
 
   def control_autoreload
-    if( @sort_selector.getSelectionModel().getSelectedItem() == 'new') or @num_comments < 200
-      start_autoreload
+    if @autoreload_check.isSelected
+
+      if( @sort_selector.getSelectionModel().getSelectedItem() == 'new') or @num_comments < 200
+        start_autoreload
+      else
+        stop_autoreload
+      end
     else
-      stop_autoreload
+      
+      disable_autoreload
     end
   end
 
@@ -722,6 +772,21 @@ class CommentPage < Page
     @links    = object_to_deep( links_raw )
     @comments = object_to_deep( comments_raw )
 
+    @subname  = @links[0][:subreddit]
+    if @subname and App.i.pref['use_sub_link_style']
+      @sub_style ||= SubStyle.from_subname( @subname )
+      Thread.new{
+        #puts "スタイル取得"
+        st = @sub_style.get_stamp_style
+        Platform.runLater{
+          @comment_view.set_additional_style( st )
+          @split_edit_area.set_sub_link_style( st )
+          
+          #puts "スタイル取得終了"
+        }
+      }
+    end
+    
     title = Html_entity.decode( @links[0].title )
     @title = title
     @num_comments = @links[0][:num_comments].to_i
@@ -730,6 +795,11 @@ class CommentPage < Page
       show_num_comments
     #  notify_comment_fetched
     }
+
+    if perm = @links[0][:permalink]
+      @base_url = @url_handler.linkpath_to_url( perm )
+      @comment_view.set_base_url( @base_url )
+    end
 
     @new_comments = []
     # todo:特定のコメントだけ表示する場合に対応
@@ -765,7 +835,7 @@ class CommentPage < Page
       # puts @comment_view.dump
       @comment_view.set_link_hook
       @comment_view.set_single_comment_highlight( @top_comment ) if @top_comment
-
+      # @comment_view.set_additional_style( ".md { background: pink !important}")
       set_status(App.i.now + " 更新")
       highlight_word()
       highlight_replying(move:false)

@@ -21,6 +21,7 @@ class PreviewWebViewWrapper < RedditWebViewWrapper
 <style>
 #{style()}
 </style>
+<style id="additional-style"></style>
 </head>
 <body style="background-color:#eeeeee;">
 <div class="md" id="sample">

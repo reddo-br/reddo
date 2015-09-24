@@ -7,7 +7,7 @@ require 'fileutils'
 
 #require 'app'
 require 'client_params'
-require 'html/html_entity'
+# require 'html/html_entity'
 
 module Util
   USER_DIR_NAME = ClientParams::APP_NAME.downcase

@@ -19,6 +19,11 @@ class RedditWebViewWrapper < WebViewWrapper
 
   CSS_PATH = Util.get_appdata_pathname + "webview/comment.css"
   
+  def set_additional_style( style )
+    st = @doc.getElementById("additional-style")
+    st.setMember("innerHTML",style)
+  end
+
   def base_html()
     html = <<EOF
 <!DOCTYPE html>
@@ -28,6 +33,7 @@ class RedditWebViewWrapper < WebViewWrapper
 <style>
 #{style}
 </style>
+<style id="additional-style"></style>
 </head>
 <body>
 </body>
@@ -171,6 +177,14 @@ div.comment p {
   border-style: solid;
   border-color: #555555;
   margin-left: 2px;
+}
+
+.user_flair_styled {
+  display:inline-block;
+  // vertical-align: baseline !important; // webの値はだいたいうまくいかない
+  margin-left: 4px;
+  color:#333333 !important;
+  background-color:rgba(0,0,0,0) !important;
 }
 
 .user_flair:empty {
