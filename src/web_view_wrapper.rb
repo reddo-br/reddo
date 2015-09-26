@@ -15,6 +15,8 @@ import 'javafx.scene.control.MenuItem'
 import 'javafx.scene.control.ContextMenu'
 import 'javafx.geometry.Side'
 
+require 'addressable/uri'
+
 class WebViewWrapper
 
   def initialize(sjis_art:true , &cb)
@@ -133,8 +135,8 @@ class WebViewWrapper
   def make_absolute_url( url )
     if @base_url
       begin
-        url_o = URI.parse( url.to_s )
-        abs = @base_url.merge( url_o )
+        url_o = Addressable::URI.parse( url.to_s )
+        abs = @base_url.join( url_o )
         abs.to_s
       rescue
         url.to_s
@@ -145,7 +147,7 @@ class WebViewWrapper
   end
 
   def set_base_url( url )
-    @base_url = URI.parse( url.to_s )
+    @base_url = Addressable::URI.parse( url.to_s )
   end
 
   def get_selected_text

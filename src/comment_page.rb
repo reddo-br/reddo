@@ -77,6 +77,7 @@ class CommentPage < Page
     }
     
     @autoreload_check = CheckBox.new()
+    @autoreload_check.setTooltip(Tooltip.new("約5分ごとに自動で更新します"))
     enable_autoreload = if @page_info[:autoreload] == 'on'
                           true
                         elsif @page_info[:autoreload] == 'off'
@@ -132,11 +133,17 @@ class CommentPage < Page
 
     @load_status = Label.new("")
     
+    @subname_label = Label.new("")
+
     @title_label = Label.new( @title )
     @title_label.setStyle("-fx-font-size:14pt")
     button_area_left = HBox.new
     button_area_left.setAlignment( Pos::CENTER_LEFT )
-    button_area_left.getChildren.setAll( @account_label , Separator.new( Orientation::VERTICAL ))
+    button_area_left.getChildren.setAll( @account_label , 
+                                         Separator.new( Orientation::VERTICAL ),
+                                         @subname_label ,
+                                         Separator.new( Orientation::VERTICAL ),
+                                         )
     
     @button_area.setLeft( button_area_left )
     @button_area.setCenter( @title_label )
@@ -773,6 +780,12 @@ class CommentPage < Page
     @comments = object_to_deep( comments_raw )
 
     @subname  = @links[0][:subreddit]
+    if @subname
+      Platform.runLater{
+        @subname_label.setText( @subname.to_s )
+      }
+    end
+    
     if @subname and App.i.pref['use_sub_link_style']
       @sub_style ||= SubStyle.from_subname( @subname )
       Thread.new{

@@ -115,6 +115,11 @@ div.comment p {
   color: #444444;
 }
 
+.dagger {
+  color: #{AppColor::RED};
+  font-family:sans-serif;
+  #{bold_style}
+}
 
 .comment_footer {
   padding:0px 3px 0px 3px;

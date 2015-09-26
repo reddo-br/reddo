@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-require 'uri'
+#require 'uri'
+require 'addressable/uri'
 
 class UrlHandler
   def initialize( site = 'reddit' , account_name:nil)
@@ -31,7 +32,7 @@ class UrlHandler
     ret = ""
     string_utf8.force_encoding("ascii-8bit").each_char{|c|
       if c.ord >= 128
-        ret << "%%%02x" % c.ord
+          ret << "%%%02x" % c.ord
       else
         ret << c
       end
@@ -41,7 +42,7 @@ class UrlHandler
   alias :pe :percent_encode_only_not_ascii
 
   def base_url
-    URI.parse("https://#{hostname()}/")
+    Addressable::URI.parse("https://#{hostname()}/")
   end
 
   # [ is_multireddit , owner ]
@@ -61,12 +62,14 @@ class UrlHandler
   end
   
   def subname_to_url(subname)
-    abs_sub_top = base_url.merge(sub_top + "/" )
-    abs_sub_top.merge( pe(subname) ) # multiへの相対パスの場合もあり
+    abs_sub_top = base_url.join(sub_top + "/" )
+    # abs_sub_top.merge( pe(subname) ) # multiへの相対パスの場合もあり
+    abs_sub_top.join( subname ) # multiへの相対パスの場合もあり
   end
 
   def linkpath_to_url( path )
-    base_url.merge( pe(path) )
+    #base_url.merge( pe(path) )
+    base_url.join( path )
   end
 
   def parse_query(q )
@@ -82,13 +85,14 @@ class UrlHandler
     url = url.to_s
     $stderr.puts("url_to_page_info(#{url})")
     begin
-      url_o = URI.parse( pe(url) )
+      # url_o = URI.parse( pe(url) )
+      url_o = Addressable::URI.parse( url)
     rescue
       return {:type => "other" , :url => url }
     end
 
     abs_url_o = if url_o.relative?
-                  base_url.merge( url_o )
+                  base_url.join( url_o )
                 else
                   url_o
                 end

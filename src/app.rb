@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
+
+#java.lang.System.setProperty("prism.lcdtext", "true")
+#java.lang.System.setProperty("prism.text", "t2k")
+#java.lang.System.setProperty("prism.text", "native")
+#java.lang.System.setProperty("prism.text", "freetype")
+
 require 'java'
+
 require 'jrubyfx'
 
 require 'redd_patched'
@@ -350,11 +357,6 @@ class App
 
     $drb = DRb.start_service( DrbWrapper::DRB_URI ,
                               DrbWrapper.new( self ))
-
-    java.lang.System.setProperty("prism.lcdtext", "false")
-    # java.lang.System.setProperty("prism.text", "t2k")
-    # java.lang.System.setProperty("prism.text", "native")
-    # java.lang.System.setProperty("prism.text", "freetype")
 
     ReadCommentDB.instance # ここで初期化しておく
 

@@ -571,6 +571,13 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
 
     comm_head.appendChild( score )
+    if obj[:controversiality] and obj[:controversiality].to_i > 0
+      dagger_mark = @doc.createElement("sup")
+      dagger_mark.setAttribute("class" , "dagger")
+      dagger_mark.setTextContent("†")
+      comm_head.appendChild( dagger_mark )
+    end
+
     comm_head.appendChild( @doc.createTextNode(" ") )
     if @account_name
       comm_head.appendChild( upvote )

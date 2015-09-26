@@ -16,7 +16,7 @@ class SubStyle
     @site = site
 
     @uh = UrlHandler.new( site:site )
-    @styles_cache_dir = (Util.get_appdata_pathname + "cache") + "css"
+    @styles_cache_dir = (Util.get_appdata_pathname + "cache") + "redditmedia"
     FileUtils.mkdir_p( @styles_cache_dir )
 
     @stamp_style = nil

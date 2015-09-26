@@ -8,6 +8,7 @@ require 'fileutils'
 #require 'app'
 require 'client_params'
 # require 'html/html_entity'
+require 'uri'
 
 module Util
   USER_DIR_NAME = ClientParams::APP_NAME.downcase
