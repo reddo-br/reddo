@@ -119,8 +119,9 @@ class UrlHandler
             {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)!uo )
             {:site => site ,:type=> "comment" , :name => m[2] }
-          elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/(\w+)!uo )
-            {:site => site ,:type=> "comment" , :name => m[2] }
+          #elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/(\w+)!uo ) 
+          # この形式がコメントかどうかをクライアント側で判定することはできない。redirect先を見るしかない
+          #  {:site => site ,:type=> "comment" , :name => m[2] }
           elsif url_o.path == '/'
             {:site => site , :type => "sub" , :name => "../" } # front
           else # 非対応パス
