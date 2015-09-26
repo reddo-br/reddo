@@ -20,8 +20,11 @@ class RedditWebViewWrapper < WebViewWrapper
   CSS_PATH = Util.get_appdata_pathname + "webview/comment.css"
   
   def set_additional_style( style )
-    st = @doc.getElementById("additional-style")
-    st.setMember("innerHTML",style)
+    @additional_style = style
+    if @doc
+      st = @doc.getElementById("additional-style")
+      st.setMember("innerHTML",style)
+    end
   end
 
   def base_html()
@@ -33,7 +36,7 @@ class RedditWebViewWrapper < WebViewWrapper
 <style>
 #{style}
 </style>
-<style id="additional-style"></style>
+<style id="additional-style">#{@additional_style}</style>
 </head>
 <body>
 </body>

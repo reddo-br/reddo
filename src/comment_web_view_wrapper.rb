@@ -761,7 +761,7 @@ html = <<EOF
 <style>
 #{style()}
 </style>
-<style id="additional-style"></style>
+<style id="additional-style">#{@additional_style}</style>
 </head>
 <body id="top">
 <div id="preview_box"><img src="" id="preview" /></div>
