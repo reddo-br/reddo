@@ -280,7 +280,7 @@ class WebViewWrapper
 
   def scroll_to_id( element_id )
     @e.executeScript( <<EOF )
-$('html,body').animate({
+$('html,body').stop().animate({
   scrollTop:$('##{element_id}').offset().top
 });
 EOF
@@ -289,7 +289,7 @@ EOF
 
   def scroll_to_pos( pos )
     @e.executeScript( <<EOF )
-$('html,body').animate({
+$('html,body').stop().animate({
   scrollTop:#{pos}
 });
 EOF
@@ -297,7 +297,7 @@ EOF
   
   def scroll_to_pos_center( pos )
     @e.executeScript( <<EOF )
-$('html,body').animate({
+$('html,body').stop().animate({
   scrollTop:#{pos} - $(window).height() / 2
 });
 EOF
@@ -395,11 +395,11 @@ EOF
   end
 
   def screen_up(ratio = 1)
-    @e.executeScript("$(\"html, body\").animate({scrollTop: document.body.scrollTop - $(window).height()*#{ratio} },300)")
+    @e.executeScript("$(\"html, body\").clearQueue().finish().animate({scrollTop: document.body.scrollTop - $(window).height()*#{ratio} },300)")
   end
 
   def screen_down(ratio = 1)
-    @e.executeScript("$(\"html, body\").animate({scrollTop: document.body.scrollTop + $(window).height()*#{ratio}},300)")
+    @e.executeScript("$(\"html, body\").clearQueue().finish().animate({scrollTop: document.body.scrollTop + $(window).height()*#{ratio}},300)")
   end
 
 ############# 加速度スクロール用スクリプト
