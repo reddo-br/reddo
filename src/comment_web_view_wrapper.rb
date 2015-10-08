@@ -669,7 +669,8 @@ EOF
                  "-webkit-linear-gradient(bottom, rgba(0,0,0,0), #{color})"
                end
     
-    move_script = <<EOF
+    if @smooth_scroll
+      move_script = <<EOF
     if(comm.hasClass("comment_this")){
       // scrollElementInView( comm );  // うまくいかない
       $('html,body').animate({
@@ -677,6 +678,13 @@ EOF
       });
     }
 EOF
+    else
+      move_script = <<EOF
+    if(comm.hasClass("comment_this")){
+      $('html,body').scrollTop( comm.offset().top );
+    }
+EOF
+    end
 
     move_script_insert = if move
                            move_script

@@ -46,6 +46,9 @@ class ConfigPage < Page
     items << make_bool_config( "コメントページを開いた時に自動更新を有効にする",
                                'enable_autoreload' )
     
+    items << make_bool_config( "スムーズスクロールを使用する" , 
+                               "enable_smooth_scroll")
+
     accel = App.i.pref['wheel_accel_max'] || 2.5
     @accel_spinner = Spinner.new( 1.0 , 5.0 , accel , 0.5 )
     @accel_spinner.getValueFactory.valueProperty.addListener{|ev|

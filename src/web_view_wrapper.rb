@@ -74,6 +74,7 @@ class WebViewWrapper
       end
     }
     
+    @smooth_scroll = App.i.pref['enable_smooth_scroll']
   end 
   attr_reader :webview
 
@@ -395,11 +396,19 @@ EOF
   end
 
   def screen_up(ratio = 1)
-    @e.executeScript("$(\"html, body\").clearQueue().finish().animate({scrollTop: document.body.scrollTop - $(window).height()*#{ratio} },300)")
+    if @smooth_scroll
+      @e.executeScript("$(\"html, body\").clearQueue().finish().animate({scrollTop: document.body.scrollTop - $(window).height()*#{ratio} },300)")
+    else
+      @e.executeScript("$(\"html, body\").scrollTop( document.body.scrollTop - $(window).height()*#{ratio} )")
+    end
   end
 
   def screen_down(ratio = 1)
-    @e.executeScript("$(\"html, body\").clearQueue().finish().animate({scrollTop: document.body.scrollTop + $(window).height()*#{ratio}},300)")
+    if @smooth_scroll
+      @e.executeScript("$(\"html, body\").clearQueue().finish().animate({scrollTop: document.body.scrollTop + $(window).height()*#{ratio}},300)")
+    else
+      @e.executeScript("$(\"html, body\").scrollTop( document.body.scrollTop + $(window).height()*#{ratio} )")
+    end
   end
 
 ############# 加速度スクロール用スクリプト
@@ -407,6 +416,19 @@ EOF
 
     accel_max = App.i.pref['wheel_accel_max'] || 2.5
     
+    if @smooth_scroll
+      scroll = <<EOF
+  nowAnim = true;
+  $("body").stop().animate({
+      scrollTop: top
+    }, 300 , 'swing' , function(){ nowAnim = false});
+EOF
+    else
+      scroll = <<EOF
+  $("body").scrollTop( top );
+EOF
+    end
+
 scr = <<EOF
 var lastScrollTime;
 var lastTargetPos = null;
@@ -464,10 +486,7 @@ window.onmousewheel = function(e){
   lastTargetPos = top;
   // document.body.scrollTop = top;
 
-  nowAnim = true;
-  $("body").stop().animate({
-    scrollTop: top
-  }, 300 , 'swing' , function(){ nowAnim = false});
+  #{scroll}
 
   e.preventDefault();
 };
