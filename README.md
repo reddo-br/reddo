@@ -20,6 +20,7 @@ rawrが必要です。
     jruby -S gem install -i ./gem jrubyfx --version "= 1.1.1" --no-rdoc --no-ri
     jruby -S gem install -i ./gem redd --version "= 0.7.7" --no-rdoc --no-ri
     jruby -S gem install -i ./gem json --no-rdoc --no-ri
+    jruby -S gem install -i ./gem css_parser --no-rdoc --no-ri
 
 gemフォルダに取得した、jrubyfx-fxmlloader-0.4にはパッチを当てといて下さい
 
