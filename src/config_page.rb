@@ -46,7 +46,7 @@ class ConfigPage < Page
     items << make_bool_config( "コメントページを開いた時に自動更新を有効にする",
                                'enable_autoreload' )
     
-    items << make_bool_config( "スムーズスクロールを使用する" , 
+    items << make_bool_config( "コメントページでスムーズスクロールを使用する" ,
                                "enable_smooth_scroll")
 
     accel = App.i.pref['wheel_accel_max'] || 2.5
