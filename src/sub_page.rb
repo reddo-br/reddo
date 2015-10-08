@@ -682,7 +682,7 @@ class SubPage < Page
                  amount * -1
                end
 
-      $stderr.puts "screen_scroll #{first} + #{amount}"
+      # $stderr.puts "screen_scroll #{first} + #{amount}"
 
       target = first + amount
 
