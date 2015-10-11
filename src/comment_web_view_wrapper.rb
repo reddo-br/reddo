@@ -511,7 +511,18 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   def is_deleted( obj )
     # とりあえず
-    obj[:author] == "[deleted]"
+    # todo:コメント削除とアカウント削除を厳密に区別する方法がない
+    # bodyがもともと[deleted]なら削除されたものと見做す
+    
+    if obj[:kind] == 't3'
+      if obj[:is_self]
+        obj[:author] == "[deleted]" and obj[:selftext] == '[deleted]'
+      else
+        obj[:author] == "[deleted]" and obj[:banned_by] # 自己削除は判定不能か
+      end
+    else
+      obj[:author] == "[deleted]" and obj[:body] == '[deleted]'
+    end
   end
 
   def element_vote_score( element )
@@ -547,7 +558,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     author = make_user_element( obj )
     
     # vote arrows
-    if @account_name
+    if @account_name and (not is_deleted( obj ))
       upvote = @doc.createElement("img")
       if obj[:likes] == true
         upvote.setAttribute("src" , @upvoted_img_url)
@@ -612,7 +623,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
 
     comm_head.appendChild( @doc.createTextNode(" ") )
-    if @account_name
+    if @account_name and (not is_deleted(obj))
       comm_head.appendChild( upvote )
       comm_head.appendChild( downvote )
     end
@@ -630,13 +641,14 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     author      = obj[:author]
     flair_text  = obj[:author_flair_text]
     flair_class = obj[:author_flair_css_class] # nilや""あり
+    deleted = (author == '[deleted]')
     ex_style = case obj[:distinguished]
                when "admin"
                  " user_name_admin"
                when "moderator"
                  " user_name_mod"
                else
-                 if obj[:kind] == 't1' and author == @original_poster
+                 if obj[:kind] == 't1' and (not deleted) and author == @original_poster
                    " user_name_op"
                  else
                    ""
@@ -646,11 +658,16 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     user = @doc.createElement("span")
     user.setAttribute("class" , "user" )
     
-    user_name = @doc.createElement("a")
-    user_name.setAttribute("class" , "user_name" + ex_style)
-    user_name.setTextContent( author )
-    user_name.setAttribute("href" , "/u/" + author )
-
+    if deleted
+      user_name = @doc.createElement("span")
+      user_name.setTextContent( author )
+    else
+      user_name = @doc.createElement("a")
+      user_name.setAttribute("class" , "user_name" + ex_style)
+      user_name.setTextContent( author )
+      user_name.setAttribute("href" , "/u/" + author )
+    end
+    
     user_flair = @doc.createElement("span")
     user_flair.setTextContent( flair_text )
     flair_class2 = flair_class.to_s.split.map{|c| "flair-" + c }.join(" ").strip
