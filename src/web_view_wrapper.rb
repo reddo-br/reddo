@@ -264,6 +264,10 @@ class WebViewWrapper
     @e.executeScript("$(\"#{selector}\").empty()")
   end
 
+  def remove( selector )
+    @e.executeScript("$(\"#{selector}\").empty().removeData().remove()")
+  end
+
   def html_encode( html_str )
     if html_str
       @enc ||= @doc.createElement("div")

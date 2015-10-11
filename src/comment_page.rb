@@ -16,6 +16,8 @@ require 'pref/account'
 require 'sub_style'
 
 import 'javafx.application.Platform'
+import 'javafx.scene.control.Alert' # jrubyfxにまだない
+import 'javafx.scene.control.ButtonType'
 
 class CommentPage < Page
 
@@ -342,6 +344,29 @@ class CommentPage < Page
       
       highlight_replying
 
+    }
+
+    @comment_view.set_delete_cb{| obj, has_children |
+      # dialog
+      dialog = Alert.new( Alert::AlertType::CONFIRMATION , 
+                          "")
+      dialog.initModality( Modality::APPLICATION_MODAL )
+      dialog.initOwner( App.i.stage )
+      dialog.getDialogPane.setContentText( "投稿/コメントを削除します")
+      dialog.getDialogPane.setHeaderText(nil)
+      op = dialog.showAndWait() # .filter{|r| r == ButtonType::OK}
+      if op.isPresent and op.get == ButtonType::OK
+        loading( Proc.new{ delete( obj , show_delete_element:has_children) } ,
+                 Proc.new{
+                   Platform.runLater{
+                     set_load_button_enable( true )
+                   }
+                 },
+                 Proc.new{|e|
+                   App.i.mes("削除エラー")
+                 }
+                 )
+      end
     }
 
     @split_comment_area.getChildren().add( @comment_view.webview )
@@ -884,6 +909,34 @@ class CommentPage < Page
         @comment_view.add_comment( comm , recursive:false , prepend:true)
       end
       @comment_view.set_link_hook
+    }
+  end
+
+  DELETED_HTML_JSONSTR = "&lt;div class=\"md\"&gt;&lt;p&gt;[deleted]&lt;/p&gt;\n&lt;/div&gt;"
+  def delete( obj , show_delete_element:true)
+    set_load_button_enable( false )
+    cl = App.i.client( @account_name )
+    obj.delete!
+    obj[:author] = '[deleted]'
+    Platform.runLater{
+      if obj[:kind] == 't3'
+        if obj[:is_self]
+          obj[:selftext] = '[deleted]'
+          obj[:selftext_html] = DELETED_HTML_JSONSTR
+        end
+        @comment_view.set_submission( obj )
+      else
+
+        if show_delete_element
+          obj[:body] = '[deleted]'
+          obj[:body_html] = DELETED_HTML_JSONSTR
+          @comment_view.add_comment( obj , recursive:false , prepend:true)
+        else
+          @comment_view.remove_comment( obj[:name] )
+        end
+
+      end
+      
     }
   end
 

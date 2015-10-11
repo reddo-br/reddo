@@ -38,6 +38,10 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     @edit_cb = cb
   end
 
+  def set_delete_cb(&cb)
+    @delete_cb = cb
+  end
+
   def set_account_name( name )
     @account_name = name
   end
@@ -265,6 +269,16 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   end # add_comment
 
+  def remove_comment( name )
+    element_id = name # そのまま
+    target = @doc.getElementById( element_id )
+    if target
+      # empty( "#" + element_id )
+      # target.getParentNode().removeChild( target )
+      remove( "#" + element_id )
+    end
+  end
+
   def clear_comment
     # @div_comments.setMember("innerHTML" , "")
     # @div_submission.setMember("innerHTML","")
@@ -456,6 +470,25 @@ class CommentWebViewWrapper < RedditWebViewWrapper
         }
         comment_foot.appendChild( @doc.createTextNode(" "))
         comment_foot.appendChild( comment_foot_edit )
+
+      end
+
+      if obj[:author] == @account_name
+        ### 削除
+        comment_foot_delete = @doc.createElement("a")
+        comment_foot_delete.setTextContent("削除")
+        comment_foot_delete.setAttribute("href" , "#" )
+        set_event( comment_foot_delete , 'click' , false ){
+          if @delete_cb
+            Platform.runLater{ # js engineのcall stack溢れ対策
+              ch = @e.executeScript("$(\"##{obj[:name]} .comment\").length")
+              $stderr.puts "deleteコールバック呼び出し リプライ数:#{ch}"
+              @delete_cb.call( obj , (ch > 0) )
+            }
+          end
+        }
+        comment_foot.appendChild( @doc.createTextNode(" "))
+        comment_foot.appendChild( comment_foot_delete )
       end
 
     end # archived?
