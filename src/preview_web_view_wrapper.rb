@@ -15,7 +15,7 @@ class PreviewWebViewWrapper < RedditWebViewWrapper
   def base_html()
     html = <<EOF
 <!DOCTYPE html>
-<html>
+<html style="background-color:#eeeeee;">
 <head>
 <meta charset="UTF-8">
 <style>
@@ -23,7 +23,7 @@ class PreviewWebViewWrapper < RedditWebViewWrapper
 </style>
 <style id="additional-style">#{@additional_style}</style>
 </head>
-<body style="background-color:#eeeeee;">
+<body>
 <div class="md" id="sample">
 </div>
 </body>

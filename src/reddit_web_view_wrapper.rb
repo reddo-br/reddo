@@ -64,7 +64,10 @@ EOF
     style = <<EOF
 html {
   font-family:#{base_font};
+  background-color:#fdfdfd;
 }
+
+a:link { color: #0022AA; }
 
 div.comment { 
   word-wrap:break-word;
@@ -144,28 +147,29 @@ div.comment p {
   background-color:#cccccc;
   color:#444444;
 }
+
 .comment_footer a:hover {
   background-color: #004298;
   color:#eeeeee;
 }
 
-.user_name {
+.user_name, a.user_name {
   color: #{AppColor::DARK_BLUE};
   border-radius: 3px;
   text-decoration:none;
 }
 
-.user_name_admin {
+.user_name_admin, a.user_name_admin {
   color:white;
   background-color: #{AppColor::DARK_RED}
 }
 
-.user_name_mod {
+.user_name_mod, a.user_name_mod {
   color:white;
   background-color: #{AppColor::DARK_GREEN}
 }
 
-.user_name_op {
+.user_name_op, a.user_name_op {
   color:white;
   background-color: #{AppColor::DARK_BLUE}
 }
@@ -208,6 +212,13 @@ strong,b {
 }
 
 h1,h2,h3,h4,h5 { #{bold_style} }
+.md h1, .md h3,.md h5 { #{bold_style} }
+.md h2, .md h4 { font-weight:normal }
+.md h6 { font-weight:normal; text-decoration:underline}
+
+.md h1, .md h2{ font-size:1.2857142857142858em;line-height:1.3888888888888888em;margin-top:0.8333333333333334em;margin-bottom:0.8333333333333334em }
+.md h3, .md h4{ font-size:1.1428571428571428em;line-height:1.25em;margin-top:0.625em;margin-bottom:0.625em}
+.md h5, .md h6{ font-size:1em;line-height:1.4285714285714286em;margin-top:0.7142857142857143em;margin-bottom:0.35714285714285715em}
 
 .md pre,
 .md code,
@@ -255,8 +266,8 @@ a#linked_title:hover {
 #submission {
   word-wrap:break-word;
   margin: 8px;
-  padding: 5px;
-  border-width: 1px;
+  padding: 7px;
+  border-width: 2px;
   border-radius: 3px;
   border-style: solid;
   border-color: #888888;
