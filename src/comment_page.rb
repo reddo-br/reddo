@@ -58,7 +58,7 @@ class CommentPage < Page
     ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
     # @site = site
     queried_sort = if is_valid_sort_type( @page_info[:sort] )
-              @page_info
+              @page_info[:sort]
             else
               nil
             end
