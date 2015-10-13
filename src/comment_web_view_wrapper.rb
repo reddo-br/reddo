@@ -514,14 +514,16 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     # todo:コメント削除とアカウント削除を厳密に区別する方法がない
     # bodyがもともと[deleted]なら削除されたものと見做す
     
+    # https://www.reddit.com/r/changelog/comments/3luvvy/reddit_change_making_removed_deleted_content_more/
+
     if obj[:kind] == 't3'
       if obj[:is_self]
-        obj[:author] == "[deleted]" and obj[:selftext] == '[deleted]'
+        obj[:author] == "[deleted]" and (obj[:selftext] == '[deleted]' or obj[:selftext] == '[removed]')
       else
         obj[:author] == "[deleted]" and obj[:banned_by] # 自己削除は判定不能か
       end
     else
-      obj[:author] == "[deleted]" and obj[:body] == '[deleted]'
+      obj[:author] == "[deleted]" and (obj[:body] == '[deleted]' or obj[:body] == '[removed]')
     end
   end
 
