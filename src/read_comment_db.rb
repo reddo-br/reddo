@@ -41,6 +41,17 @@ class ReadCommentDB
     map.get( subm_id )
   end
 
+  def set_subm_account( subm_id , account_name )
+    map = @db.getHashMap("subm_account")
+    map.put( subm_id , account_name )
+    @db.commit()
+  end
+
+  def get_subm_account( subm_id )
+    map = @db.getHashMap( "subm_account")
+    map.get( subm_id )
+  end
+
   def close
     @db.close()
   end

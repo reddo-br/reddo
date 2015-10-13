@@ -15,6 +15,8 @@ require 'app_color'
 require 'pref/account'
 require 'sub_style'
 
+require 'account_selector'
+
 import 'javafx.application.Platform'
 import 'javafx.scene.control.Alert' # jrubyfxにまだない
 import 'javafx.scene.control.ButtonType'
@@ -52,7 +54,8 @@ class CommentPage < Page
     if not Account.exist?( @page_info[:account_name] )
       @page_info[:account_name] = nil
     end
-    @account_name = @page_info[:account_name] # 今のところ切り変えはない
+    @account_name = ReadCommentDB.instance.get_subm_account(@link_id) || @page_info[:account_name]
+    ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
     # @site = site
     queried_sort = if is_valid_sort_type( @page_info[:sort] )
               @page_info
@@ -115,9 +118,19 @@ class CommentPage < Page
 
     @title = @page_info[:title] # 暫定タイトル / これはデコードされてる
     
-    name = @account_name || "なし"
-    @account_label = Label.new("アカウント:" + name)
-
+    # name = @account_name || "なし"
+    # @account_label = Label.new("アカウント:" + name)
+    @account_selector = AccountSelector.new( @account_name )
+    @account_selector.set_change_cb{
+      if @account_name != @account_selector.get_account
+        @account_name = @account_selector.get_account # 未ログイン = nil
+        @comment_view.set_account_name( @account_name )
+        ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
+        # todo:dbにセット
+        start_reload
+      end
+    }
+    
     @external_browser_button = Button.new("webで開く")
     @external_browser_button.setOnAction{|e|
       if @base_url
@@ -141,8 +154,8 @@ class CommentPage < Page
     @title_label.setStyle("-fx-font-size:14pt")
     button_area_left = HBox.new
     button_area_left.setAlignment( Pos::CENTER_LEFT )
-    button_area_left.getChildren.setAll( @account_label , 
-                                         Separator.new( Orientation::VERTICAL ),
+    button_area_left.getChildren.setAll( @account_selector , 
+                                         Label.new(" "),
                                          @subname_label ,
                                          Separator.new( Orientation::VERTICAL ),
                                          )
@@ -690,7 +703,8 @@ class CommentPage < Page
 
   def set_load_button_enable( enable )
     start_buttons = [ @reload_button , @split_edit_area.post_button , 
-                      @clear_partial_thread_button , @sort_selector ]
+                      @clear_partial_thread_button , @sort_selector , 
+                      @account_selector]
     stop_buttons  = [ @load_stop_button ]
 
     if enable
