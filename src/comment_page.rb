@@ -23,18 +23,18 @@ import 'javafx.scene.control.ButtonType'
 
 class CommentPage < Page
 
-  SORT_TYPE = [[ "新しい" , "new"],
-               [ "古い" , "old" ],
-               # [ "注目" , "hot" ],
-               [ "スコア" , "top" ],
-               [ "ベスト","confidence"], # いわゆるbest
-               [ "論争的","controversial"],
-               # [ "ランダム","random"],
-               [ "Q&A","qa"]
-              ]
+  SORT_TYPES = [[ "新着" , "new"],
+                [ "古い順" , "old" ],
+                # [ "注目" , "hot" ],
+                [ "トップ" , "top" ],
+                [ "ベスト","confidence"], # いわゆるbest
+                [ "論争中","controversial"],
+                # [ "ランダム","random"],
+                [ "Q&A","qa"]
+               ]
 
   def is_valid_sort_type(sort)
-    SORT_TYPE.rassoc( sort )
+    SORT_TYPES.rassoc( sort )
   end
 
   def initialize( info , start_user_present:true)
@@ -107,12 +107,12 @@ class CommentPage < Page
     @autoreload_status = Label.new("")
     
     @sort_selector = ChoiceBox.new
-    @sort_selector.getItems().setAll( SORT_TYPE.map{|ta| ta[1] } )
-    @sort_selector.getSelectionModel.select( @default_sort )
+    @sort_selector.getItems().setAll( SORT_TYPES.map{|ta| ta[0] } )
+    set_current_sort( @default_sort )
 
     @sort_selector.valueProperty().addListener{|ov|
       start_reload( asread:false )
-      @page_info[:sort] = @sort_selector.getSelectionModel.getSelectedItem
+      @page_info[:sort] = get_current_sort
       App.i.save_tabs
     }
 
@@ -138,7 +138,7 @@ class CommentPage < Page
         if @top_comment
           comment_link += @top_comment
         end
-        sort = @sort_selector.getSelectionModel.getSelectedItem
+        sort = get_current_sort
         if sort != @default_sort
           comment_link += ( "?sort=" + sort )
         end
@@ -512,6 +512,14 @@ class CommentPage < Page
 
   end # initialize
   
+  def get_current_sort
+    SORT_TYPES.assoc(@sort_selector.getSelectionModel.getSelectedItem)[1]
+  end
+
+  def set_current_sort(sort)
+    @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc(sort)[0] )
+  end
+
   def highlight_replying( move:true )
     if @editing
       @comment_view.set_replying( @editing[:name] , mode:"edit" , move:move)
@@ -616,9 +624,9 @@ class CommentPage < Page
     end
     
     if info[:sort] and is_valid_sort_type( info[:sort] )
-      current_sort = @sort_selector.getSelectionModel.getSelectedItem
+      current_sort = get_current_sort
       if current_sort != info[:sort]
-        @sort_selector.getSelectionModel.select( info[:sort] ) # listenerでリロードさせる
+        set_current_sort( info[:sort] ) # listenerでリロードさせる
       else
         start_reload( asread:false ) if changed
       end
@@ -803,7 +811,7 @@ class CommentPage < Page
   def reload( asread:false , user_present:true)
     set_load_button_enable( false )
     # submission#get では、コメントが深いレベルまでオブジェクト化されない問題
-    sort_type = @sort_selector.getSelectionModel.getSelectedItem
+    sort_type = get_current_sort
     res = if @top_comment
             App.i.client(@account_name).get( "/comments/#{@link_id}/-/#{@top_comment}.json" , limit:200 , sort:sort_type , context:@comment_context).body
           else
