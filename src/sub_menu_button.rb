@@ -45,7 +45,13 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
                                  GlyphAwesome.make("EDIT"))
     @base_menus << SeparatorMenuItem.new
     
-    getItems().setAll( @base_menus + @user_menus )
+    @multi_menu = Menu.new("マルチレディット")
+    @subscribes_menu = Menu.new("購読サブレ")
+
+    # @base_menus << @multi_menu
+    # @base_menus << @subscribes_menu
+
+    getItems().setAll( @base_menus )
     load_user_menus
   end
 
@@ -88,15 +94,12 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
     }
     @user_menus << SeparatorMenuItem.new
     
-    user_subs.multis.each{|m|
-      @user_menus << menu_from_subname( m )
-    }
-    if @user_menus.length > 0
-      @user_menus << SeparatorMenuItem.new
-    end
-    user_subs.subscribes.each{|s|
-      @user_menus << menu_from_subname( s )
-    }
+    @multi_menu.getItems().setAll( user_subs.multis.map{|m| menu_from_subname( m ) } )
+    @subscribes_menu.getItems().setAll( user_subs.subscribes.map{|s|menu_from_subname( s )} )
+
+    @user_menus << @multi_menu
+    @user_menus << @subscribes_menu
+
     getItems().setAll( @base_menus + @user_menus )
   end
 end
