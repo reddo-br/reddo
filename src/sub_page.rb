@@ -29,28 +29,30 @@ import 'javafx.application.Platform'
 import 'javafx.util.StringConverter'
 class SubPage < Page
   
-  SORT_TYPES = [ [ "注目" , "hot" , nil ],
-                 [ "新着" , "new" , nil ],
-                 [ "上昇中","rising" , nil],
+  SORT_TYPES = [ # [ "注目" , "hot" , nil ],
+                 # [ "新着" , "new" , nil ],
                  
-                 [ "トップ(時)" , "top" , :hour ],
-                 [ "トップ(日)" , "top" , :day  ],
-                 [ "トップ(月)" , "top" , :month],
-                 [ "トップ(年)" , "top" , :year ],
-                 [ "トップ(全)" , "top" , :all  ],
+                [ "トップ(時)" , "top" , :hour ],
+                [ "トップ(日)" , "top" , :day  ],
+                [ "トップ(月)" , "top" , :month],
+                [ "トップ(年)" , "top" , :year ],
+                [ "トップ(全)" , "top" , :all  ],
 
-                 [ "論争中(時)" , "controversial" , :hour ],
-                 [ "論争中(日)" , "controversial" , :day  ],
-                 [ "論争中(月)" , "controversial" , :month],
-                 [ "論争中(年)" , "controversial" , :year ],
-                 [ "論争中(全)" , "controversial" , :all  ],
+                [ "論争中(時)" , "controversial" , :hour ],
+                [ "論争中(日)" , "controversial" , :day  ],
+                [ "論争中(月)" , "controversial" , :month],
+                [ "論争中(年)" , "controversial" , :year ],
+                [ "論争中(全)" , "controversial" , :all  ],
+                
+                [ "上昇中","rising" , nil],
 
                ]
   
   def initialize( info )
     super(3.0)
     getStyleClass().add("sub-page")
-    
+    setStyle("-fx-border-width:1px; -fx-border-style:solid; -fx-border-color:#c8c8c8;")
+
     @page_info = info
     @page_info[:site] ||= 'reddit'
     @page_info[:type] ||= 'sub'
@@ -172,11 +174,12 @@ class SubPage < Page
     
     # @sort_button_area.setStyle("-fx-margin: 3px 3px 0px 3px")
     @sort_buttons = []
-=begin
+
     @sort_buttons << @sort_hot = ToggleButton.new("注目")
     @sort_buttons << @sort_new = ToggleButton.new("新着")
-    @sort_buttons << @sort_contr_day = ToggleButton.new("物議(日)")
-    @sort_buttons << @sort_contr_week = ToggleButton.new("物議(週)")
+    @sort_buttons << @sort_others = ToggleButton.new("他→")
+    # @sort_buttons << @sort_contr_day = ToggleButton.new("物議(日)")
+    # @sort_buttons << @sort_contr_week = ToggleButton.new("物議(週)")
     # 票数,コメント
 
     @sort_button_group = ToggleGroup.new()
@@ -202,17 +205,20 @@ class SubPage < Page
     Util.toggle_group_set_listener_force_selected( @sort_button_group ,
                                                    @sort_hot){|btn| start_reload }
     
-=end
-
     @sort_selector = ChoiceBox.new
     @sort_selector.getItems().setAll( SORT_TYPES.map{|e| e[0]} )
-    @sort_selector.getSelectionModel.select(SORT_TYPES.rassoc('hot')[0])
+    @sort_selector.getSelectionModel.select(SORT_TYPES[1][0])
     @sort_selector.valueProperty().addListener{|ov|
-      start_reload
+      if @sort_button_group.getSelectedToggle() == @sort_others
+        start_reload
+      else
+        @sort_others.fire
+      end
     }
 
     @sort_button_area_left.getChildren().add( Label.new("ソート:"))
-    # @sort_button_area_left.getChildren().addAll( @sort_buttons )
+    @sort_button_area_left.getChildren().addAll( @sort_buttons )
+    @sort_button_area_left.getChildren().add( Label.new(" "))
     @sort_button_area_left.getChildren().add( @sort_selector )
     @sort_button_area_left.getChildren().add( Label.new(" "))
     @sort_button_area.setLeft( @sort_button_area_left )
@@ -576,8 +582,18 @@ class SubPage < Page
                end
 =end
       
-      sort_a = SORT_TYPES.assoc(@sort_selector.getValue)
-      subms = case sort_a[1]
+      sort_type , timespan = 
+        case @sort_button_group.getSelectedToggle()
+        when @sort_hot
+          [ 'hot' , nil ]
+        when @sort_new
+          ['new' , nil ]
+        when @sort_others
+          sa = SORT_TYPES.assoc(@sort_selector.getValue)
+          [ sa[1] , sa[2] ]
+        end
+
+      subms = case sort_type
               when 'hot'
                 cl.get_hot( @page_info[:name] , limit:count , after:after)
               when 'new'
@@ -590,10 +606,10 @@ class SubPage < Page
                 cl.object_from_body( raw )
               when 'controversial'
                 cl.get_controversial( @page_info[:name] , 
-                                      {:limit => count , :t => sort_a[2] , after:after})
+                                      {:limit => count , :t => timespan , after:after})
               when 'top'
                 cl.get_top( @page_info[:name] , 
-                            {:limit => count , :t => sort_a[2] , after:after})
+                            {:limit => count , :t => timespan , after:after})
               end
 
       # todo:存在しないsubの対応
@@ -1420,17 +1436,17 @@ class SubPage < Page
   end
 
   def key_hot
-    # @sort_hot.fire() if not @sort_hot.isDisable()
-    if not @sort_selector.isDisable()
-      @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc('hot')[0])
-    end
+    @sort_hot.fire() if not @sort_hot.isDisable()
+    #if not @sort_selector.isDisable()
+    #  @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc('hot')[0])
+    #end
   end
 
   def key_new
-    # @sort_new.fire() if not @sort_new.isDisable()
-    if not @sort_selector.isDisable()
-      @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc('new')[0] )
-    end
+    @sort_new.fire() if not @sort_new.isDisable()
+    #if not @sort_selector.isDisable()
+    #  @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc('new')[0] )
+    #end
   end
 
   def key_upvote()

@@ -635,8 +635,17 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     comm_head.appendChild( @doc.createTextNode(" ") )
     comm_head.appendChild( time_str )
 
+    # edited?
+    if obj[:edited].is_a?( Float )
+      edit_time = @doc.createElement("span")
+      edit_time.setAttribute("class" , "comment_time")
+      edit_time_str = Time.at( obj[:edited ] ).strftime("%Y-%m-%d %H:%M:%S")
+      edit_time.setTextContent( "[編集 #{edit_time_str}]")
+      
+      comm_head.appendChild( @doc.createTextNode(" ") )
+      comm_head.appendChild( edit_time )
+    end
     comm_head
-
   end
 
   def make_user_element( obj )

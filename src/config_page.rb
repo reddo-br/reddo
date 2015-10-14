@@ -13,6 +13,8 @@ class ConfigPage < Page
 
   def initialize(info)
     super()
+    setSpacing(3.0)
+    setStyle("-fx-border-width:1px; -fx-border-style:solid; -fx-border-color:#c8c8c8;")
     @page_info = info
     scroll_pane = ScrollPane.new()
     scroll_pane.setPrefHeight( 2000 )
@@ -21,6 +23,8 @@ class ConfigPage < Page
     scroll_pane.setContent( grid_pane )
 
     items = []
+
+    items << make_header( "全般" )
 
     @font_selector = ChoiceBox.new
     font_list = ["未設定"] + Font.getFamilies()
@@ -39,6 +43,8 @@ class ConfigPage < Page
 
     items << make_bool_config( "新規タブを現在のタブの直後に挿入する",
                                "new_tab_after_current" )
+
+    items << make_header( "コメント画面" )
 
     items << make_bool_config( "サブレディットのリンク(スタンプ)とフレアーのスタイルを適用する(試験的)",
                                'use_sub_link_style')
@@ -61,17 +67,19 @@ class ConfigPage < Page
 
     items.each_with_index{|row , rownum|
       row.each_with_index{|control , colnum|
-        GridPane.setColumnIndex( control , colnum )
-        GridPane.setRowIndex( control , rownum )
-        
-        if colnum == 0
-          #labels
-          control.setWrapText(true)
-          control.setStyle("-fx-word-wrap:break-word")
+        if control
+          GridPane.setColumnIndex( control , colnum )
+          GridPane.setRowIndex( control , rownum )
+          
+          if colnum == 0
+            #labels
+            control.setWrapText(true)
+            control.setStyle(control.getStyle + "; -fx-word-wrap:break-word")
+          end
+          
+          GridPane.setMargin( control , Insets.new( 5 , 5 , 5 , 5))
+          grid_pane.getChildren().add( control )
         end
-
-        GridPane.setMargin( control , Insets.new( 5 , 5 , 5 , 5))
-        grid_pane.getChildren().add( control )
       }
     }
 
@@ -87,6 +95,8 @@ class ConfigPage < Page
     label_top.setStyle("-fx-font-size:16px")
     getChildren.add( label_top )
     getChildren.add( scroll_pane )
+    self.class.setMargin( label_top , Insets.new(3.0 , 3.0 , 3.0 , 3.0) )
+    self.class.setMargin( scroll_pane , Insets.new(3.0 , 3.0 , 3.0 , 3.0) )
 
     prepare_tab( "設定" )
   end
@@ -104,6 +114,16 @@ class ConfigPage < Page
     label = Label.new( label_string )
     check = checkbox_with_pref( pref_name )
     [ label , check ]
+  end
+
+  def make_header( label_string )
+    label = Label.new( label_string )
+    if App.i.pref["artificial_bold"]
+      label.setStyle("-fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
+    else
+      label.setStyle("-fx-font-weight:bold;")
+    end
+    [ label , nil ]
   end
 
   def get_font

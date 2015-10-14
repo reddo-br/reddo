@@ -38,7 +38,8 @@ class CommentPage < Page
   end
 
   def initialize( info , start_user_present:true)
-    super()
+    super(3.0)
+    setSpacing(3.0)
     getStyleClass().add("comment-page")
 
     @new_comments = []
