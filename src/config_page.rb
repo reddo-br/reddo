@@ -11,6 +11,12 @@ import 'javafx.scene.control.Spinner'
 
 class ConfigPage < Page
 
+  SUB_SCROLL_AMOUNT_CHOICES = [[ nil , "ui標準" ],
+                               [ 0.001 , "一行" ],
+                               [ 0.25 , "画面の約25%" ],
+                               [ 0.5 ,  "画面の約50%" ],
+                               [ 1.0 ,  "約1画面分"   ]]
+  
   def initialize(info)
     super()
     setSpacing(3.0)
@@ -43,6 +49,20 @@ class ConfigPage < Page
 
     items << make_bool_config( "新規タブを現在のタブの直後に挿入する",
                                "new_tab_after_current" )
+
+    items << make_header("サブレディット画面")
+
+    # スクロール量
+    sub_scroll_amount = App.i.pref["sub_scroll_amount"]
+    @sub_scroll_amount_selector = ChoiceBox.new
+    @sub_scroll_amount_selector.getItems().setAll( SUB_SCROLL_AMOUNT_CHOICES.map{|e| e[1] })
+    @sub_scroll_amount_selector.getSelectionModel.select( SUB_SCROLL_AMOUNT_CHOICES.assoc(sub_scroll_amount)[1] )
+    @sub_scroll_amount_selector.valueProperty.addListener{|ev|
+      am = SUB_SCROLL_AMOUNT_CHOICES.rassoc( ev.getValue )[0]
+      App.i.pref['sub_scroll_amount'] = am
+    }
+
+    items << [ Label.new("サブレディット画面でのホイールスクロール量") , @sub_scroll_amount_selector ]
 
     items << make_header( "コメント画面" )
 

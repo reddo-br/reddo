@@ -692,7 +692,8 @@ class SubPage < Page
       if @table.getSelectionModel().getSelectedIndex == -1
         @table.getSelectionModel().select( old_top )
       end
-      set_scroll_amount
+      am = App.i.pref['sub_scroll_amount']
+      set_scroll_amount( am )
     }
   end
 
@@ -740,7 +741,7 @@ class SubPage < Page
     first = get_scroll_top
     last  = get_scroll_bottom
     if first and last
-      amount = ((last - first) * ratio).to_i
+      amount = ((last - first + 1) * ratio).to_i
       amount = 1 if amount < 1
 
       amount = if forward
@@ -758,12 +759,16 @@ class SubPage < Page
     end
   end
 
-  def set_scroll_amount
+  def set_scroll_amount( amount = 0.6 )
     if vf = get_virtual_flow
-      vf.setOnScroll{|ev|
-        screen_scroll( ev.getDeltaY() < 0 , 0.6) # -1なら↓
-        ev.consume
-      }
+      if amount
+        vf.setOnScroll{|ev|
+          screen_scroll( ev.getDeltaY() < 0 , amount) # -1なら↓
+          ev.consume
+        }
+      #else
+      #  vf.setOnScroll(nil)
+      end
     end
   end
 
