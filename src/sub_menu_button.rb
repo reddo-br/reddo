@@ -92,7 +92,7 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
       App.i.user_subs_hash[ @account_name ] = nil
       load_user_menus
     }
-    @user_menus << SeparatorMenuItem.new
+    # @user_menus << SeparatorMenuItem.new
     
     @multi_menu.getItems().setAll( user_subs.multis.map{|m| menu_from_subname( m ) } )
     @subscribes_menu.getItems().setAll( user_subs.subscribes.map{|s|menu_from_subname( s )} )
