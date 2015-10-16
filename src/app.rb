@@ -15,6 +15,7 @@ require 'client_params'
 require 'pref/preferences'
 require 'pref/session'
 require 'pref/account'
+require 'pref/history'
 
 require 'singleton'
 
@@ -178,8 +179,9 @@ class App
     @session = Session.new
     @user_subs_hash = {}
     @subs_data_hash = {}
+    @close_history = History.new
   end
-  attr_reader :pref , :session
+  attr_reader :pref , :session , :close_history
   # widget
   attr_accessor :fxapp , :stage , :scene , :user_subs_hash , :subs_data_hash
 
@@ -296,6 +298,8 @@ class App
         end
       end
     
+      close_history.remove( page_info )
+
       if target_tab and selection
         tabpane.getSelectionModel().select( target_tab ) if selection
       end

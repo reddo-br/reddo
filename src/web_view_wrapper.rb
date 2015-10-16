@@ -209,7 +209,7 @@ class WebViewWrapper
     # link = ev.getTarget().getAttribute("href")
     if @link_cb
       Platform.runLater{
-        @link_cb.call( make_absolute_url(href) )
+        @link_cb.call( make_absolute_url(href) , ev.shiftKey)
       }
     end
     ev.preventDefault

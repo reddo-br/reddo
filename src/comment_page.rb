@@ -132,20 +132,32 @@ class CommentPage < Page
       end
     }
     
-    @external_browser_button = Button.new("webで開く")
-    @external_browser_button.setOnAction{|e|
-      if @base_url
-        comment_link = @base_url
-        if @top_comment
-          comment_link += @top_comment
-        end
-        sort = get_current_sort
-        if sort != @default_sort
-          comment_link += ( "?sort=" + sort )
-        end
-        App.i.open_external_browser( comment_link )
+    ###
+    @comments_menu = MenuButton.new("その他")
+
+    external_browser_item = MenuItem.new("webで開く")
+    external_browser_item.setOnAction{|e|
+      if url = make_page_url
+        App.i.open_external_browser( url )
       end
     }
+    @comments_menu.getItems.add( external_browser_item )
+    
+    copy_url_item = MenuItem.new("URLをコピー")
+    copy_url_item.setOnAction{|e|
+      if url = make_page_url
+        App.i.copy( url )
+      end
+    }
+    @comments_menu.getItems.add( copy_url_item )
+
+    copy_url_item_short = MenuItem.new("URLをコピー(短縮)")
+    copy_url_item_short.setOnAction{|e|
+      App.i.copy( "https://redd.it/#{@page_info[:name]}" )
+    }
+    @comments_menu.getItems.add( copy_url_item_short )
+
+    ####
 
     @load_status = Label.new("")
     
@@ -163,8 +175,8 @@ class CommentPage < Page
     
     @button_area.setLeft( button_area_left )
     @button_area.setCenter( @title_label )
-    @button_area.setRight( @external_browser_button )
-    [ button_area_left , @title_label , @external_browser_button ].each{|e|
+    @button_area.setRight( @comments_menu )
+    [ button_area_left , @title_label , @comments_menu ].each{|e|
       BorderPane.setAlignment( e , Pos::CENTER_LEFT )
     }
 
@@ -318,10 +330,10 @@ class CommentPage < Page
       }
     }
 
-    @comment_view.set_link_cb{|link|
+    @comment_view.set_link_cb{|link, shift |
       page_info = @url_handler.url_to_page_info( link )
       page_info[:account_name] = @account_name
-      App.i.open_by_page_info( page_info )
+      App.i.open_by_page_info( page_info , (not shift))
     }
 
     @comment_view.set_reply_cb{|obj|
@@ -490,6 +502,7 @@ class CommentPage < Page
       # check_read()
       check_read2()
       finish()
+      App.i.close_history.add( @page_info , @title )
     }
     @tab.setOnSelectionChanged{|ev|
       if @tab.isSelected()
@@ -513,6 +526,22 @@ class CommentPage < Page
 
   end # initialize
   
+  def make_page_url
+    if @base_url
+      comment_link = @base_url.to_s
+      if @top_comment
+        comment_link += @top_comment
+      end
+      sort = get_current_sort
+      if sort != @default_sort
+        comment_link += ( "?sort=" + sort )
+      end
+      comment_link
+    else
+      nil
+    end
+  end
+
   def get_current_sort
     SORT_TYPES.assoc(@sort_selector.getSelectionModel.getSelectedItem)[1]
   end

@@ -4,6 +4,7 @@ require 'jrubyfx'
 
 require 'url_handler'
 require 'glyph_awesome'
+require 'pref/history'
 
 import 'org.controlsfx.control.textfield.TextFields'
 
@@ -31,7 +32,8 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
   end
 
   def initialize(site:"reddit" , account_name:nil)
-    super("SUBs")
+    super("開く")
+
     @site = site
     @account_name = account_name
     @user_menus = []
@@ -41,17 +43,38 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
     @base_menus << menu_from_subname("../","front")
     @base_menus << menu_from_subname("ReddoBrowser")
     @base_menus << SeparatorMenuItem.new
+    
+    @history_menu = Menu.new("最近閉じたタブ")
+    @base_menus << @history_menu
+
+    @base_menus << SeparatorMenuItem.new
     @base_menus << menu_from_url("https://www.reddit.com/subreddits/" , "webで購読を編集",
                                  GlyphAwesome.make("EDIT"))
     @base_menus << SeparatorMenuItem.new
     
-    @multi_menu = Menu.new("マルチレディット")
-    @subscribes_menu = Menu.new("購読サブレ")
+    @multi_menu = Menu.new("multireddit")
+    @subscribes_menu = Menu.new("購読subreddit")
 
     # @base_menus << @multi_menu
     # @base_menus << @subscribes_menu
 
     getItems().setAll( @base_menus )
+    setOnMouseClicked{|ev|
+      # $stderr.puts "ヒストリ setOnSHowing"
+      items = App.i.close_history.get_history.map{|info,name|
+        i = MenuItem.new( )
+        l = Label.new( name )
+        l.setPrefWidth(400)
+        i.setGraphic(l)
+        i.setOnAction{|ev|
+          App.i.open_by_page_info( info )
+        }
+        i.setMnemonicParsing(false)
+        i
+      }
+      @history_menu.getItems.setAll(items)
+    }
+
     load_user_menus
   end
 
@@ -87,7 +110,7 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
 
   def set_user_subs_data( user_subs )
     @user_menus = []
-    @user_menus << reload_item = MenuItem.new("リロード",GlyphAwesome.make("REFRESH"))
+    @user_menus << reload_item = MenuItem.new("購読のリロード",GlyphAwesome.make("REFRESH"))
     reload_item.setOnAction{|e|
       App.i.user_subs_hash[ @account_name ] = nil
       load_user_menus

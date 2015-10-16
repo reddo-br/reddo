@@ -102,34 +102,48 @@ class SubPage < Page
 
     @active_label = Label.new()
 
-    @external_browser_button = Button.new("webで開く")
-    @external_browser_button.setOnAction{|e|
+    # メニュー :todo 動的に
+    @sub_menu_button = MenuButton.new( "その他" )
+    
+    external_browser_item = MenuItem.new("webで開く")
+    external_browser_item.setOnAction{|e|
       url = get_sub_url
       if url.to_s.length > 0
         App.i.open_external_browser( url.to_s )
       end
       
     }
+    @sub_menu_button.getItems.add( external_browser_item )
 
-    @button_area.setLeft( @account_selector )
-    BorderPane.setAlignment( @title_label , Pos::CENTER_LEFT )
-    @button_area.setCenter( @title_label )
-
-    @button_area_right.getChildren().addAll( Separator.new( Orientation::VERTICAL ),
-                                             @active_label ,
-                                             @external_browser_button)
-    
     if not @is_multireddit
-      @external_post_page_button = Button.new("投稿ページ")
-      @external_post_page_button.setOnAction{|e|
+      external_post_page_item = MenuItem.new("webで投稿ページを開く")
+      external_post_page_item.setOnAction{|e|
         url = get_sub_url
         if url.to_s.length > 0
           App.i.open_external_browser( url.to_s + "submit" )
         end
       }
-      @button_area_right.getChildren().add( @external_post_page_button )
-    end
+      @sub_menu_button.getItems.add( external_post_page_item )
+      @sub_menu_button.getItems.add( SeparatorMenuItem.new )
 
+      @subscribed_check_item = CheckMenuItem.new("購読@" + @account_name)
+      @subscribed_check_item.selectedProperty.addListener{|ov|
+        sel = ov.getValue
+        $stderr.puts sel
+        if @subscribed != sel
+          post_subscribed( sel )
+          @subscribed = sel
+        end
+      }
+      @sub_menu_button.getItems.add( @subscribed_check_item )
+    end
+    @button_area_right.getChildren().addAll( Separator.new( Orientation::VERTICAL ),
+                                             @active_label ,
+                                             @sub_menu_button)
+
+    @button_area.setLeft( @account_selector )
+    BorderPane.setAlignment( @title_label , Pos::CENTER_LEFT )
+    @button_area.setCenter( @title_label )
     @button_area.setRight( @button_area_right )
     getChildren().add( @button_area )
 
@@ -408,7 +422,7 @@ class SubPage < Page
           when MouseButton::PRIMARY
             item =  @table.getSelectionModel().getSelectedItem()
             if @old_selected_item == item
-              open_selected_submission()
+              open_selected_submission( (not ev.isShiftDown()) )
             else
               @old_selected_item = item
             end
@@ -422,7 +436,7 @@ class SubPage < Page
       case ev.getCode()
       when KeyCode::SPACE
         # key_space
-        open_selected_submission()
+        open_selected_submission(( not ev.isShiftDown()) )
       end
     }
     
@@ -439,17 +453,35 @@ class SubPage < Page
 
     @tab.setOnClosed{
       finish()
+      # タブから閉じたときしか来ないはず...
+      App.i.close_history.add( @page_info , make_tab_name )
     }
 
     # subのデータ取得
     if @is_multireddit
       @active_label.setText("[multi]")
     else
-      start_load_sub_info
+      # start_load_sub_info
     end
     start_reload
   end # initialize
   
+  def post_subscribed( subscribed )
+    if @sub_info and @sub_info[:name]
+      Thread.new{
+        cl = App.i.client( @account_name )
+        act = if subscribed
+                'sub'
+              else
+                'unsub'
+              end
+        ret = cl.post( '/api/subscribe.json' , sr:@sub_info[:name] , # not display name
+                       action:act ).body
+        $stderr.puts ret
+      }
+    end
+  end
+
   def open_search
     word = @google_search_field.getText().strip
     if word.length > 0 
@@ -478,38 +510,34 @@ class SubPage < Page
     name + owner
   end
 
-  def start_load_sub_info
-    @load_sub_info_thread = Thread.new{
-      loop do
-
-        begin
-          @sub_info = App.i.client(@account_name).subreddit_from_name( @page_info[:name] )
-          if @sub_info
-            title = @sub_info[:title] || subpath_to_name(@page_info[:name])
-            Platform.runLater{
-              @title_label.setText( Html_entity.decode(title) )
-              set_tab_text( make_tab_name )
-              @active_label.setText("ユーザー数: #{@sub_info[:accounts_active].to_i}/#{@sub_info[:subscribers]}")
-            }
-          end
-        rescue
-          $stderr.puts "sub情報取得失敗"
-        end
-      
-        sleep( 300 + rand( 10 ) )
-      end # loop
-    }
+  def load_sub_info
+    begin
+      @sub_info = App.i.client(@account_name).subreddit_from_name( @page_info[:name] )
+      if @sub_info
+        title = @sub_info[:title] || subpath_to_name(@page_info[:name])
+        @subscribed = @sub_info[:user_is_subscriber]
+        Platform.runLater{
+          @title_label.setText( Html_entity.decode(title) )
+          set_tab_text( make_tab_name )
+          @subscribed_check_item.setText("購読@" + @account_name)
+          @subscribed_check_item.setSelected( @subscribed )
+          @active_label.setText("ユーザー数: #{@sub_info[:accounts_active].to_i}/#{@sub_info[:subscribers]}")
+        }
+      end
+    rescue
+      $stderr.puts "sub情報取得失敗"
+    end
   end
 
   def finish
-    if @load_sub_info_thread
-      begin
-        @load_sub_info_thread.kill
-      rescue
+    # if @load_sub_info_thread
+    #   begin
+    #     @load_sub_info_thread.kill
+    #   rescue
         
-      end
-      @load_sub_info_thread = nil
-    end
+    #   end
+    #   @load_sub_info_thread = nil
+    # end
   end
   
   def subname_to_pathname(name)
@@ -556,9 +584,11 @@ class SubPage < Page
   def reload( add:false , count:100)
     $stderr.puts "reload"
     set_load_button_enable( false )
+    Thread.new{ load_sub_info } if not @is_multireddit
+
     cl = App.i.client(@account_name)
     $stderr.puts cl.access.to_json ########
-
+    
     after = if add and @subms.to_a.length > 0
               @subms.last[:name]
             else
@@ -614,6 +644,7 @@ class SubPage < Page
 
       # todo:存在しないsubの対応
       # todo:randomの対応
+
       if subms
         subms.each_with_index{|obj,i|
           obj[:reddo_rownum] = i + 1 + @subms.length
@@ -820,7 +851,7 @@ class SubPage < Page
     end
   end
 
-  def open_selected_submission
+  def open_selected_submission( set_focus = true )
     # url = item_to_comment_link( @table.getSelectionModel().getSelectedItem() )
     item =  @table.getSelectionModel().getSelectedItem()
     subm_id = item[:id]
@@ -832,7 +863,8 @@ class SubPage < Page
                                :name  => subm_id , 
                                :title => title , # 暫定表示用
                                :suggested_sort => item[:suggested_sort],
-                               :account_name => comm_account })
+                               :account_name => comm_account } ,
+                             set_focus)
     
   end
 
@@ -1434,6 +1466,11 @@ class SubPage < Page
   def key_open_comment
     $stderr.puts "sub_page.rb:key_o()"
     open_selected_submission()
+  end
+  
+  def key_open_comment_without_focus
+    $stderr.puts "sub_page.rb:key_o()"
+    open_selected_submission(false)
   end
   
   def key_add

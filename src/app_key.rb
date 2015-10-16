@@ -66,6 +66,9 @@ module AppKey
       when [ KeyCode::O, false , false , false]
         key_send( page,  :key_open_comment )
 
+      when [ KeyCode::O, true , false , false]
+        key_send( page,  :key_open_comment_without_focus )
+
       when [ KeyCode::C, false , false , false]
         key_send( page,  :key_close )
 
