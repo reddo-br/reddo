@@ -660,6 +660,7 @@ class SubPage < Page
           obj[:reddo_vote_score] = obj[:reddo_orig_vote_score]
           obj[:reddo_score] = obj[:score]
           obj[:title_decoded] = Html_entity.decode( obj[:title] )
+          obj[:title_for_match] = obj[:title_decoded].to_s.unicode_normalize(:nfkc).downcase
           
           obj[:reddo_thumbnail_decoded] = if obj[:thumbnail] =~ /^http/o
                                             Html_entity.decode( obj[:thumbnail] )
@@ -805,13 +806,13 @@ class SubPage < Page
   end
 
   def filter(subms_in)
-    word = @filter_text.getText().downcase
+    word = @filter_text.getText().to_s.unicode_normalize(:nfkc).downcase
     filter_upvoted = @filter_upvoted.isSelected()
 
     subms = subms_in
     if( word.length > 0 )
       subms = subms.find_all{|subm|
-        subm[:title_decoded].to_s.downcase.index( word ) or
+        subm[:title_for_match].to_s.index( word ) or
         subm[:author].to_s.downcase.index( word ) or
         subm[:link_flair_text].to_s.downcase.index(word)
       }
