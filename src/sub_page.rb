@@ -31,7 +31,9 @@ class SubPage < Page
   
   SORT_TYPES = [ # [ "注目" , "hot" , nil ],
                  # [ "新着" , "new" , nil ],
-                 
+                
+                [ "上昇中","rising" , nil],
+
                 [ "トップ(時)" , "top" , :hour ],
                 [ "トップ(日)" , "top" , :day  ],
                 [ "トップ(月)" , "top" , :month],
@@ -44,7 +46,6 @@ class SubPage < Page
                 [ "論争中(年)" , "controversial" , :year ],
                 [ "論争中(全)" , "controversial" , :all  ],
                 
-                [ "上昇中","rising" , nil],
 
                ]
   
@@ -221,7 +222,7 @@ class SubPage < Page
     
     @sort_selector = ChoiceBox.new
     @sort_selector.getItems().setAll( SORT_TYPES.map{|e| e[0]} )
-    @sort_selector.getSelectionModel.select(SORT_TYPES[1][0])
+    @sort_selector.getSelectionModel.select(SORT_TYPES[7][0]) # controversial-day
     @sort_selector.valueProperty().addListener{|ov|
       if @sort_button_group.getSelectedToggle() == @sort_others
         start_reload
