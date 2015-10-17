@@ -1,14 +1,29 @@
+# -*- coding: utf-8 -*-
 require 'java'
 require 'jrubyfx'
 
 # require './lib/java/controlsfx-8.40.9.jar'
 import 'org.controlsfx.glyphfont.Glyph'
+import 'org.controlsfx.glyphfont.GlyphFont'
+import 'org.controlsfx.glyphfont.GlyphFontRegistry'
+
+require 'app'
 
 module GlyphAwesome
+
   module_function
   def make( name ,size:(11.5) , gradient:false , hover:true , color:nil)
     glyph_name = name.to_s
-    glyph = Glyph.new( 'FontAwesome' , glyph_name )
+
+    if not defined?( @@gf )
+      # $stderr.puts "グリフをロード"
+      GlyphFontRegistry.register("fontawesome" ,
+                                 App.res( '/res/fontawesome-webfont.ttf'),
+                                 11.5 )
+      @@gf = GlyphFontRegistry.font("fontawesome")
+    end
+    # glyph = Glyph.new( 'FontAwesome' , glyph_name )
+    glyph = @@gf.create( glyph_name )
     glyph.size( size ) if size
     glyph.useGradientEffect if gradient
     glyph.useHoverEffect if hover
