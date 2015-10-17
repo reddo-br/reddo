@@ -71,12 +71,12 @@ configuration do |c|
 	# Undocumented option 'target_jvm_version'
 	# default value: 1.7
 	#
-	# c.target_jvm_version = 1.8
+	c.target_jvm_version = 1.8
 
 	# Undocumented option 'jvm_arguments'
 	# default value: ""
 	#
-	c.jvm_arguments = "-splash:splash.png -Dfile.encoding=utf-8 -Xmx1g -XX:+UseConcMarkSweepGC"
+	c.jvm_arguments = "-splash:splash.png -Dfile.encoding=utf-8 -Xmx750m -XX:+UseConcMarkSweepGC"
 
 	# Undocumented option 'java_library_path'
 	# default value: ""
