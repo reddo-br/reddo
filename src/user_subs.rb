@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'redd_patched'
 
 class UserSubs
@@ -23,40 +24,48 @@ class UserSubs
   def load_thread( &load_cb )
     @subscribes = []
     @multis = []
-    cl = App.i.client( @account_name )
+    
     Thread.new{
-      sub_thread = Thread.new{
-        begin
-          ss = get_all_subscribes( cl )
-          ss = ss.sort_by{|e| e[:display_name].downcase }
-          # $stderr.puts "***** subscribes #{ss}"
-          ss.each{|sub|
-            App.i.subs_data_hash[ sub[:display_name] ] = sub
-            @subscribes << sub[:display_name]
-          }
-        rescue
-          $stderr.puts $!
-          $stderr.puts $@
-        end
-      }
+      begin
+        cl = App.i.client( @account_name ) # errorあり
+        
+        sub_thread = Thread.new{
+          begin
+            ss = get_all_subscribes( cl )
+            ss = ss.sort_by{|e| e[:display_name].downcase }
+            # $stderr.puts "***** subscribes #{ss}"
+            ss.each{|sub|
+              App.i.subs_data_hash[ sub[:display_name] ] = sub
+              @subscribes << sub[:display_name]
+            }
+          rescue
+            $stderr.puts $!
+            $stderr.puts $@
+          end
+        }
 
-      multi_thread = Thread.new{
-        begin
-          mul = cl.my_multis
-          # $stderr.puts "***** mulits #{mul}"
-          mul = mul.sort_by{|e| e[:display_name].downcase }
-          mul.each{|m|
-            @multis << ".." + m[:path]
-          }
-        rescue
-          $stderr.puts $!
-          $stderr.puts $@
-        end
-      }
+        multi_thread = Thread.new{
+          begin
+            mul = cl.my_multis
+            # $stderr.puts "***** mulits #{mul}"
+            mul = mul.sort_by{|e| e[:display_name].downcase }
+            mul.each{|m|
+              @multis << ".." + m[:path]
+            }
+          rescue
+            $stderr.puts $!
+            $stderr.puts $@
+          end
+        }
 
-      sub_thread.join
-      multi_thread.join
-      @loaded = true
+        sub_thread.join
+        multi_thread.join
+        @loaded = true
+        
+      rescue
+        $stderr.puts $!
+        $stderr.puts $@
+      end
       load_cb.call(self) if load_cb
     }
   end

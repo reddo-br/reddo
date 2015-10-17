@@ -117,11 +117,15 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
     }
     # @user_menus << SeparatorMenuItem.new
     
-    @multi_menu.getItems().setAll( user_subs.multis.map{|m| menu_from_subname( m ) } )
-    @subscribes_menu.getItems().setAll( user_subs.subscribes.map{|s|menu_from_subname( s )} )
+    if user_subs.loaded
+      @multi_menu.getItems().setAll( user_subs.multis.map{|m| menu_from_subname( m ) } )
+      @subscribes_menu.getItems().setAll( user_subs.subscribes.map{|s|menu_from_subname( s )} )
 
-    @user_menus << @multi_menu
-    @user_menus << @subscribes_menu
+      @user_menus << @multi_menu
+      @user_menus << @subscribes_menu
+    else
+      @user_menus << MenuItem.new("* 購読の取得失敗 *")
+    end
 
     getItems().setAll( @base_menus + @user_menus )
   end
