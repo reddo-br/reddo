@@ -32,7 +32,7 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
   end
 
   def initialize(site:"reddit" , account_name:nil)
-    super("開く")
+    super("SUBs")
 
     @site = site
     @account_name = account_name
