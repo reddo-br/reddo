@@ -135,9 +135,8 @@ class SubPage < Page
           @subscribed = sel
         end
       }
-      @subscribed_check_separator_item = SeparatorMenuItem.new
       set_subscribed_check_item_label( @account_name )
-      @sub_menu_button.getItems.add( @subscribed_check_separator_item )
+      @sub_menu_button.getItems.add( SeparatorMenuItem.new )
       @sub_menu_button.getItems.add( @subscribed_check_item )
 
     end
@@ -534,13 +533,16 @@ class SubPage < Page
   end
 
   def set_subscribed_check_item_label( account_name )
-    @subscribed_check_item.setText("購読@" + @account_name.to_s)
-    if account_name
-      @subscribed_check_separator_item.setVisible(true)
-      @subscribed_check_item.setVisible(true)
+    if @account_name
+      @subscribed_check_item.setText("購読@" + @account_name.to_s)
     else
-      @subscribed_check_separator_item.setVisible(false)
-      @subscribed_check_item.setVisible(false)
+      @subscribed_check_item.setText("購読")
+    end
+    
+    if account_name
+      @subscribed_check_item.setDisable(false)
+    else
+      @subscribed_check_item.setDisable(true)
     end
   end
 
