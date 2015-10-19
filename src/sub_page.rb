@@ -125,9 +125,8 @@ class SubPage < Page
         end
       }
       @sub_menu_button.getItems.add( external_post_page_item )
-      @sub_menu_button.getItems.add( SeparatorMenuItem.new )
 
-      @subscribed_check_item = CheckMenuItem.new("購読@" + @account_name)
+      @subscribed_check_item = CheckMenuItem.new()
       @subscribed_check_item.selectedProperty.addListener{|ov|
         sel = ov.getValue
         $stderr.puts sel
@@ -136,7 +135,11 @@ class SubPage < Page
           @subscribed = sel
         end
       }
+      @subscribed_check_separator_item = SeparatorMenuItem.new
+      set_subscribed_check_item_label( @account_name )
+      @sub_menu_button.getItems.add( @subscribed_check_separator_item )
       @sub_menu_button.getItems.add( @subscribed_check_item )
+
     end
     @button_area_right.getChildren().addAll( Separator.new( Orientation::VERTICAL ),
                                              @active_label ,
@@ -468,7 +471,7 @@ class SubPage < Page
   end # initialize
   
   def post_subscribed( subscribed )
-    if @sub_info and @sub_info[:name]
+    if @sub_info and @sub_info[:name] and @account_name
       Thread.new{
         cl = App.i.client( @account_name )
         act = if subscribed
@@ -520,13 +523,24 @@ class SubPage < Page
         Platform.runLater{
           @title_label.setText( Html_entity.decode(title) )
           set_tab_text( make_tab_name )
-          @subscribed_check_item.setText("購読@" + @account_name)
+          set_subscribed_check_item_label( @account_name )
           @subscribed_check_item.setSelected( @subscribed )
           @active_label.setText("ユーザー数: #{@sub_info[:accounts_active].to_i}/#{@sub_info[:subscribers]}")
         }
       end
     rescue
       $stderr.puts "sub情報取得失敗"
+    end
+  end
+
+  def set_subscribed_check_item_label( account_name )
+    @subscribed_check_item.setText("購読@" + @account_name.to_s)
+    if account_name
+      @subscribed_check_separator_item.setVisible(true)
+      @subscribed_check_item.setVisible(true)
+    else
+      @subscribed_check_separator_item.setVisible(false)
+      @subscribed_check_item.setVisible(false)
     end
   end
 
