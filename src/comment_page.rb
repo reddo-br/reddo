@@ -52,11 +52,22 @@ class CommentPage < Page
     @top_comment = @page_info[:top_comment] # todo: 単独コメント機能
     @comment_context = @page_info[:context]
     @url_handler = UrlHandler.new( @page_info[:site] )
+
+    # すでに存在しないアカウントの棄却
     if not Account.exist?( @page_info[:account_name] )
       @page_info[:account_name] = nil
     end
-    @account_name = ReadCommentDB.instance.get_subm_account(@link_id) || @page_info[:account_name]
-    ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
+    rec_account = ReadCommentDB.instance.get_subm_account(@link_id)
+    if not Account.exist?( rec_account )
+      ReadCommentDB.instance.get_subm_account(nil)
+    end
+
+    if rec_account == false
+      @account_name = nil
+    else
+      @account_name = rec_account || @page_info[:account_name]
+      ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
+    end
     # @site = site
     queried_sort = if is_valid_sort_type( @page_info[:sort] )
               @page_info[:sort]
@@ -126,8 +137,14 @@ class CommentPage < Page
       if @account_name != @account_selector.get_account
         @account_name = @account_selector.get_account # 未ログイン = nil
         @comment_view.set_account_name( @account_name )
-        ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
-        # todo:dbにセット
+        if @account_name
+          ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
+          @page_info[:account_name] = @account_name
+        else
+          ReadCommentDB.instance.set_subm_account( @link_id , false ) # 明示的な未ログイン
+          @page_info[:account_name] = false
+        end
+        App.i.save_tabs
         start_reload
       end
     }

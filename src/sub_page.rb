@@ -65,14 +65,23 @@ class SubPage < Page
     @pref = Subs.new( @page_info[:name] , site:@page_info[:site] )
     setSpacing(3.0)
     @thread_pool = []
-    if not Account.exist?( @pref['account_name'] )
+    
+    # 使うアカウントの決定
+    # 存在しないアカウント名なら(消された？)nilとする
+    if @pref['account_name'] and not Account.exist?( @pref['account_name'] )
       @pref['account_name'] = nil
     end
-    if not Account.exist?( @page_info[:account_name] )
+    if @page_info[:account_name] and not Account.exist?( @page_info[:account_name] )
       @page_info[:account_name] = nil
     end
-    @account_name = @pref['account_name'] || @page_info[:account_name] || App.i.pref['current_account'] # ページごとの記録が優先
-    @pref['account_name'] = @account_name
+    # nil:未指定 false:アカウントなしを指定 (よくない
+    if @pref['account_name'] == false
+      @account_name = nil
+    else
+      @account_name = @pref['account_name'] || @page_info[:account_name] || App.i.pref['current_account'] # ページごとの記録が優先
+      @pref['account_name'] = @account_name
+    end
+    
     @sub_info = nil
     @url_handler = UrlHandler.new( @page_info[:site] , account_name:@account_name)
 
@@ -92,7 +101,11 @@ class SubPage < Page
       if not @account_loading
         if @account_name != @account_selector.get_account
           @account_name = @account_selector.get_account # 未ログイン = nil
-          @pref['account_name'] = @account_name
+          if @account_name
+            @pref['account_name'] = @account_name
+          else
+            @pref['account_name'] = false
+          end
           start_reload
         end
       end

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'java'
 # require './lib/java/mapdb-1.0.8.jar'
 import 'org.mapdb.DBMaker'
@@ -43,7 +44,11 @@ class ReadCommentDB
 
   def set_subm_account( subm_id , account_name )
     map = @db.getHashMap("subm_account")
-    map.put( subm_id , account_name )
+    if account_name == nil # falseは書く
+      map.remove( subm_id )
+    else
+      map.put( subm_id , account_name )
+    end
     @db.commit()
   end
 
