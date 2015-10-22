@@ -768,9 +768,13 @@ class SubPage < Page
     @virtual_flow
   end
 
-  def get_scroll_top
+  def get_scroll_top( within_view_port = true )
     if vf = get_virtual_flow
-      cell = vf.getFirstVisibleCellWithinViewPort() || vf.getFirstVisibleCell()
+      cell = if within_view_port 
+               vf.getFirstVisibleCellWithinViewPort() || vf.getFirstVisibleCell()
+             else
+               vf.getFirstVisibleCell()
+             end
       if cell
         cell.getIndex()
       else
@@ -781,14 +785,19 @@ class SubPage < Page
     end
   end
 
-  def selection_is_in_view
+  def selection_is_in_view( within_view_port = true )
     sel = @table.getSelectionModel.getSelectedIndex()
-    (st = get_scroll_top) and (st <= sel ) and (ed = get_scroll_bottom) and (sel <= ed)
+    (st = get_scroll_top(within_view_port) ) and (st <= sel ) and 
+      (ed = get_scroll_bottom(within_view_port) ) and (sel <= ed)
   end
 
-  def get_scroll_bottom
+  def get_scroll_bottom( within_view_port = true )
     if vf = get_virtual_flow
-      cell = vf.getLastVisibleCellWithinViewPort() || vf.getLastVisibleCell()
+      cell = if within_view_port 
+               vf.getLastVisibleCellWithinViewPort() || vf.getLastVisibleCell()
+             else
+               vf.getLastVisibleCell()
+             end
       if cell
         cell.getIndex()
       else
@@ -1428,30 +1437,40 @@ class SubPage < Page
   def key_up
     # 選択の移動
     index = @table.getSelectionModel().getSelectedIndex()
-    if index >= 0
-      if index > 0
-        $stderr.puts "set selection"
-        select_row( index - 1 )
-        if not selection_is_in_view
-          @table.scrollTo( index - 1)
+    if index >= 0 # どこかが選択されていれば
+      if selection_is_in_view(false)
+        if index > 0
+          $stderr.puts "set selection"
+          select_row( index - 1 )
+          if not selection_is_in_view
+            @table.scrollTo( index - 1)
+          end
         end
+      else
+        select_row( get_scroll_bottom ) # 下から出てくる
       end
     else
-      select_row( get_scroll_top )
+      select_row( get_scroll_top ) # 最初はトップ
     end
   end
   
   def key_down
     index = @table.getSelectionModel().getSelectedIndex()
     if index >= 0
-      if index < @table.getItems().size - 1
-        select_row( index + 1 )
-        if not selection_is_in_view
-          @table.scrollTo( index + 1 - (get_scroll_bottom - get_scroll_top) )
+      if selection_is_in_view(false) 
+        
+        if index < @table.getItems().size - 1
+          select_row( index + 1 )
+          if not selection_is_in_view
+            @table.scrollTo( index + 1 - (get_scroll_bottom - get_scroll_top) )
+          end
         end
+        
+      else
+        select_row( get_scroll_top ) # 上から出てくる
       end
     else
-      select_row( get_scroll_top )
+      select_row( get_scroll_top ) # 最初はトップ
     end
   end
 
