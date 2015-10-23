@@ -807,8 +807,8 @@ class CommentPage < Page
 
   def control_autoreload
     if @autoreload_check.isSelected
-
-      if( @sort_selector.getSelectionModel().getSelectedItem() == 'new') or @num_comments < 200
+      new_label = SORT_TYPES.rassoc("new")[0]
+      if( @sort_selector.getSelectionModel().getSelectedItem() == new_label) or @num_comments < 200
         start_autoreload
       else
         stop_autoreload
