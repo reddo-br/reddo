@@ -463,25 +463,27 @@ class CommentPage < Page
       
     }
 
-    @comment_view.set_more_cb{|more , elem |
+    @comment_view.set_more_cb{|more , elem_id |
 
       if @links and @links[0]
         subm = @links[0]
         Thread.new{
           begin
+            # todo: アカウントが無い場合、通常のget_commentを使って取得する
             cl = App.i.client( @account_name )
             list = subm.expand_more_hack( more , sort:"new")
             
             list = object_to_deep( list )
+
             added = []
             comments_each(list){|c| 
-              added << c[:name]
+              added << c[:name] if c[:name]
             }
             ReadCommentDB.instance.add( added )
 
             Platform.runLater{
               stop_autoreload
-              @comment_view.more_result( elem , true ) # moreボタンを消す
+              @comment_view.more_result( elem_id , true ) # moreボタンを消す
               list.each{|c| 
                 @comment_view.add_comment(c , more.parent_id ) 
                 @comment_view.set_link_hook
@@ -492,11 +494,13 @@ class CommentPage < Page
           rescue
             $stderr.puts $!
             $stderr.puts $@
-            @comment_view.more_result( elem , false )
+            Platform.runLater{
+              @comment_view.more_result( elem_id , false )
+            }
           end
         }
       else
-        @comment_view.more_result( elem , false )
+        @comment_view.more_result( elem_id , false )
       end
     }
 

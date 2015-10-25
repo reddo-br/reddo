@@ -159,12 +159,16 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     @more_cb = cb
   end
 
-  def more_result( elem , success )
-    # more = @doc.getElementById( id )
-    more = elem
-    # $stderr.puts("more_resut() id:#{id} success:#{success}")
+  def more_result( more_elem_id , success )
+    more = @doc.getElementById( more_elem_id ) # うまくいかない
+    # more = elem
+
+    $stderr.puts "more_result more_element_id: #{more_elem_id}"
+    $stderr.puts "more_result more: #{more}"
+
     if success
-      more.getParentNode().removeChild( more )
+      # more.getParentNode().removeChild( more )
+      remove( "##{more_elem_id}" )
     else
       more.getChildNodes().item(0).removeAttribute("disabled")
       more.getChildNodes().item(1).setTextContent("取得失敗")
@@ -196,14 +200,18 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
 
     if parent
-      if obj.kind_of?(Array)
+      # if obj.kind_of?(Array)
+      if obj.is_a?( Redd::Objects::MoreComments )
         if obj.count > 0
+
+          $stderr.puts "コメント内のmore: #{obj}"
+
           more = @doc.createElement("div")
           more.setAttribute("class" , "more")
-          # uid = java.util.UUID.randomUUID().toString()
-          # more.setAttribute("id" , uid)
+          elem_id = java.util.UUID.randomUUID().toString()
+          more.setAttribute("id" , elem_id)
           # more.setIdAttribute( "id" ,true) # not implemented
-          $stderr.puts "attr id = #{more.getAttribute("id")}"
+          $stderr.puts "●attr id = #{more.getAttribute("id")}"
           more_button = @doc.createElement("button")
           more_button.setTextContent("もっと見る(#{obj.count})")
           more.appendChild( more_button )
@@ -212,14 +220,20 @@ class CommentWebViewWrapper < RedditWebViewWrapper
           more.appendChild( result )
           parent.appendChild( more )
           
-          set_event(more_button , 'click',false){
-            if @more_cb
-              more_button.setAttribute("disabled" , "disabled" )
-              Platform.runLater{
-                @more_cb.call( obj , more )
-              }
-            end
-          }
+          if @account_name
+            set_event(more_button , 'click',false){
+              if @more_cb
+                more_button.setAttribute("disabled" , "disabled" )
+                Platform.runLater{
+                  # @more_cb.call( obj , more )
+                  @more_cb.call( obj , elem_id )
+                }
+              end
+            }
+          else
+            more_button.setAttribute("disabled" , "disabled" )
+            result.setTextContent("※現状Reddoでは、アカウントを設定しないと「もっと見る」が機能しません")
+          end
         else # 自分自信がchildであるようなmore
           # 階層が深すぎるのか？
           continue_thread = @doc.createElement("div")

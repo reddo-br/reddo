@@ -23,30 +23,30 @@ module Redd
           sort:sort
         )
 
-        client.object_from_body(
+        ret = client.object_from_body(
           kind: "Listing",
           data: {
             before: "", after: "",
             children: response.body[:json][:data][:things]
           }
         )
+        
+        # todo: clientがloginしてない場合、morechildrenの内容がhtmlの内容だけになる
+        # 例： https://www.reddit.com/r/redditdev/comments/31z6ln/more_children_comments_format_and_schema_issue/
+        # 他のブラウザでは、afterパラメタ等を駆使して代用している？
+
+        ret
       end
     end
 
     class MoreComments
-      attr_accessor :parent_id , :count
+      attr_accessor :parent_id , :count , :id
       def initialize(  _, attributes)
-        super(attributes[:children])
+        super( attributes[:children] )
         @parent_id = attributes[:parent_id]
+        @id = attributes[:id]
         @count = attributes[:count].to_i
       end
-      
-    #   def parent_id
-    #     @parent_id
-    #   end
-    #   def count
-    #     @count
-    #   end
       
     end
 
@@ -55,5 +55,3 @@ module Redd
   
 
 end
-
-
