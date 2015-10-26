@@ -125,4 +125,15 @@ module Util
   def search_url( text )
     "https://www.google.com/search?q=" + URI.encode( text )
   end
+
+  def explicit_clear(obj)
+    if obj.kind_of?(Array)
+      obj.each{|e| explicit_clear(e) }
+      obj.clear
+    elsif obj.kind_of?(Hash)
+      obj.each{|k,v| explicit_clear(v)}
+      obj.clear
+    end
+  end
+
 end # module

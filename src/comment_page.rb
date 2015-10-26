@@ -859,6 +859,15 @@ class CommentPage < Page
     end
   end
 
+  def force_comment_clear
+    begin
+      Util.explicit_clear( @comments )
+      Util.explicit_clear( @links )
+    rescue
+      $stderr.puts "コメントデータの明示的消去に失敗"
+    end
+  end
+
   def reload( asread:false , user_present:true)
     set_load_button_enable( false )
     # submission#get では、コメントが深いレベルまでオブジェクト化されない問題
@@ -874,6 +883,7 @@ class CommentPage < Page
     
     # @links    = App.i.client.object_from_body( links_raw )
     # @comments = App.i.client.object_from_body( comments_raw )
+    force_comment_clear
     @links    = object_to_deep( links_raw )
     @comments = object_to_deep( comments_raw )
 
@@ -885,6 +895,7 @@ class CommentPage < Page
     end
     
     if @subname and App.i.pref['use_sub_link_style']
+      $stderr.puts "SubStyleを作成 \"#{@subname}\""
       @sub_style ||= SubStyle.from_subname( @subname )
       Thread.new{
         #puts "スタイル取得"
