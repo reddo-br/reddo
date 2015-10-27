@@ -1126,7 +1126,6 @@ class SubPage < Page
   class TitleCell < Java::JavafxSceneControl::TableCell
     include JRubyFX::DSLControl
 
-    # FONT_FAMILY = '-fx-font-family:"Meiryo";' # 暫定
     @@dummy_label = nil
     @@dummy_scene = nil
 
@@ -1200,9 +1199,9 @@ class SubPage < Page
 
       @box = VBox.new
       @box.setAlignment( Pos::TOP_LEFT )
-      @box.getChildren().add( @hbox )
-      @box.getChildren().add( @hbox2 )
       @box.getChildren().add( @subm_title )
+      @box.getChildren().add( @hbox2 )
+      @box.getChildren().add( @hbox )
 
       # box.prefHeightProperty().bind( self.heightProperty()) # wrapしなくなる
       # self.heightProperty().bind( box.heightProperty())
