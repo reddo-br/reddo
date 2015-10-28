@@ -112,7 +112,7 @@ class SubPage < Page
     }
 
     @title_label = Label.new( subpath_to_name(@page_info[:name]) )
-    @title_label.setStyle("-fx-font-size:16pt")
+    @title_label.setStyle("-fx-font-size:14pt")
 
     @active_label = Label.new()
 
@@ -157,9 +157,11 @@ class SubPage < Page
                                              @active_label ,
                                              @sub_menu_button)
 
+    BorderPane.setAlignment( @account_selector , Pos::CENTER_LEFT )
     @button_area.setLeft( @account_selector )
     BorderPane.setAlignment( @title_label , Pos::CENTER_LEFT )
     @button_area.setCenter( @title_label )
+    BorderPane.setAlignment( @button_area_right , Pos::CENTER_RIGHT )
     @button_area.setRight( @button_area_right )
     getChildren().add( @button_area )
 
@@ -1165,6 +1167,10 @@ class SubPage < Page
       @sticky.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::DARK_GREEN}")
       @sticky.setWrapText(false)
 
+      @locked = Label.new("Locked")
+      @locked.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::DARK_YELLOW}")
+      @locked.setWrapText(false)
+
       @author = Label.new
       @author.setStyle("-fx-text-fill:#{AppColor::DARK_BLUE};")
       @author.setWrapText(false)
@@ -1193,6 +1199,7 @@ class SubPage < Page
       @hbox2.setAlignment( Pos::CENTER_LEFT )
       @hbox2.getChildren().add( @subreddit ) if @show_subreddit
       @hbox2.getChildren().add( @nsfw )
+      @hbox2.getChildren().add( @locked )
       @hbox2.getChildren().add( @sticky )
       @hbox2.getChildren().add( @link_flair )
       @hbox2.getChildren().add( @domain )
@@ -1251,6 +1258,14 @@ class SubPage < Page
         else
           @sticky.setText("")
           @sticky.setVisible(false)
+        end
+
+        if data[:locked]
+          @locked.setText(" Locked ")
+          @locked.setVisible(true)
+        else
+          @locked.setText("")
+          @locked.setVisible(false)
         end
 
         author = data[:author].to_s

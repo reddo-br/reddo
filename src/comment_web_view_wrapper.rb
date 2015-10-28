@@ -65,6 +65,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
   def set_submission(obj)
     @original_poster = obj[:author]
     @permalink = obj[:permalink]
+    @locked = obj[:locked]
     set_title( html_decode(obj[:title].to_s) , html_decode(obj[:url]) , obj[:is_self])
     domain = @doc.getElementById("domain")
     domain.setMember("innerHTML" , "(" + obj[:domain] + ")" )
@@ -450,22 +451,23 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     elsif is_deleted( obj )
       #
     else
-      
-      if @account_name
-        comment_foot_reply = @doc.createElement("a")
-        comment_foot_reply.setTextContent("返信")
-        comment_foot_reply.setAttribute("href" , "#" )
-        set_event( comment_foot_reply , 'click' , false ){
-          # inboxable#reply(text) -> obj, message
-          # submission#add_comment(text)
-          # editable#edit(text) -> thing | submission と comment
-          if @reply_cb
-            Platform.runLater{ # js engineのcall stack溢れ対策
-              @reply_cb.call( obj )
-            }
-          end
-        }
-        comment_foot.appendChild( comment_foot_reply )
+      if not @locked
+        if @account_name
+          comment_foot_reply = @doc.createElement("a")
+          comment_foot_reply.setTextContent("返信")
+          comment_foot_reply.setAttribute("href" , "#" )
+          set_event( comment_foot_reply , 'click' , false ){
+            # inboxable#reply(text) -> obj, message
+            # submission#add_comment(text)
+            # editable#edit(text) -> thing | submission と comment
+            if @reply_cb
+              Platform.runLater{ # js engineのcall stack溢れ対策
+                @reply_cb.call( obj )
+              }
+            end
+          }
+          comment_foot.appendChild( comment_foot_reply )
+        end
       end
       
       # if obj[:author] == obj.client.me[:name] # 時間かかる
@@ -503,6 +505,12 @@ class CommentWebViewWrapper < RedditWebViewWrapper
         }
         comment_foot.appendChild( @doc.createTextNode(" "))
         comment_foot.appendChild( comment_foot_delete )
+      end
+
+      if @locked
+        comment_foot_locked = @doc.createElement("span")
+        comment_foot_locked.setTextContent("[ロックされたポスト]")
+        comment_foot.appendChild( comment_foot_locked )
       end
 
     end # archived?
