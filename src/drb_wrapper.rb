@@ -11,12 +11,9 @@ class DrbWrapper
   end
 
   def open( url )
-    pi = @uh.url_to_page_info( url )
-    if pi[:type] != 'other'
-        Platform.runLater{
-        @app.open_by_page_info( url )
-      }
-    end
+    Platform.runLater{
+      @app.open_url( url )
+    }
   end
 
   def focus

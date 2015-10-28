@@ -107,6 +107,11 @@ class FXApp < JRubyFX::Application
       end
 
       # セッション再生
+      # コマンドラインオプションにより、セッションを破棄する
+      if $opts.discard_session
+        App.i.session.set_page_infos([])
+      end
+
       infos = App.i.session.get_page_infos
       if infos.length > 0
         App.i.session.get_page_infos.each{|pi|
@@ -114,8 +119,14 @@ class FXApp < JRubyFX::Application
           App.i.open_by_page_info( pi , false)
         }
       else
+        # 何もなければfrontを開く
         an = App.i.pref["current_account"]
         App.i.open_by_page_info( {type:"sub" , name:"../" , account_name:an} , true )
+      end
+      
+      # コマンドラインのurlを開く
+      if url = ARGV.shift
+        App.i.open_url( url )
       end
       
       show
@@ -305,6 +316,23 @@ class App
       end
 
     end
+  end
+
+  def open_url( url , pass_to_external:false , account_name:nil)
+    if account_name == nil
+      account_name = App.i.pref['current_account']
+    end
+
+    uh = UrlHandler.new( account_name:account_name )
+    info = uh.url_to_page_info( url )
+    if info['type'] == 'other'
+      if pass_to_external
+        open_external_browser( url )
+      end
+    else
+      App.i.open_by_page_info( info )
+    end
+    
   end
 
   def get_info_name_for_compare( info )

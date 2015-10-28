@@ -43,4 +43,4 @@ cd "$progdir/../Resources/Java"
 exec "$JAVACMD" -splash:splash.png -Dfile.encoding=utf-8 -Xmx1g -XX:+UseConcMarkSweepGC \
        -Dapple.laf.useScreenMenuBar=true \
        -Xdock:icon=./../app_icon.icns \
-       -jar reddo.jar
+       -jar reddo.jar "$@"
