@@ -19,6 +19,9 @@ require 'app_color'
 
 require 'glyph_awesome'
 
+# jruby-9.0.0.0 unicode_normalizeの障害回避
+require 'unicode_normalize/normalize.rb'
+
 import 'javafx.scene.control.cell.MapValueFactory'
 # import 'javafx.beans.property.SimpleStringProperty'
 import 'javafx.beans.property.SimpleMapProperty'
