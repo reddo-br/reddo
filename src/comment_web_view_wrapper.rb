@@ -462,7 +462,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
             # editable#edit(text) -> thing | submission と comment
             if @reply_cb
               Platform.runLater{ # js engineのcall stack溢れ対策
-                @reply_cb.call( obj )
+                @reply_cb.call( obj.dup )
               }
             end
           }
@@ -480,7 +480,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
         set_event( comment_foot_edit , 'click' , false ){
           if @edit_cb
             Platform.runLater{ # js engineのcall stack溢れ対策
-              @edit_cb.call( obj )
+              @edit_cb.call( obj.dup )
             }
           end
         }
@@ -499,7 +499,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
             Platform.runLater{ # js engineのcall stack溢れ対策
               ch = @e.executeScript("$(\"##{obj[:name]} .comment\").length")
               $stderr.puts "deleteコールバック呼び出し リプライ数:#{ch}"
-              @delete_cb.call( obj , (ch > 0) )
+              @delete_cb.call( obj.dup , (ch > 0) )
             }
           end
         }
