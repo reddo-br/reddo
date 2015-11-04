@@ -1,0 +1,76 @@
+
+.root {
+    -fx-base: rgb(50, 50, 50);
+    /* -fx-focused-base: rgb(90, 90, 90); */
+    -fx-background: rgb(50, 50, 50);
+    -fx-control-inner-background:  rgb(50, 50, 50);
+    -fx-control-inner-background-alt:  rgb(60, 60, 60);
+    -fx-text-base-color: #dddddd;
+    -fx-text-background-color:#dddddd;
+
+    -fx-selection-bar: #cc7c00;
+    -fx-selection-bar-non-focused: rgb( 120,120,120 );
+ 
+    -fx-box-border: #404040;
+
+    -fx-focus-color: #cc7c00;
+    -fx-faint-focus-color: #cc7c0022;
+    -fx-accent: #cc7c00;
+
+/*
+    -fx-text-box-border: #505050;
+
+    -fx-inner-border: linear-gradient(to bottom,
+                ladder(
+                    -fx-color,
+                    derive(-fx-color,40%) 0%,
+                    derive(-fx-color,35%) 40%,
+                    derive(-fx-color,30%) 60%,
+                    derive(-fx-color,20%) 80%,
+                    derive(-fx-color,15%) 90%,
+                    derive(-fx-color,25%) 100%
+                ),
+                ladder(
+                    -fx-color,
+                    derive(-fx-color,-5%) 0%,
+                    derive(-fx-color,-2%) 20%,
+                    derive(-fx-color,5%) 40%,
+                    derive(-fx-color,10%) 60%,
+                    derive(-fx-color,20%) 100%
+                ));
+    -fx-inner-border-horizontal: linear-gradient(to left, derive(-fx-color,55%), derive(-fx-color,-5%));
+    -fx-inner-border-bottomup: linear-gradient(to bottom, derive(-fx-color,55%), derive(-fx-color,-5%));
+
+    -fx-outer-border: derive(-fx-color,-12%);
+*/
+}
+
+.text-field {
+    -fx-prompt-text-fill: derive(-fx-control-inner-background,40%);
+}
+
+.tab:selected {
+  // -fx-background:rgb(80, 80, 80);
+  -fx-background-color: -fx-outer-border, -fx-inner-border, rgb(70, 70, 70);
+}
+
+.table-cell {
+  -fx-text-fill:#dddddd;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    /* TODO should not be using text-box-border I think? */
+    /*
+    -fx-background-color:  
+        -fx-outer-border,
+        -fx-text-box-border, 
+        linear-gradient(from 0px 0px to 0px 5px, -fx-box-border, derive(-fx-box-border, -40%));
+    */
+   -fx-background-color:#151515;
+}
+
+.table-view,
+.tree-table-view {
+    -fx-table-header-border-color: -fx-box-border;
+    -fx-table-cell-border-color: #555555;
+}

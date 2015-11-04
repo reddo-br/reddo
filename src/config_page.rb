@@ -20,7 +20,7 @@ class ConfigPage < Page
   def initialize(info)
     super()
     setSpacing(3.0)
-    setStyle("-fx-border-width:1px; -fx-border-style:solid; -fx-border-color:#c8c8c8;")
+    setStyle("-fx-border-width:1px; -fx-border-style:solid; -fx-border-color:#{App.i.theme::COLOR::PAGE_BORDER};")
     @page_info = info
     scroll_pane = ScrollPane.new()
     scroll_pane.setPrefHeight( 2000 )
@@ -49,6 +49,9 @@ class ConfigPage < Page
 
     items << make_bool_config( "新規タブを現在のタブの直後に挿入する",
                                "new_tab_after_current" )
+
+    items << make_bool_config( "ダークテーマ(試験的)" , 
+                               "use_dark_theme" )
 
     items << make_header("サブレディット画面")
 

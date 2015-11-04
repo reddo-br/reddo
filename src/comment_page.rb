@@ -367,7 +367,6 @@ class CommentPage < Page
       @split_edit_area.set_text( "" , mode:"reply" )
 
       highlight_replying
-
     }
 
     @comment_view.set_edit_cb{|obj|
@@ -514,7 +513,7 @@ class CommentPage < Page
     
     getChildren().add( @split_pane )
 
-    prepare_tab( @title || "取得中" , "/res/comment.png" )
+    prepare_tab( @title || "取得中" , App.i.theme::TAB_ICON_COMMENT )
     
     # Page
     @tab.setOnClosed{|ev|
@@ -606,7 +605,7 @@ class CommentPage < Page
       
       Platform.runLater{
         @autoreload_status.setText("自動更新中")
-        @autoreload_status.setStyle("-fx-background-color:#{AppColor::DARK_GREEN};-fx-text-fill:white;")
+        @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::DARK_GREEN};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
       }
     end
   end
@@ -626,7 +625,7 @@ class CommentPage < Page
     end
     Platform.runLater{
         @autoreload_status.setText("自動更新中断")
-        @autoreload_status.setStyle("-fx-background-color:#{AppColor::DARK_YELLOW};-fx-text-fill:white;")
+      @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::DARK_YELLOW};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
     }
   end
 
@@ -645,7 +644,7 @@ class CommentPage < Page
     end
     Platform.runLater{
         @autoreload_status.setText("自動更新無効")
-        @autoreload_status.setStyle("-fx-background-color:#{AppColor::DARK_RED};-fx-text-fill:white;")
+        @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::DARK_RED};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
     }
   end
 
@@ -827,7 +826,7 @@ class CommentPage < Page
     Platform.runLater{
       @load_status.setText( str ) 
       if error
-        @load_status.setStyle("-fx-text-fill:red;")
+        @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_RED};")
       else
         @load_status.setStyle("")
       end

@@ -49,11 +49,12 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
 
   def set_num( num )
     if num > 0
-      setStyle("-fx-text-fill:#{AppColor::RED}")
-      @glyph.color( Color.web( AppColor::RED ))
+      setStyle("-fx-text-fill:#{App.i.theme::COLOR::RED}")
+      @glyph.color( Color.web( App.i.theme::COLOR::RED ))
     else
       setStyle("")
-      @glyph.color( Color::BLACK)
+      # @glyph.color( Color::BLACK)
+      # @glyph.color( nil )
     end
 
     setText( num.to_s )
@@ -117,6 +118,9 @@ class UnreadPopOver < PopOver
     BorderPane.setMargin( @list , Insets.new(3, 6, 6, 6) )
 
     super( bp )
+    if App.i.pref['use_dark_theme']
+      bp.setStyle("-fx-background-color:#161616;")
+    end
     #####
     
     @web_button.setOnAction{|ev|
@@ -191,7 +195,7 @@ class UnreadPopOver < PopOver
         @type_label.setStyle("-fx-font-weight: bold;")
       end
       
-      [@from_label , @to_label].each{|l| l.setStyle( "-fx-text-fill:#{AppColor::DARK_BLUE}" )}
+      [@from_label , @to_label].each{|l| l.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::DARK_BLUE}" )}
 
       @summary  = Hyperlink.new
       @submission = Hyperlink.new

@@ -55,7 +55,8 @@ class SubPage < Page
   def initialize( info )
     super(3.0)
     getStyleClass().add("sub-page")
-    setStyle("-fx-border-width:1px; -fx-border-style:solid; -fx-border-color:#c8c8c8;")
+    # setStyle("-fx-border-width:1px; -fx-border-style:solid; -fx-border-color:#c8c8c8;")
+    setStyle("-fx-border-width:1px; -fx-border-style:solid;-fx-border-color:#{App.i.theme::COLOR::PAGE_BORDER};")
 
     @page_info = info
     @page_info[:site] ||= 'reddit'
@@ -470,7 +471,7 @@ class SubPage < Page
     self.class.setMargin( @table , Insets.new(3.0, 3.0 , 0 , 3.0) )
     
     # tab
-    prepare_tab( make_tab_name , "/res/list.png")
+    prepare_tab( make_tab_name , App.i.theme::TAB_ICON_LIST)
 
     @tab.setOnClosed{
       finish()
@@ -609,7 +610,7 @@ class SubPage < Page
     Platform.runLater{
       @load_status.setText( str ) 
       if error
-        @load_status.setStyle("-fx-text-fill:red;")
+        @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_RED};")
       else
         @load_status.setStyle("")
       end
@@ -1140,26 +1141,34 @@ class SubPage < Page
 
       # @subm_title = Label.new
       @subm_title = Text.new
+      color = if App.i.pref['use_dark_theme']
+        # @subm_title.setFill( Color::WHITE )
+                'white'
+              else
+                'black'
+              end
+      
       # @subm_title.setWrapText(true)
       if artificial_bold
         # drowshadow ( blur-type , color , radius , spread, offset_x , offset_y )
-        @subm_title.setStyle( "-fx-font-size:14px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
+        # @subm_title.setStyle( "-fx-font-size:14px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
+        @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:14px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , #{color} , 0,0,1,0 );")
       else
-        @subm_title.setStyle( "-fx-font-size:14px; -fx-font-weight: bold; -fx-word-wrap:break-word")
+        @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:14px; -fx-font-weight: bold; -fx-word-wrap:break-word")
       end
 
       if @show_subreddit
         @subreddit = Label.new
-        @subreddit.setStyle( "-fx-text-fill:green;-fx-padding:0 6px 0 0;")
+        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::DARK_GREEN};-fx-padding:0 6px 0 0;")
         @subreddit.setWrapText(false)
       end
 
       @nsfw = Label.new("NSFW")
-      @nsfw.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::DARK_RED}")
+      @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::DARK_RED}")
       @nsfw.setWrapText(false)
 
       @link_flair = Label.new
-      @link_flair.setStyle( "-fx-text-fill:#dddddd; -fx-background-color:#222222;")
+      @link_flair.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
       @link_flair.setWrapText(false)
 
       @datetime = Label.new
@@ -1167,19 +1176,19 @@ class SubPage < Page
       @datetime.setWrapText(false)
 
       @sticky = Label.new("Sticky")
-      @sticky.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::DARK_GREEN}")
+      @sticky.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::DARK_GREEN}")
       @sticky.setWrapText(false)
 
       @locked = Label.new("Locked")
-      @locked.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::DARK_YELLOW}")
+      @locked.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::DARK_YELLOW}")
       @locked.setWrapText(false)
 
       @author = Label.new
-      @author.setStyle("-fx-text-fill:#{AppColor::DARK_BLUE};")
+      @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_BLUE};")
       @author.setWrapText(false)
       
       @user_flair = Label.new
-      @user_flair.setStyle( "-fx-border-color:black; -fx-border-width: 1 1 1 1" )
+      @user_flair.setStyle( "-fx-border-color:#{App.i.theme::COLOR::BASE}; -fx-border-width: 1 1 1 1" )
       @user_flair.setMaxWidth( 200 )
       @user_flair.setWrapText(false)
 
@@ -1275,14 +1284,14 @@ class SubPage < Page
         if d = data[:distinguished]
           author += "[" + d[0].to_s + "]"
           if d == 'moderator'
-            @author.setStyle("-fx-text-fill:#{AppColor::DARK_GREEN};")
+            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_GREEN};")
           elsif d == 'admin'
-            @author.setStyle("-fx-text-fill:#{AppColor::DARK_RED};")
+            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_RED};")
           else
-            @author.setStyle("-fx-text-fill:#{AppColor::DARK_BLUE};")
+            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_BLUE};")
           end
         else
-          @author.setStyle("-fx-text-fill:#{AppColor::DARK_BLUE};")
+          @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_BLUE};")
         end
         @author.setText( author )
 

@@ -95,6 +95,10 @@ class FXApp < JRubyFX::Application
       custom_css = App.res_url("/res/ui.css")
       stage.getScene().getStylesheets().add( custom_css )
       
+      if App.i.pref["use_dark_theme"]
+        stage.getScene().getStylesheets().add( App.res_url("/res/dark.css") )
+      end
+      
       # an = App.i.pref["current_account"]
       # App.i.open_by_page_info( type:"sub" , name:"newsokur" , account_name:an )
       # App.i.open_by_page_info( {type:"sub" , name:"../" , account_name:an} , false )
@@ -192,7 +196,7 @@ class App
     @subs_data_hash = {}
     @close_history = History.new
   end
-  attr_reader :pref , :session , :close_history
+  attr_reader :pref , :session , :close_history , :theme
   # widget
   attr_accessor :fxapp , :stage , :scene , :user_subs_hash , :subs_data_hash
 
@@ -391,6 +395,14 @@ class App
                               DrbWrapper.new( self ))
 
     ReadCommentDB.instance # ここで初期化しておく
+
+    if pref['use_dark_theme']
+      require 'theme/theme_dark'
+      @theme = ThemeDark
+    else
+      require 'theme/theme'
+      @theme = Theme
+    end
 
     $thumbnail_plugins = []
     load( 'thumbnail_plugins/imgur.rb' , true )

@@ -719,10 +719,11 @@ class CommentWebViewWrapper < RedditWebViewWrapper
   
   def set_single_comment_highlight( name )
     selector = "#t1_#{name} > .comment_this > .comment_text"
+    # 旧:ffffc0
     @e.executeScript( <<EOF )
     var comm = $("#{selector}");
     if(comm)
-      comm.css( "background-color" , "#ffffc0");
+      comm.css( "background-color" , "#{App.i.theme::COLOR::HTML_COMMENT_HIGHLIGHT}");
 EOF
     
   end # end
@@ -741,9 +742,9 @@ EOF
                end
 
     color = if mode == 'reply'
-              "#FFCCDD"
+              App.i.theme::COLOR::HTML_COMMENT_REPLYING
             elsif mode == 'edit'
-              "#BBFFDD"
+              App.i.theme::COLOR::HTML_COMMENT_EDITING
             end
     
     gradient = if name =~ /^t1/
@@ -762,9 +763,12 @@ EOF
     }
 EOF
     else
+      # comment画面が縮むのを待つ。てきとう
       move_script = <<EOF
     if(comm.hasClass("comment_this")){
-      $('html,body').scrollTop( comm.offset().top );
+        setTimeout( function(){
+          $('html,body').scrollTop( comm.offset().top );
+        },200);
     }
 EOF
     end

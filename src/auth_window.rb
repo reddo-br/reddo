@@ -38,6 +38,13 @@ class AuthWindow < Java::JavafxStage::Stage
   
   def initialize( )
     super()
+    if App.i.pref['use_dark_theme']
+      sceneProperty.addListener{|ev|
+        if s = ev.getValue()
+          s.getStylesheets().add( App.res_url("/res/dark.css") )
+        end
+      }
+    end
     
     @auth_state = "mftWfct" + rand.to_s
     

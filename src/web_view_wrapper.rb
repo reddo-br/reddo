@@ -388,7 +388,7 @@ EOF
   end
 
   def style
-    ".highlight { background-color: #{AppColor::DARK_YELLOW};}"
+    ".highlight { background-color: #{App.i.theme::COLOR::DARK_YELLOW};}"
   end
 
   def scroll_bottom

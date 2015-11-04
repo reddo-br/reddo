@@ -65,7 +65,7 @@ class GoogleSearchPage < Page
     load_search_page # こっちで
     getChildren.add( @web_view_wrapper.webview )
 
-    prepare_tab( "google検索" ,"/res/search.png" )
+    prepare_tab( "google検索" ,App.i.theme::TAB_ICON_SEARCH )
   end
 
   def load_search_page

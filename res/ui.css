@@ -24,3 +24,12 @@
     -fx-background-radius: 0 0 3 3, 0 0 2 2, 0 0 4 4, 0;
 }
 
+/* dark test */
+/*
+.root {
+    -fx-base: rgb(50, 50, 50);
+    -fx-focused-base: rgb(90, 90, 90);
+    -fx-background: rgb(50, 50, 50);
+    -fx-control-inner-background:  rgb(50, 50, 50);
+}
+*/

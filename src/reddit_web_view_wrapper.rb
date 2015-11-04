@@ -49,7 +49,8 @@ EOF
 
   def style
     bold_style = if @artificial_bold
-                   "font-weight:normal; text-shadow: 1px 0px #222222;"
+                   # "font-weight:normal; text-shadow: 1px 0px #222222;"
+                   "font-weight:normal; text-shadow: 1px 0px;"
                  else
                    "font-weight:bold;"
                  end
@@ -64,10 +65,17 @@ EOF
     style = <<EOF
 html {
   font-family:#{base_font};
-  background-color:#fdfdfd;
+  background-color:#{App.i.theme::COLOR::HTML_BG};
+  color:#{App.i.theme::COLOR::HTML_TEXT};
 }
 
-a:link { color: #0022AA; }
+button {
+  color:#{App.i.theme::COLOR::HTML_TEXT};
+}
+
+.highlight { background-color: #{App.i.theme::COLOR::HTML_TEXT_HIGHLIGHT_BG};}
+
+a:link { color: #{App.i.theme::COLOR::HTML_LINK}; }
 
 div.comment { 
   word-wrap:break-word;
@@ -75,8 +83,8 @@ div.comment {
   margin: 12px 12px 0px 12px;
   border-width: 1px 1px 1px 1px;
   border-style: solid;
-  border-color: #cccccc;
-  background-color: #eeeeee;
+  border-color: #{App.i.theme::COLOR::HTML_COMMENT_BORDER};
+  background-color: #{App.i.theme::COLOR::HTML_COMMENT_BG};
 }
 
 
@@ -87,9 +95,11 @@ div.comment > div.comment {
   padding: 0px 0px 0px 0px;
 }
 
+/*
 .comment-even-level {
   background-color: #dddddd;
 }
+*/
 
 div.comment .md {
   margin:6px 0px 6px 0px;
@@ -114,22 +124,22 @@ div.comment p {
 
 .comment_header {
   font-size:90%;
-  color: #555555;
+  color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
 .subm_header {
-  color: #444444;
+  color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
 .dagger {
-  color: #{AppColor::RED};
+  color: #{App.i.theme::COLOR::RED};
   font-family:sans-serif;
   #{bold_style}
 }
 
 .comment_footer {
   padding:0px 3px 0px 3px;
-  color:#444444;
+  color:#{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
 #comments > .comment > .comment_this > .comment_footer {
@@ -144,34 +154,34 @@ div.comment p {
   text-decoration:none;
   padding:1px 3px 1px 3px;
   border-radius: 3px;
-  background-color:#cccccc;
-  color:#444444;
+  background-color:#{App.i.theme::COLOR::HTML_COMMENT_FOOTER_LINK_BG};
+  color:#{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
 .comment_footer a:hover {
-  background-color: #004298;
-  color:#eeeeee;
+  background-color:#{App.i.theme::COLOR::HTML_COMMENT_FOOTER_LINK_HOVER_BG};
+  color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
 }
 
 .user_name, a.user_name {
-  color: #{AppColor::DARK_BLUE};
+  color: #{App.i.theme::COLOR::DARK_BLUE};
   border-radius: 3px;
   text-decoration:none;
 }
 
 .user_name_admin, a.user_name_admin {
-  color:white;
-  background-color: #{AppColor::DARK_RED}
+  color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
+  background-color: #{App.i.theme::COLOR::DARK_RED}
 }
 
 .user_name_mod, a.user_name_mod {
-  color:white;
-  background-color: #{AppColor::DARK_GREEN}
+  color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
+  background-color: #{App.i.theme::COLOR::DARK_GREEN}
 }
 
 .user_name_op, a.user_name_op {
-  color:white;
-  background-color: #{AppColor::DARK_BLUE}
+  color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
+  background-color: #{App.i.theme::COLOR::DARK_BLUE}
 }
 
 .upvote , .downvote {
@@ -184,10 +194,10 @@ div.comment p {
 }
 
 .user_flair {
-  color: #333333;
+  color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   border-width: 1px;
   border-style: solid;
-  border-color: #555555;
+  border-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   margin-left: 2px;
 }
 
@@ -195,7 +205,7 @@ div.comment p {
   display:inline-block;
   // vertical-align: baseline !important; // webの値はだいたいうまくいかない
   margin-left: 4px;
-  color:#333333 !important;
+  color: #{App.i.theme::COLOR::HTML_TEXT_THIN} !important;
   background-color:rgba(0,0,0,0) !important;
 }
 
@@ -240,8 +250,8 @@ h1,h2,h3,h4,h5 { #{bold_style} }
 }
 
 #link_flair {
-  color:#dddddd;
-  background-color: #222222;
+  color:#{App.i.theme::COLOR::HTML_BG};
+  background-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   margin-right:2px;
 }
 
@@ -270,7 +280,7 @@ a#linked_title:hover {
   border-width: 2px;
   border-radius: 3px;
   border-style: solid;
-  border-color: #888888;
+  border-color: #{App.i.theme::COLOR::HTML_POST_BORDER};
   display:none; // 開始時
 }
 
@@ -290,7 +300,7 @@ a#linked_title:hover {
   border-style: dashed;
   margin: 6px;
   padding: 6px;
-  backrgound-color: #f8f8f8;
+  // backrgound-color: #f8f8f8;
 
 }
 
@@ -302,7 +312,7 @@ a#linked_title:hover {
 
 .thumb_area {
   padding: 2px;
-  background-color: #dddddd;
+  background-color: #{App.i.theme::COLOR::HTML_THUMB_AREA_BG}
 }
 
 .thumb_box {
@@ -311,7 +321,7 @@ a#linked_title:hover {
 }
 
 .thumb_over {
-  background-color: #ce579b;
+  background-color: #{App.i.theme::COLOR::RED}
 }
 
 table {
@@ -319,23 +329,23 @@ table {
 }
 
 table, th, td {
-    border: 1px solid black;
+    border: 1px solid #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
 .new_mark {
-  // background-color: #{AppColor::DARK_YELLOW};
+  // background-color: #{App.i.theme::COLOR::DARK_YELLOW};
   // color:white;
   // padding:2px;
   // border-radius: 3px;
 
-  color: #{AppColor::DARK_RED};
+  color: #{App.i.theme::COLOR::DARK_RED};
   #{bold_style};
 }
 
 EOF
 
 
-    return style + "\n" + super()
+    return( super() + "\n" + style )
   end
 
 end # class

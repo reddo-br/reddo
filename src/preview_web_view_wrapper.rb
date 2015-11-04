@@ -15,7 +15,7 @@ class PreviewWebViewWrapper < RedditWebViewWrapper
   def base_html()
     html = <<EOF
 <!DOCTYPE html>
-<html style="background-color:#eeeeee;">
+<html style="background-color:#{App.i.theme::COLOR::HTML_COMMENT_BG};">
 <head>
 <meta charset="UTF-8">
 <style>
