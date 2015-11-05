@@ -25,6 +25,9 @@ module AppColor
   PAGE_BORDER = "#c8c8c8"
   ####
 
+  UPVOTED = "orange"
+  DOWNVOTED = "#4400ff"
+
   # HTML_BG = "#f5f5f5"# uiと同じでちょっと
   HTML_BG = "#fdfdfd"
   HTML_LINK = "#0022AA"

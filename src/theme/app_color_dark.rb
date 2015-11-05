@@ -25,6 +25,9 @@ module AppColorDark
   # LINK_FLAIR    = "#dddddd";
   ####
 
+  UPVOTED = "orange"
+  DOWNVOTED  = "#8A2BE2"
+
   # HTML_BG = "#f5f5f5"# uiと同じでちょっと
   HTML_BG = "#222222"
   # HTML_LINK = "#88AAFF"

@@ -7,4 +7,7 @@ module ThemeDark
   TAB_ICON_COMMENT = "/res/comment-dark.png"
   TAB_ICON_SEARCH = "/res/search-dark.png"
 
+  HTML_UPVOTED = "/res/upvoted-dark.png"
+  HTML_DOWNVOTED = "/res/downvoted-dark.png"
+  
 end

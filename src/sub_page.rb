@@ -937,13 +937,13 @@ class SubPage < Page
         vote_score = 0
         if @upvote_button.isSelected
           vote_score = 1
-          @upvote_button.setStyle("#{STYLE_BASE} -fx-text-fill:orange")
+          @upvote_button.setStyle("#{STYLE_BASE} -fx-text-fill:#{App.i.theme::COLOR::UPVOTED}")
         else
           @upvote_button.setStyle(STYLE_BASE)
         end
         if @downvote_button.isSelected
           vote_score = -1
-          @downvote_button.setStyle("#{STYLE_BASE} -fx-text-fill:blue")
+          @downvote_button.setStyle("#{STYLE_BASE} -fx-text-fill:#{App.i.theme::COLOR::DOWNVOTED}")
         else
           @downvote_button.setStyle(STYLE_BASE)
         end
@@ -1115,9 +1115,9 @@ class SubPage < Page
       if data and not is_empty_col
         case data[:reddo_vote_score]
         when 1
-          @number.setStyle( "-fx-font-size:20px;-fx-text-fill:orange")
+          @number.setStyle( "-fx-font-size:20px;-fx-text-fill:#{App.i.theme::COLOR::UPVOTED}")
         when -1
-          @number.setStyle( "-fx-font-size:20px;-fx-text-fill:blue")
+          @number.setStyle( "-fx-font-size:20px;-fx-text-fill:#{App.i.theme::COLOR::DOWNVOTED}")
         else
           @number.setStyle( "-fx-font-size:20px;")
         end

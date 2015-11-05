@@ -11,8 +11,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
     @upvote_img_url   = App.res_url( "/res/upvote.png")
     @downvote_img_url = App.res_url( "/res/downvote.png")
-    @upvoted_img_url   = App.res_url( "/res/upvoted.png")
-    @downvoted_img_url = App.res_url( "/res/downvoted.png")
+    @upvoted_img_url   = App.res_url( App.i.theme::HTML_UPVOTED)
+    @downvoted_img_url = App.res_url( App.i.theme::HTML_DOWNVOTED)
 
     $stderr.puts "internal url upvote #{@upvote_img_url}"
   end
