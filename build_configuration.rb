@@ -76,7 +76,7 @@ configuration do |c|
 	# Undocumented option 'jvm_arguments'
 	# default value: ""
 	#
-	c.jvm_arguments = "-splash:splash.png -Dfile.encoding=utf-8 -Xmx750m -XX:+UseConcMarkSweepGC"
+	c.jvm_arguments = "-splash:splash.png -Dfile.encoding=utf-8 -Xmx750m -XX:+CMSClassUnloadingEnabled -XX:+UseConcMarkSweepGC"
 
 	# Undocumented option 'java_library_path'
 	# default value: ""
