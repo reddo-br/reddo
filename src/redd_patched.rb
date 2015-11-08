@@ -16,7 +16,7 @@ module Redd
     
     class Submission 
       def expand_more_hack(more , sort:"new")
-        response = client.get(
+        response = client.post(
           "/api/morechildren",
           children: more.join(","),
           link_id: fullname,
