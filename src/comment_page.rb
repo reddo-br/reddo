@@ -116,8 +116,9 @@ class CommentPage < Page
       control_autoreload
     }
 
-    @autoreload_status = Label.new("")
-    
+    @autoreload_status = Label.new("準備中")
+    @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::HTML_TEXT_THIN};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
+
     @sort_selector = ChoiceBox.new
     @sort_selector.getItems().setAll( SORT_TYPES.map{|ta| ta[0] } )
     set_current_sort( @default_sort )
@@ -542,7 +543,8 @@ class CommentPage < Page
       on_user_present
     }
 
-    control_autoreload
+    # control_autoreload # start_reload内から呼ばないと@comment_numが判断できない
+    
 
   end # initialize
   
@@ -798,6 +800,7 @@ class CommentPage < Page
                  on_user_present
                end
                @last_reload = Time.now
+               control_autoreload
              } ,
              Proc.new{ |e|
                # App.i.mes("#{@title} 更新失敗")
@@ -805,7 +808,7 @@ class CommentPage < Page
              }
              )
     
-    control_autoreload
+    
   end
 
   def control_autoreload
