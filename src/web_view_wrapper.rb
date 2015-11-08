@@ -75,6 +75,7 @@ class WebViewWrapper
     }
     
     @smooth_scroll = App.i.pref['enable_smooth_scroll']
+    @event_listeners = []
   end 
   attr_reader :webview
 
@@ -171,7 +172,7 @@ class WebViewWrapper
     @doc = @e.getDocument()
     
     window = @e.executeScript("window")
-    window.setMember( "cb" , CommentCB.new(self))
+    # window.setMember( "cb" , CommentCB.new(self))
     
     f = App.res("/res/jquery-2.1.4.min.js").to_io
     @e.executeScript( f.read )
@@ -199,8 +200,9 @@ class WebViewWrapper
           href !~ /^\#/ and 
           not link.getAttribute("reddo_hooked")
         link.setAttribute("reddo_hooked" , "true")
-        cb = Proc.new{|ev|  link_clicked(ev,href) }
-        link.addEventListener( "click" , cb , false )
+        #cb = Proc.new{|ev|  link_clicked(ev,href) }
+        #link.addEventListener( "click" , cb , false )
+        set_event( link , 'click', false ){|ev|  link_clicked(ev,href) }
       end
     }
   end
@@ -215,12 +217,35 @@ class WebViewWrapper
     ev.preventDefault
   end
   
-  # イベント付けやすいよう、引数の順序を変えただけ
-  def set_event( element , evname , comsume )
-    proc = Proc.new
-    element.addEventListener( evname , proc , comsume)
+  # 明示的にイベントを削除するため,jrubyのラッパ生成を使わない ← 結局効果ない
+  class RubyProcWrapper 
+    include org.w3c.dom.events.EventListener
+    def initialize
+      @proc = Proc.new
+    end
+
+    java_signature 'void handleEvent(org.w3c.dom.events.Event)'
+    def handleEvent(ev)
+      @proc.call(ev)
+    end
+    become_java!
   end
-  
+  # イベント付けやすいよう、引数の順序を変えただけ
+  def set_event( element , evname , consume )
+    proc = Proc.new
+    po = RubyProcWrapper.new{|ev| proc.call(ev) }
+    @venet_listeners ||= []
+    @event_listeners << [ element , evname , po ,consume]
+    element.addEventListener( evname , po , consume)
+  end
+  def clear_events
+    @event_listeners.each{|e,name,po,co|
+      e.removeEventListener( name,po,co )
+      e.removeAttribute("reddo_hooked")
+    }
+    @event_listeners = []
+  end
+
   def nl2a( nodelist )
     ret = []
     0.upto( nodelist.getLength() - 1){|n|

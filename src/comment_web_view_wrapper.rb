@@ -295,6 +295,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
   end
 
   def clear_comment
+    clear_events # web_view_wrapper.rb # イベントリスナーの明示的解放
+    
     # @div_comments.setMember("innerHTML" , "")
     # @div_submission.setMember("innerHTML","")
     empty("#submission")
@@ -386,10 +388,15 @@ class CommentWebViewWrapper < RedditWebViewWrapper
           thumb_box.setAttribute("class", "thumb_box")
           anc.setAttribute("class", "")
         }
-        thumb_box.addEventListener( "mouseover" , mouseover_proc , false )
-        anc.addEventListener( "mouseover" , mouseover_proc , false )
-        thumb_box.addEventListener( "mouseout" , mouseout_proc , false )
-        anc.addEventListener( "mouseout" , mouseout_proc , false )
+        #thumb_box.addEventListener( "mouseover" , mouseover_proc , false )
+        #anc.addEventListener( "mouseover" , mouseover_proc , false )
+        #thumb_box.addEventListener( "mouseout" , mouseout_proc , false )
+        #anc.addEventListener( "mouseout" , mouseout_proc , false )
+
+        set_event( thumb_box , "mouseover" , false , &mouseover_proc )
+        set_event( anc ,       "mouseover" , false , &mouseover_proc )
+        set_event( thumb_box , "mouseout"  , false , &mouseout_proc )
+        set_event( anc ,       "mouseout"  , false , &mouseout_proc )
 
         thumb_area.appendChild( thumb_box )
       }

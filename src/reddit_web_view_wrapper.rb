@@ -17,6 +17,10 @@ class RedditWebViewWrapper < WebViewWrapper
     @e.loadContent( base_html() )
   end
 
+  def reload_content
+    @e.loadContent( base_html() )
+  end
+
   CSS_PATH = Util.get_appdata_pathname + "webview/comment.css"
   
   def set_additional_style( style )
