@@ -15,7 +15,10 @@ rawrが必要です。
 リポジトリに入ってない、必要なファイルを取得します。
 
     jruby -S rake rawr:get:current-jruby
-    # 手動で最新のjruby-complete-9.*.jar を探してきて、lib/javaに入れた方がいいかも
+    
+    # jrubyのサイトからjruby-complete-9.0.1.0.jar を取ってきてコピーします
+    # 9.0.3.0では現在動作しません
+    cp jruby-complete-9.0.1.0.jar lib/java/jruby-complete.jar
 
     jruby -S gem install -i ./gem jrubyfx --version "= 1.1.1" --no-rdoc --no-ri
     jruby -S gem install -i ./gem redd --version "= 0.7.7" --no-rdoc --no-ri
