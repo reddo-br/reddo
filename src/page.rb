@@ -122,6 +122,7 @@ class Page < Java::JavafxSceneLayout::VBox
     if selected
       @tab.getTabPane().getSelectionModel().select( @tab )
     end
+    App.i.save_tabs
   end
 
   def start_loading_icon
