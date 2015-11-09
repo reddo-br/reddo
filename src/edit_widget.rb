@@ -59,7 +59,7 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     BorderPane.setAlignment( @toolbar , Pos::CENTER_LEFT )
     
     @error_label = Label.new("")
-    @error_label.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_RED}")
+    @error_label.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_RED}")
     @toolbar2.setCenter( @error_label )
     BorderPane.setAlignment( @error_label , Pos::CENTER_LEFT )
 

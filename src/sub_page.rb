@@ -15,8 +15,6 @@ require 'account_selector'
 require 'url_handler'
 require 'html/html_entity'
 
-require 'app_color'
-
 require 'glyph_awesome'
 
 # jruby-9.0.0.0 unicode_normalizeの障害回避
@@ -610,7 +608,7 @@ class SubPage < Page
     Platform.runLater{
       @load_status.setText( str ) 
       if error
-        @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_RED};")
+        @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_RED};")
       else
         @load_status.setStyle("")
       end
@@ -1159,12 +1157,12 @@ class SubPage < Page
 
       if @show_subreddit
         @subreddit = Label.new
-        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::DARK_GREEN};-fx-padding:0 6px 0 0;")
+        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};-fx-padding:0 6px 0 0;")
         @subreddit.setWrapText(false)
       end
 
       @nsfw = Label.new("NSFW")
-      @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::DARK_RED}")
+      @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
       @nsfw.setWrapText(false)
 
       @link_flair = Label.new
@@ -1176,15 +1174,15 @@ class SubPage < Page
       @datetime.setWrapText(false)
 
       @sticky = Label.new("Sticky")
-      @sticky.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::DARK_GREEN}")
+      @sticky.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_GREEN}")
       @sticky.setWrapText(false)
 
       @locked = Label.new("Locked")
-      @locked.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::DARK_YELLOW}")
+      @locked.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_YELLOW}")
       @locked.setWrapText(false)
 
       @author = Label.new
-      @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_BLUE};")
+      @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
       @author.setWrapText(false)
       
       @user_flair = Label.new
@@ -1284,14 +1282,14 @@ class SubPage < Page
         if d = data[:distinguished]
           author += "[" + d[0].to_s + "]"
           if d == 'moderator'
-            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_GREEN};")
+            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};")
           elsif d == 'admin'
-            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_RED};")
+            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_RED};")
           else
-            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_BLUE};")
+            @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
           end
         else
-          @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_BLUE};")
+          @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
         end
         @author.setText( author )
 

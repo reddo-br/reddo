@@ -4,7 +4,6 @@ require 'jrubyfx'
 
 require 'glyph_awesome'
 require 'html/html_entity'
-require 'app_color'
 
 import 'org.controlsfx.control.PopOver'
 
@@ -197,7 +196,7 @@ class UnreadPopOver < PopOver
         @type_label.setStyle("-fx-font-weight: bold;")
       end
       
-      [@from_label , @to_label].each{|l| l.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::DARK_BLUE}" )}
+      [@from_label , @to_label].each{|l| l.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE}" )}
 
       @summary  = Hyperlink.new
       @submission = Hyperlink.new

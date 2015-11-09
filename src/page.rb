@@ -10,7 +10,6 @@ require 'rotate_transition_fps_limited'
 require 'button_unfocusable'
 
 # require 'tab_hack'
-require 'app_color'
 require 'glyph_awesome'
 
 class Page < Java::JavafxSceneLayout::VBox

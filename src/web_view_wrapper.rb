@@ -7,7 +7,6 @@ import 'javafx.concurrent.Worker'
 
 import 'javafx.scene.web.WebView'
 
-require 'app_color'
 require 'html/html_entity'
 require 'util'
 
@@ -413,7 +412,7 @@ EOF
   end
 
   def style
-    ".highlight { background-color: #{App.i.theme::COLOR::DARK_YELLOW};}"
+    ".highlight { background-color: #{App.i.theme::COLOR::STRONG_YELLOW};}"
   end
 
   def scroll_bottom

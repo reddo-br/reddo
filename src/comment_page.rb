@@ -11,7 +11,6 @@ require 'url_handler'
 require 'edit_widget'
 require 'html/html_entity'
 require  'read_comment_db'
-require 'app_color'
 require 'pref/account'
 require 'sub_style'
 
@@ -621,7 +620,7 @@ class CommentPage < Page
       
       Platform.runLater{
         @autoreload_status.setText("自動更新中")
-        @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::DARK_GREEN};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
+        @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::STRONG_GREEN};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
       }
     end
   end
@@ -641,7 +640,7 @@ class CommentPage < Page
     end
     Platform.runLater{
         @autoreload_status.setText("自動更新中断")
-      @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::DARK_YELLOW};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
+      @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::STRONG_YELLOW};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
     }
   end
 
@@ -660,7 +659,7 @@ class CommentPage < Page
     end
     Platform.runLater{
         @autoreload_status.setText("自動更新無効")
-        @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::DARK_RED};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
+        @autoreload_status.setStyle("-fx-background-color:#{App.i.theme::COLOR::STRONG_RED};-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};")
     }
   end
 
@@ -843,7 +842,7 @@ class CommentPage < Page
     Platform.runLater{
       @load_status.setText( str ) 
       if error
-        @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_RED};")
+        @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_RED};")
       else
         @load_status.setStyle("")
       end

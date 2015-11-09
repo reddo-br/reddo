@@ -898,7 +898,7 @@ class SubPage < Page
       end
 
       @nsfw = Label.new("NSFW")
-      @nsfw.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::DARK_RED}")
+      @nsfw.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::STRONG_RED}")
       @nsfw.setWrapText(false)
 
       @link_flair = Label.new
@@ -910,11 +910,11 @@ class SubPage < Page
       @datetime.setWrapText(false)
 
       @sticky = Label.new("Sticky")
-      @sticky.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::DARK_GREEN}")
+      @sticky.setStyle("-fx-text-fill:white; -fx-background-color:#{AppColor::STRONG_GREEN}")
       @sticky.setWrapText(false)
 
       @author = Label.new
-      @author.setStyle("-fx-text-fill:#{AppColor::DARK_BLUE};")
+      @author.setStyle("-fx-text-fill:#{AppColor::STRONG_BLUE};")
       @author.setWrapText(false)
       
       @user_flair = Label.new
@@ -1014,14 +1014,14 @@ class SubPage < Page
         if d = data[:distinguished]
           author += "[" + d[0].to_s + "]"
           if d == 'moderator'
-            @author.setStyle("-fx-text-fill:#{AppColor::DARK_GREEN};")
+            @author.setStyle("-fx-text-fill:#{AppColor::STRONG_GREEN};")
           elsif d == 'admin'
-            @author.setStyle("-fx-text-fill:#{AppColor::DARK_RED};")
+            @author.setStyle("-fx-text-fill:#{AppColor::STRONG_RED};")
           else
-            @author.setStyle("-fx-text-fill:#{AppColor::DARK_BLUE};")
+            @author.setStyle("-fx-text-fill:#{AppColor::STRONG_BLUE};")
           end
         else
-          @author.setStyle("-fx-text-fill:#{AppColor::DARK_BLUE};")
+          @author.setStyle("-fx-text-fill:#{AppColor::STRONG_BLUE};")
         end
         @author.setText( author )
 

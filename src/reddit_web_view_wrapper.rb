@@ -8,7 +8,6 @@ import 'javafx.concurrent.Worker'
 import 'javafx.scene.web.WebView'
 
 require 'web_view_wrapper'
-require 'app_color'
 
 class RedditWebViewWrapper < WebViewWrapper
 
@@ -168,24 +167,24 @@ div.comment p {
 }
 
 .user_name, a.user_name {
-  color: #{App.i.theme::COLOR::DARK_BLUE};
+  color: #{App.i.theme::COLOR::STRONG_BLUE};
   border-radius: 3px;
   text-decoration:none;
 }
 
 .user_name_admin, a.user_name_admin {
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
-  background-color: #{App.i.theme::COLOR::DARK_RED}
+  background-color: #{App.i.theme::COLOR::STRONG_RED}
 }
 
 .user_name_mod, a.user_name_mod {
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
-  background-color: #{App.i.theme::COLOR::DARK_GREEN}
+  background-color: #{App.i.theme::COLOR::STRONG_GREEN}
 }
 
 .user_name_op, a.user_name_op {
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
-  background-color: #{App.i.theme::COLOR::DARK_BLUE}
+  background-color: #{App.i.theme::COLOR::STRONG_BLUE}
 }
 
 .upvote , .downvote {
@@ -337,12 +336,12 @@ table, th, td {
 }
 
 .new_mark {
-  // background-color: #{App.i.theme::COLOR::DARK_YELLOW};
+  // background-color: #{App.i.theme::COLOR::STRONG_YELLOW};
   // color:white;
   // padding:2px;
   // border-radius: 3px;
 
-  color: #{App.i.theme::COLOR::DARK_RED};
+  color: #{App.i.theme::COLOR::STRONG_RED};
   #{bold_style};
 }
 
