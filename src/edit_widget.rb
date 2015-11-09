@@ -37,22 +37,34 @@ class EditWidget < Java::JavafxSceneLayout::VBox
 
     @toolbar.getChildren().add( Label.new(" ") )
 
-    @post_button = Button.new("返信")
+    @post_button = Button.new("返信" , GlyphAwesome.make("REPLY"))
     @post_button.setOnAction{|e| 
       if @post_cb
         @post_cb.call( get_md )
       end
     }
     @toolbar.getChildren().add( @post_button )
-    @close_button = Button.new("閉じる")
+    @close_button = Button.new("閉じる" , GlyphAwesome.make("CLOSE"))
     @close_button.setOnAction{|e|
       @close_cb.call if @close_cb
     }
 
     @toolbar.getChildren().add( @close_button )
+    @toolbar.getChildren().add( Label.new(" "))
+    
+    App.i.adjust_height( @toolbar.getChildren().to_a , @post_button )
 
-    add( @toolbar )
-    self.class.setMargin( @toolbar , Insets.new( 3 , 3 , 3 , 3 ))
+    @toolbar2 = BorderPane.new
+    @toolbar2.setLeft( @toolbar )
+    BorderPane.setAlignment( @toolbar , Pos::CENTER_LEFT )
+    
+    @error_label = Label.new("")
+    @error_label.setStyle("-fx-text-fill:#{App.i.theme::COLOR::DARK_RED}")
+    @toolbar2.setCenter( @error_label )
+    BorderPane.setAlignment( @error_label , Pos::CENTER_LEFT )
+
+    add( @toolbar2 )
+    self.class.setMargin( @toolbar2 , Insets.new( 3 , 3 , 3 , 3 ))
 
     @text_area = TextArea.new
     App.i.suppress_printable_key_event( @text_area )
@@ -100,10 +112,12 @@ class EditWidget < Java::JavafxSceneLayout::VBox
       # @text_mode_button.setSelected(true) # todo: デフォルト設定
       @md_mode_button.setSelected(true)
       @post_button.setText("返信")
+      @post_button.setGraphic( GlyphAwesome.make("REPLY"))
     else
       @md_mode_button.setSelected(true)
       @text_mode_button.setDisable(true)
       @post_button.setText("編集")
+      @post_button.setGraphic( GlyphAwesome.make("EDIT"))
     end
   end
 
@@ -190,6 +204,10 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     @post_button.setDisable(false)
   end
   
+  def set_error_message(mes)
+    @error_label.setText(mes.to_s)
+  end
+
   attr_reader :post_button
 
 end

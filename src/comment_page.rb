@@ -397,6 +397,7 @@ class CommentPage < Page
       dialog.initOwner( App.i.stage )
       dialog.getDialogPane.setContentText( "投稿/コメントを削除します")
       dialog.getDialogPane.setHeaderText(nil)
+
       op = dialog.showAndWait() # .filter{|r| r == ButtonType::OK}
       if op.isPresent and op.get == ButtonType::OK
         loading( Proc.new{ delete( obj , show_delete_element:has_children) } ,
@@ -417,6 +418,7 @@ class CommentPage < Page
     @split_edit_area = EditWidget.new( account_name:@account_name ,
                                        site:@site ) # リンク生成用
     @split_edit_area.set_close_cb{
+      @split_edit_area.set_error_message("")
       close_edit_area
     }
     @split_edit_area.set_post_cb{ |md_text|
@@ -428,16 +430,22 @@ class CommentPage < Page
                  Proc.new{
                    Platform.runLater{
                      set_load_button_enable( true )
-                     close_edit_area
-                     @replying = nil
+                     #close_edit_area
+                     # @replying = nil
                    }
                  },
                  Proc.new {|e|
                    # $stderr.puts "投稿エラー"
                    if e.class == Redd::Error::RateLimited 
-                     App.i.mes("投稿エラー 投稿間隔が制限されています")
+                     # App.i.mes("投稿エラー 投稿間隔が制限されています")
+                     Platform.runLater{
+                       @split_edit_area.set_error_message("#{App.i.now} 投稿エラー 投稿間隔が制限されています")
+                     }
                    else
-                     App.i.mes("投稿エラー")
+                     # App.i.mes("投稿エラー")
+                     Platform.runLater{
+                       @split_edit_area.set_error_message("#{App.i.now} 投稿エラー #{e}")
+                     }
                    end
                  }
                  )
@@ -447,15 +455,21 @@ class CommentPage < Page
                  Proc.new{
                    Platform.runLater{
                      set_load_button_enable( true )
-                     close_edit_area
-                     @editing = nil
+                     #close_edit_area
+                     # @editing = nil
                    }
                  },
                  Proc.new {|e|
                    if e.class == Redd::Error::RateLimited 
-                     App.i.mes("編集エラー 投稿間隔が制限されています")
+                     # App.i.mes("編集エラー 投稿間隔が制限されています")
+                     Platform.runLater{
+                       @split_edit_area.set_error_message("#{App.i.now} 編集エラー 投稿間隔が制限されています")
+                     }
                    else
-                     App.i.mes("編集エラー")
+                     # App.i.mes("編集エラー")
+                     Platform.runLater{
+                       @split_edit_area.set_error_message("#{App.i.now} 編集エラー #{e}")
+                     }
                    end
                  }
                  )
@@ -981,6 +995,10 @@ class CommentPage < Page
         @comment_view.set_link_hook
       }
     end
+    Platform.runLater{
+      @split_edit_area.set_error_message("")
+      close_edit_area
+    }
   end
   
   def edit( obj_edit , md_text )
@@ -995,6 +1013,10 @@ class CommentPage < Page
         @comment_view.add_comment( comm , recursive:false , prepend:true)
       end
       @comment_view.set_link_hook
+    }
+    Platform.runLater{
+      @split_edit_area.set_error_message("")
+      close_edit_area
     }
   end
 
