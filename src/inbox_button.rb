@@ -13,6 +13,9 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
 
   def initialize
     @glyph = GlyphAwesome.make('ENVELOPE_ALT')
+    @glyph_message = GlyphAwesome.make('ENVELOPE_ALT')
+    @glyph_message.setColor( Color.web( App.i.theme::COLOR::RED ) )
+    
     super("0" , @glyph)
     getStyleClass().add("inbox-button")
     @unread_count = 0
@@ -50,11 +53,10 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
   def set_num( num )
     if num > 0
       setStyle("-fx-text-fill:#{App.i.theme::COLOR::RED}")
-      @glyph.color( Color.web( App.i.theme::COLOR::RED ))
+      setGraphic( @glyph_message )
     else
       setStyle("")
-      # @glyph.color( Color::BLACK)
-      # @glyph.color( nil )
+      setGraphic( @glyph )
     end
 
     setText( num.to_s )
