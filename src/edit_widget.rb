@@ -35,7 +35,20 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     @toolbar.getChildren().addAll( mode_buttons )
     # App.i.make_pill_buttons( mode_buttons )
 
-    @toolbar.getChildren().add( Label.new(" ") )
+    @toolbar.getChildren().addAll( Label.new(" ") ,
+                                   Separator.new(Orientation::VERTICAL),
+                                   Label.new(" "))
+
+    @code_indent_button = Button.new("AA/CODE" , GlyphAwesome.make("INDENT"))
+    @code_indent_button.setTooltip( Tooltip.new("行頭にスペースを4つ挿入します"))
+    @code_indent_button.setOnAction{|e|
+      code_indent
+    }
+    @toolbar.getChildren().add(@code_indent_button)
+
+    @toolbar.getChildren().addAll( Label.new(" ") ,
+                                   Separator.new(Orientation::VERTICAL),
+                                   Label.new(" "))
 
     @post_button = Button.new("返信" , GlyphAwesome.make("REPLY"))
     @post_button.setOnAction{|e| 
@@ -206,6 +219,39 @@ class EditWidget < Java::JavafxSceneLayout::VBox
   
   def set_error_message(mes)
     @error_label.setText(mes.to_s)
+  end
+
+  def code_indent
+    text = @text_area.getText()
+    lines = text.split(/\n/ , -1)
+    if index_range = @text_area.getSelection()
+      st = index_range.getStart()
+      ed = index_range.getEnd()
+      $stderr.puts "range: #{st}:#{ed}"
+      replace_lines = []
+      cur_pos = 0
+      repl_st = nil
+      repl_ed = nil
+      lines.each{ |l|
+        if st <= (cur_pos + l.length) and cur_pos <= ed
+          replace_lines << "    " + l
+          if repl_st == nil or cur_pos < repl_st
+            repl_st = cur_pos
+          end
+          if repl_ed == nil or repl_ed < (cur_pos + l.length)
+            repl_ed = cur_pos + l.length
+          end
+        end
+        cur_pos += (l.length + 1)
+      }
+      new_text = replace_lines.join("\n")
+      # undoのバグ回避
+      new_text2 = new_text.gsub(/[^ ]+\Z/,'')
+      repl_ed -= ( new_text.length - new_text2.length )
+
+      @text_area.replaceText( repl_st, repl_ed , new_text2 )
+    end
+    
   end
 
   attr_reader :post_button
