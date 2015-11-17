@@ -453,10 +453,18 @@ class App
 
   def suppress_printable_key_event( node )
     node.setOnKeyPressed{|ev|
-      if ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+      if is_printable_key_event(ev)
         ev.consume
       end
     }
+  end
+
+  def is_printable_key_event( ev )
+    not ev.isAltDown and
+      not ev.isControlDown and 
+      not ev.isMetaDown and
+      ev.getText.to_s.length > 0 and 
+      ev.getText.ord >= 32 # windowsでは、コントロールコードがこないっぽい
   end
 
   def adjust_height(  nodes , base = nil)

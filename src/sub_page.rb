@@ -315,7 +315,7 @@ class SubPage < Page
       @google_search_field.setOnKeyPressed{|ev|
         if ev.getCode() == KeyCode::ENTER
           open_search
-        elsif ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+        elsif App.i.is_printable_key_event(ev)
           ev.consume
         end
       }

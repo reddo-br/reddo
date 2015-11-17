@@ -68,7 +68,7 @@ class WebViewWrapper
     # @e.loadContent( base_html() )
 
     @webview.setOnKeyPressed{|ev|
-      if is_inputting and ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+      if is_inputting and App.i.is_printable_key_event( ev )
         ev.consume
       end
     }

@@ -81,7 +81,7 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     @url_text.setOnKeyPressed{|ev|
       if ev.getCode() == KeyCode::ENTER
         open_text
-      elsif ev.getText.to_s.length > 0 and ev.getText.ord >= 32
+      elsif App.i.is_printable_key_event(ev)
         ev.consume
       end
     }
