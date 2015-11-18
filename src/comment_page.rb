@@ -13,8 +13,10 @@ require 'html/html_entity'
 require  'read_comment_db'
 require 'pref/account'
 require 'sub_style'
+require 'user_state'
 
 require 'account_selector'
+require 'user_ban_state_label'
 
 import 'javafx.application.Platform'
 import 'javafx.scene.control.Alert' # jrubyfxにまだない
@@ -148,7 +150,7 @@ class CommentPage < Page
         start_reload
       end
     }
-    
+    @user_ban_state_label = UserBanStateLabel.new
     ###
     @comments_menu = MenuButton.new("その他")
 
@@ -186,6 +188,8 @@ class CommentPage < Page
     button_area_left.setAlignment( Pos::CENTER_LEFT )
     button_area_left.getChildren.setAll( @account_selector , 
                                          Label.new(" "),
+                                         @user_ban_state_label,
+                                         Separator.new( Orientation::VERTICAL ),
                                          @subname_label ,
                                          Separator.new( Orientation::VERTICAL ),
                                          )
@@ -818,6 +822,8 @@ class CommentPage < Page
              Proc.new{ |e|
                # App.i.mes("#{@title} 更新失敗")
                set_status("#{App.i.now} エラー #{e}" , true) 
+               $stderr.puts e.inspect
+               $stderr.puts e.backtrace
              }
              )
     
@@ -886,6 +892,11 @@ class CommentPage < Page
   def reload( asread:false , user_present:true)
     set_load_button_enable( false )
     # submission#get では、コメントが深いレベルまでオブジェクト化されない問題
+    ut = Thread.new{
+      @user_state = UserState.from_username( @account_name )
+      @user_state.refresh
+    }
+
     sort_type = get_current_sort
     res = if @top_comment
             App.i.client(@account_name).get( "/comments/#{@link_id}/-/#{@top_comment}.json" , limit:200 , sort:sort_type , context:@comment_context).body
@@ -957,7 +968,13 @@ class CommentPage < Page
       show_num_new_comments
     }
     
+    ut.join
+    if @user_state
+      @comment_view.set_user_suspended( @user_state.user[:is_suspended] )
+    end
+
     Platform.runLater{
+      @user_ban_state_label.set_data( @user_state.user , @user_state.is_shadowbanned) if @user_state
       @comment_view.clear_comment
       # @comment_view.set_title( title ) # if @comment_view.dom_prepared
       @comment_view.set_submission( @links[0] )

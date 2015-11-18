@@ -46,6 +46,10 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     @account_name = name
   end
 
+  def set_user_suspended( suspended )
+    @user_suspended = suspended
+  end
+
   def set_url_handler( uh )
     @uh = uh
   end
@@ -458,27 +462,24 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     elsif is_deleted( obj )
       #
     else
-      if not @locked
-        if @account_name
-          comment_foot_reply = @doc.createElement("a")
-          comment_foot_reply.setTextContent("返信")
-          comment_foot_reply.setAttribute("href" , "#" )
-          set_event( comment_foot_reply , 'click' , false ){
-            # inboxable#reply(text) -> obj, message
-            # submission#add_comment(text)
-            # editable#edit(text) -> thing | submission と comment
-            if @reply_cb
-              Platform.runLater{ # js engineのcall stack溢れ対策
-                @reply_cb.call( obj.dup )
-              }
-            end
-          }
-          comment_foot.appendChild( comment_foot_reply )
-        end
+      if is_repliable(obj)
+        comment_foot_reply = @doc.createElement("a")
+        comment_foot_reply.setTextContent("返信")
+        comment_foot_reply.setAttribute("href" , "#" )
+        set_event( comment_foot_reply , 'click' , false ){
+          # inboxable#reply(text) -> obj, message
+          # submission#add_comment(text)
+          # editable#edit(text) -> thing | submission と comment
+          if @reply_cb
+            Platform.runLater{ # js engineのcall stack溢れ対策
+              @reply_cb.call( obj.dup )
+            }
+          end
+        }
+        comment_foot.appendChild( comment_foot_reply )
       end
       
-      # if obj[:author] == obj.client.me[:name] # 時間かかる
-      if obj[:author] == @account_name and ( obj[:kind] == 't1' or obj[:is_self] )
+      if is_editable(obj)
         # todo: submissionならselfかどうかもチェックする
         # if obj[:author] == @account_name
         comment_foot_edit = @doc.createElement("a")
@@ -496,7 +497,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
       end
 
-      if obj[:author] == @account_name
+      if is_deletable(obj)
         ### 削除
         comment_foot_delete = @doc.createElement("a")
         comment_foot_delete.setTextContent("削除")
@@ -536,6 +537,20 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
     
     comment_foot
+  end
+
+  def is_deletable(obj)
+    (obj[:author] == @account_name) and (not is_deleted(obj)) and (not obj[:archived])
+  end
+  def is_repliable(obj)
+    (not @locked) and @account_name and (not obj[:archived]) and (not @user_suspended )
+  end
+  def is_editable(obj)
+    obj[:author] == @account_name and ( obj[:kind] == 't1' or obj[:is_self] ) and
+      (not obj[:archived]) and (not @user_suspended)
+  end
+  def is_votable(obj)
+    (not is_deleted(obj)) and @account_name and (not @user_suspended)
   end
 
   def is_deleted( obj )
@@ -589,7 +604,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     author = make_user_element( obj )
     
     # vote arrows
-    if @account_name and (not is_deleted( obj ))
+    if is_votable(obj) # ↓でも分岐してる注意
       upvote = @doc.createElement("img")
       if obj[:likes] == true
         upvote.setAttribute("src" , @upvoted_img_url)
@@ -633,7 +648,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
         end
         score.setTextContent( (obj[:reddo_raw_score] + obj[:reddo_vote_score]).to_s + "ポイント")
       }
-    end # if @account_name
+    end # is_votable
     
     # ヘッダ部
 
@@ -654,7 +669,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
 
     comm_head.appendChild( @doc.createTextNode(" ") )
-    if @account_name and (not is_deleted(obj))
+    if is_votable(obj)
       comm_head.appendChild( upvote )
       comm_head.appendChild( downvote )
     end
