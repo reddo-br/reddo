@@ -969,7 +969,7 @@ class CommentPage < Page
     }
     
     ut.join
-    if @user_state
+    if @user_state and @user_state.user
       @comment_view.set_user_suspended( @user_state.user[:is_suspended] )
     end
 
