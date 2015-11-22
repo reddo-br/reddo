@@ -149,12 +149,12 @@ class Page < Java::JavafxSceneLayout::VBox
         rescue Redd::Error => e
           $stderr.puts e.inspect
           $stderr.puts $@
-          err_proc.call(e.inspect) if err_proc
+          err_proc.call(e) if err_proc
 
         rescue Exception => e
           $stderr.puts e.inspect
           $stderr.puts $@
-          err_proc.call(e.inspect) if err_proc
+          err_proc.call(e) if err_proc
         ensure
           Platform.runLater{stop_loading_icon}
           end_proc.call if end_proc

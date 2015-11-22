@@ -425,61 +425,40 @@ class CommentPage < Page
       close_edit_area
     }
     @split_edit_area.set_post_cb{ |md_text|
+      end_proc = Proc.new{
+        Platform.runLater{
+          set_load_button_enable( true )
+        }
+      }
+      
+      error_proc = Proc.new {|e|
+        if e.is_a?( Redd::Error::RateLimited )
+          Platform.runLater{
+            @split_edit_area.set_error_message("#{App.i.now} 投稿エラー 投稿間隔制限 あと#{e.time.to_i}秒")
+          }
+        else
+          Platform.runLater{
+            @split_edit_area.set_error_message("#{App.i.now} 投稿エラー #{e}")
+          }
+        end
+      }
+      
       if @replying
         # $stderr.puts "reply to #{@replying[:name]}"
         # $stderr.puts md_text
         # ここで投稿
         loading( Proc.new{ post( @replying , md_text ) } ,
-                 Proc.new{
-                   Platform.runLater{
-                     set_load_button_enable( true )
-                     #close_edit_area
-                     # @replying = nil
-                   }
-                 },
-                 Proc.new {|e|
-                   # $stderr.puts "投稿エラー"
-                   if e.class == Redd::Error::RateLimited 
-                     # App.i.mes("投稿エラー 投稿間隔が制限されています")
-                     Platform.runLater{
-                       @split_edit_area.set_error_message("#{App.i.now} 投稿エラー 投稿間隔が制限されています")
-                     }
-                   else
-                     # App.i.mes("投稿エラー")
-                     Platform.runLater{
-                       @split_edit_area.set_error_message("#{App.i.now} 投稿エラー #{e}")
-                     }
-                   end
-                 }
-                 )
+                 end_proc ,
+                 error_proc)
 
       elsif @editing
         loading( Proc.new{ edit( @editing , md_text ) } ,
-                 Proc.new{
-                   Platform.runLater{
-                     set_load_button_enable( true )
-                     #close_edit_area
-                     # @editing = nil
-                   }
-                 },
-                 Proc.new {|e|
-                   if e.class == Redd::Error::RateLimited 
-                     # App.i.mes("編集エラー 投稿間隔が制限されています")
-                     Platform.runLater{
-                       @split_edit_area.set_error_message("#{App.i.now} 編集エラー 投稿間隔が制限されています")
-                     }
-                   else
-                     # App.i.mes("編集エラー")
-                     Platform.runLater{
-                       @split_edit_area.set_error_message("#{App.i.now} 編集エラー #{e}")
-                     }
-                   end
-                 }
-                 )
+                 end_proc ,
+                 error_proc)
       end
       
-    }
-
+    } # set_post_cb
+    
     @comment_view.set_more_cb{|more , elem_id |
 
       if @links and @links[0]
