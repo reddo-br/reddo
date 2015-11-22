@@ -36,10 +36,12 @@ gemフォルダに取得した、jrubyfx-fxmlloader-0.4にはパッチを当て�
     jruby -S rake rawr:bundle:exe
     jruby -S rake rawr:bundle:app
 
-mac用パッケージを修正するファイルを追加しときます
+いくつかのファイルを手動で追加、上書きしてください
 
     cp misc/Reddo-mac package/osx/reddo.app/Contents/MacOS/Reddo
     cp misc/Info.plist package/osx/reddo.app/Contents/
+    cp misc/reddo.l4j.ini package/windows/
+    cp misc/reddo.sh package/jar
 
 windowsのjrubyでは、jarファイル内でのrequire_relativeが正常に動かない関係で、
 windows用パッケージには、gemディレクトリ以下をそのままコピーしておいて下さい。とりあえず動きます;
