@@ -550,7 +550,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       (not obj[:archived]) and (not @user_suspended)
   end
   def is_votable(obj)
-    (not is_deleted(obj)) and @account_name and (not @user_suspended)
+    (not is_deleted(obj)) and @account_name and (not obj[:archived]) and (not @user_suspended)
   end
 
   def is_deleted( obj )
