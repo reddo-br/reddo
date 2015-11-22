@@ -27,26 +27,68 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
         @popover.hide
       end
     }
+    @mes = []
+    check_thread_start
+  end
 
-    Thread.new{
+  def check_thread_start
+    @check_thread = Thread.new{
       sleep( 5 )
       loop{
-        mes = []
+        
         begin
-          mes = get_inbox_unread
+          @mes = get_inbox_unread
         rescue
           
         end
       
         Platform.runLater{
-          set_num( mes.length )
-          @popover.set_items( mes )
+          set_num( @mes.length )
+          @popover.set_items( @mes )
         }
         
         sleep(60)
       }
     }
+  end
 
+  def check_thread_stop
+    @check_thread.kill
+    @check_thread = nil
+  end
+
+  def read_all
+    if @mes.length > 0
+      check_thread_stop
+      u_m = user_to_mails(@mes)
+      @mes = []
+      Thread.new{
+        u_m.each{|user,mails|
+          cl = App.i.client(user)
+          if cl
+            begin
+              # cl.read_all_messages
+              ids = mails.map{|m| m[:name] }.join(",")
+              ret = cl.post("/api/read_message.json" , id:ids ).body
+              $stderr.puts ret
+            rescue
+              $stderr.puts $!
+              $stderr.puts $@
+            end
+          end
+        }
+        check_thread_start
+      } # thread
+    end
+  end
+
+  def user_to_mails(mes)
+    user_mails = {}
+    mes.each{|m|
+      user_mails[ m[:dest] ] ||= []
+      user_mails[ m[:dest] ] << m
+    }
+    user_mails
   end
 
   def set_num( num )
@@ -128,24 +170,12 @@ class UnreadPopOver < PopOver
       App.i.open_external_browser( "https://www.reddit.com/message/inbox/" )
     }
     @read_button.setOnAction{|ev|
-      users = @items_observable.to_a.map{|m| m[:dest] }.uniq
-      if @items_observable.length > 0
-        set_items( [] )
-        getOwnerNode.set_num( 0 )
-        
-        Thread.new{
-          users.each{|an|
-            cl = App.i.client(an)
-            if cl
-              begin
-                cl.read_all_messages
-              rescue
-                
-              end
-            end
-          }
-        } # thread
-      end
+      # users = @items_observable.to_a.map{|m| m[:dest] }.uniq
+
+      set_items( [] )
+      getOwnerNode.set_num( 0 )
+      getOwnerNode.read_all
+      
     }
 
     @items_observable = FXCollections.synchronizedObservableList(FXCollections.observableArrayList)
