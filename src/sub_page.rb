@@ -209,50 +209,38 @@ class SubPage < Page
     # @sort_button_area.setStyle("-fx-margin: 3px 3px 0px 3px")
     @sort_buttons = []
 
+    @current_sort_other = SORT_TYPES[7]
+
     @sort_buttons << @sort_hot = ToggleButton.new("注目")
     @sort_buttons << @sort_new = ToggleButton.new("新着")
-    @sort_buttons << @sort_others = ToggleButton.new("他→")
-    # @sort_buttons << @sort_contr_day = ToggleButton.new("物議(日)")
-    # @sort_buttons << @sort_contr_week = ToggleButton.new("物議(週)")
-    # 票数,コメント
+    @sort_buttons << @sort_others = ToggleButton.new(@current_sort_other[0])
 
     @sort_button_group = ToggleGroup.new()
     @sort_buttons.each{|b| b.setToggleGroup( @sort_button_group) }
 
-    App.i.make_pill_buttons( @sort_buttons )
-
-    # old_sort = @sort_hot # todo:prefからやること
-    # @sort_button_group.selectToggle( old_sort )
-    # @sort_button_group.selectedToggleProperty().addListener{|obj|
-    #   new_selected = obj.getValue()
-    #   if new_selected
-    #     if old_sort != new_selected
-    #       old_sort = new_selected
-    #       start_reload
-    #     end
-    #   else
-    #     # 必ずどれかが選択された状態に
-    #     @sort_button_group.selectToggle( old_sort )
-    #   end
-    # }
- 
     Util.toggle_group_set_listener_force_selected( @sort_button_group ,
                                                    @sort_hot){|btn| start_reload }
     
-    @sort_selector = ChoiceBox.new
-    @sort_selector.getItems().setAll( SORT_TYPES.map{|e| e[0]} )
-    @sort_selector.getSelectionModel.select(SORT_TYPES[7][0]) # controversial-day
-    @sort_selector.valueProperty().addListener{|ov|
-      if @sort_button_group.getSelectedToggle() == @sort_others
-        start_reload
-      else
-        @sort_others.fire
-      end
+    @sort_selector = MenuButton.new("")
+    @sort_selector.getStyleClass.add("empty-menu-button")
+    SORT_TYPES.each{|name,type,span|
+      item = MenuItem.new(name)
+      item.setOnAction{|ev|
+        @current_sort_other = [ name , type , span ]
+        @sort_others.setText(name)
+        if @sort_button_group.getSelectedToggle() == @sort_others
+          start_reload
+        else
+          @sort_others.fire
+        end
+      }
+      @sort_selector.getItems.add( item )
     }
+    
+    App.i.make_pill_buttons( @sort_buttons + [ @sort_selector ] )
 
     @sort_button_area_left.getChildren().add( Label.new("ソート:"))
     @sort_button_area_left.getChildren().addAll( @sort_buttons )
-    @sort_button_area_left.getChildren().add( Label.new(" "))
     @sort_button_area_left.getChildren().add( @sort_selector )
     @sort_button_area_left.getChildren().add( Label.new(" "))
     @sort_button_area.setLeft( @sort_button_area_left )
@@ -263,7 +251,7 @@ class SubPage < Page
     @sort_button_area.setCenter( @load_status )
 
     getChildren.add( @sort_button_area )
-
+    
     #### 第三列
     # filterバー
     @filter_and_search_bar = BorderPane.new()
@@ -653,7 +641,7 @@ class SubPage < Page
         when @sort_new
           ['new' , nil ]
         when @sort_others
-          sa = SORT_TYPES.assoc(@sort_selector.getValue)
+          sa = @current_sort_other
           [ sa[1] , sa[2] ]
         end
 
