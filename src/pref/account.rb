@@ -2,6 +2,7 @@ require 'util'
 require 'pref/prefbase'
 
 require 'fileutils'
+require 'json'
 
 # access_dump: {
 #  access_token:
@@ -13,7 +14,7 @@ require 'fileutils'
 class Account < Prefbase
   
   def initialize( name )
-    accounts_dir = Util.get_appdata_pathname + "accounts"
+    accounts_dir = Util.get_appdata_pathname / "accounts"
     FileUtils.mkdir_p( accounts_dir )
     file = accounts_dir + (name + ".json")
     #p file.to_s
@@ -33,9 +34,22 @@ class Account < Prefbase
     end
   end
 
+  def scopes
+    if dump = self["access_dump"]
+      begin
+        json = JSON.parse(dump)
+        json["scope"].to_s.split(" ")
+      rescue
+        []
+      end
+    else
+      []
+    end
+  end
+
   def name_to_path( name )
-    accounts_dir = Util.get_appdata_pathname + "accounts"
-    accounts_dir + ( name + ".json" ) # Pathname class
+    accounts_dir = Util.get_appdata_pathname / "accounts"
+    accounts_dir / ( name + ".json" ) # Pathname class
   end
 
   def self.list

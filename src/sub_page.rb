@@ -90,6 +90,7 @@ class SubPage < Page
     @url_handler = UrlHandler.new( @page_info[:site] , account_name:@account_name)
 
     @is_multireddit = @url_handler.path_is_multireddit( @page_info[:name] )
+    @is_user_submission_list = @url_handler.path_is_user_submission_list( @page_info[:name] )
 
     ### ボタン第一列
     # @toolbar = ToolBar.new() # ツールバーは良くない はじっこが切れるからだっけ
@@ -123,7 +124,7 @@ class SubPage < Page
                                           @user_ban_state_label,
                                           Separator.new(Orientation::VERTICAL))
 
-    @title_label = Label.new( subpath_to_name(@page_info[:name]) )
+    @title_label = Label.new( make_tab_name )
     @title_label.setStyle("-fx-font-size:14pt")
 
     @active_label = Label.new()
@@ -477,13 +478,18 @@ class SubPage < Page
       # タブから閉じたときしか来ないはず...
       App.i.close_history.add( @page_info , make_tab_name )
     }
-
+    
+    @permission_alert_ph = Label.new("注意：ユーザーのsubmission履歴表示には、新規の権限が必要です。旧バージョンで認可を与えたアカウントは、再度「アカウント追加」で認可を与える必要があります。")
+    
     # subのデータ取得
-    if @is_multireddit
+    if @is_user_submission_list
+      @active_label.setText("[history]")
+    elsif @is_multireddit
       @active_label.setText("[multi]")
     else
       # start_load_sub_info
     end
+
     start_reload
   end # initialize
   
@@ -528,7 +534,7 @@ class SubPage < Page
            end
 
     owner = if @is_multireddit.is_a?(String)
-              " [" + @is_multireddit + "]"
+              " [by " + @is_multireddit + "]"
             else
               ""
             end
@@ -539,7 +545,7 @@ class SubPage < Page
     begin
       @sub_info = App.i.client(@account_name).subreddit_from_name( @page_info[:name] )
       if @sub_info
-        title = @sub_info[:title] || subpath_to_name(@page_info[:name])
+        title = @sub_info[:title] || make_tab_name
         @subscribed = @sub_info[:user_is_subscriber]
         Platform.runLater{
           @title_label.setText( Html_entity.decode(title) )
@@ -622,8 +628,24 @@ class SubPage < Page
     }
   end
 
+  def set_placeholder
+    if @is_user_submission_list and @account_name
+      if Account.byname( @account_name ).scopes.index("history")
+        Platform.runLater{
+          @table.setPlaceholder(nil)
+        }
+      else
+        Platform.runLater{
+          @table.setPlaceholder(@permission_alert_ph)
+        }
+      end
+    end
+  end
+  
   def reload( add:false , count:100)
     $stderr.puts "reload"
+    set_placeholder
+
     set_load_button_enable( false )
     set_status( "更新中…" , false , true)
     Thread.new{ load_sub_info } if not @is_multireddit
@@ -669,29 +691,41 @@ class SubPage < Page
           [ sa[1] , sa[2] ]
         end
 
-      subms = case sort_type
-              when 'hot'
-                cl.get_hot( @page_info[:name] , limit:count , after:after)
-              when 'new'
-                cl.get_new( @page_info[:name] , limit:count , after:after)
-              when 'rising'
-                path = @url_handler.subname_to_url( @page_info[:name]).path.to_s
-                rpath = path + "/rising.json"
-                $stderr.puts "rising用パス #{rpath}"
-                raw = cl.get( rpath , limit:count , after:after).body
-                cl.object_from_body( raw )
-              when 'controversial'
-                cl.get_controversial( @page_info[:name] , 
-                                      {:limit => count , :t => timespan , after:after})
-              when 'top'
-                cl.get_top( @page_info[:name] , 
+      subms = 
+        if @is_user_submission_list and @account_name # アカウントが無いとデータの形式が違う？
+          path = Pathname.new("/r/") / @page_info[:name]
+          $stderr.puts "ユーザーリストの取得 #{path}"
+          resp = cl.get( path.to_s , limit:count, sort:sort_type , 
+                         after:after , t:timespan ).body
+          cl.object_from_body(resp)
+        else
+          case sort_type
+          when 'hot'
+            cl.get_hot( @page_info[:name] , limit:count , after:after)
+          when 'new'
+            cl.get_new( @page_info[:name] , limit:count , after:after)
+          when 'rising'
+            path = @url_handler.subname_to_url( @page_info[:name]).path.to_s
+            rpath = path + "/rising.json"
+            $stderr.puts "rising用パス #{rpath}"
+            raw = cl.get( rpath , limit:count , after:after).body
+            cl.object_from_body( raw )
+          when 'controversial'
+            cl.get_controversial( @page_info[:name] , 
+                                  {:limit => count , :t => timespan , after:after})
+          when 'top'
+            cl.get_top( @page_info[:name] , 
                             {:limit => count , :t => timespan , after:after})
-              end
-
+          end
+        end
+      
       ut.join
       Platform.runLater{
-          @user_ban_state_label.set_data( @user_state.user , @user_state.is_shadowbanned) if @user_state
+        if @user_state
+          @user_ban_state_label.set_data( @user_state.user , @user_state.is_shadowbanned)
+        end
       }
+
       # todo:存在しないsubの対応
       # todo:randomの対応
 
@@ -740,6 +774,8 @@ class SubPage < Page
       end
     rescue Redd::Error::PermissionDenied
       set_status( App.i.now + " アクセスできません" , true)
+      @subms = []
+      display_subms
     end
 
   end # subs

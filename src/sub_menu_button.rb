@@ -32,7 +32,7 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
   end
 
   def initialize(site:"reddit" , account_name:nil)
-    super("SUBs")
+    super("タブ")
 
     @site = site
     @account_name = account_name
@@ -46,12 +46,17 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
     
     @history_menu = Menu.new("最近閉じたタブ")
     @base_menus << @history_menu
-
     @base_menus << SeparatorMenuItem.new
+
+    @user_history_menu = make_user_history_menu
+    @user_history_menu.setVisible(true)
+    @base_menus << @user_history_menu
+    @base_menus << SeparatorMenuItem.new
+
     @base_menus << menu_from_url("https://www.reddit.com/subreddits/" , "webで購読を編集",
                                  GlyphAwesome.make("EDIT"))
     @base_menus << SeparatorMenuItem.new
-    
+
     @multi_menu = Menu.new("multireddit")
     @subscribes_menu = Menu.new("購読subreddit")
 
@@ -78,8 +83,32 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
     load_user_menus
   end
 
+  def make_user_history_menu
+    menu = Menu.new("ユーザー履歴")
+    menu.getItems.add( make_user_history_item( "submitted" , "投稿"))
+    menu.getItems.add( make_user_history_item( "upvoted"   , "upvoteしたサブミッション"))
+    menu.getItems.add( make_user_history_item( "downvoted" , "downvoteしたサブミッション"))
+    menu
+  end
+  def make_user_history_item( name , label = nil)
+    label ||= name
+    item = MenuItem.new(label)
+    item.setOnAction{|ev|
+      an = App.i.pref["current_account"]
+      url = "https://www.reddit.com/user/#{an}/#{name}"
+      info = @uh.url_to_page_info( url )
+      App.i.open_by_page_info(info)
+    }
+    item
+  end
+
   def set_account_name( name )
     @account_name = name
+    if name
+      @user_history_menu.setDisable(false)
+    else
+      @user_history_menu.setDisable(true)
+    end
     load_user_menus
   end
 

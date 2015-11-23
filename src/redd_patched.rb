@@ -52,6 +52,14 @@ module Redd
 
   end # module Objects
 
-  
+  # class Error < StandardError
+  #   class RateLimited < Error
+  #     def initialize(env)
+  #       p env
+  #       @time = env[:body][:json][:ratelimit] || 60*60
+  #       super
+  #     end
+  #   end
+  # end
 
 end

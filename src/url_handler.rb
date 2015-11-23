@@ -46,9 +46,12 @@ class UrlHandler
   end
 
   # [ is_multireddit , owner ]
+  REGEX_USER_SUBMISSION_LISTS = "(submitted|upvoted|downvoted|hidden)"
   def path_is_multireddit(path)
     # reddit
     if m = path.match( /\/u(?:ser)?\/([\w\-]+)\/m\/\w+\/?$/ )
+      m[ 1 ]
+    elsif m = path.match( /\/u(?:ser)?\/([\w\-]+)\/#{REGEX_USER_SUBMISSION_LISTS}\/?$/ )
       m[ 1 ]
     elsif File.basename(path) =~ /\+/
       true
@@ -56,11 +59,21 @@ class UrlHandler
       true
     elsif path == "all"
       true
+    elsif path == "friends"
+      true
     else
       false
     end
   end
   
+  def path_is_user_submission_list(path)
+    if m = path.match( /\/u(?:ser)?\/([\w\-]+)\/#{REGEX_USER_SUBMISSION_LISTS}\/?$/ )
+      m[ 1 ]
+    else
+      nil
+    end
+  end
+
   def subname_to_url(subname)
     abs_sub_top = base_url.join(sub_top + "/" )
     # abs_sub_top.merge( pe(subname) ) # multiへの相対パスの場合もあり
@@ -115,6 +128,10 @@ class UrlHandler
             {:site => site , :type => "sub" , :name => ".." + url_o.path }
           elsif @account_name and m = url_o.path.match( %r!^/me/m/(\w+)/?$!uo )
             {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] }
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
+            {:site => site , :type => "sub" , :name => ".." + url_o.path }
+          elsif @account_name and m = url_o.path.match( %r!^/me/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
+            {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/" + m[1] }
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
             {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)!uo )

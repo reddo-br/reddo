@@ -33,7 +33,11 @@ class AuthWindow < Java::JavafxStage::Stage
             "vote" , "subscribe" , "save" , "report" , 
             "privatemessages" , 
             "creddits" , # not credits
-            "mysubreddits" # 購読リストに必要
+            "mysubreddits" ,# 購読リストに必要
+            "history",
+            "flair",
+            "wikiread",
+            "modposts"
           ]
   
   def initialize( )
@@ -166,6 +170,7 @@ class AuthWindow < Java::JavafxStage::Stage
             user_name = @cl.me.name
             ac = Account.byname( user_name )
             ac['access_dump'] = @cl.access.to_json
+            App.i.reset_client( user_name )
             
             res.body = make_html("#{ClientParams::APP_NAME}:認可を受け取りました。アプリケーションに戻ってください。")
             
