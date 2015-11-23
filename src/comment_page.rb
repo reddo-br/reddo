@@ -181,6 +181,12 @@ class CommentPage < Page
     @load_status = Label.new("")
     
     @subname_label = Label.new("")
+    @subname_label_sep = Separator.new( Orientation::VERTICAL )
+    @subname_label_sep.setVisible(false)
+    @subname_label.textProperty.addListener{|ov|
+      text = ov.getValue
+      @subname_label_sep.setVisible( ((text != nil) and (text.length > 0)) )
+    }
 
     @title_label = Label.new( @title )
     @title_label.setStyle("-fx-font-size:14pt")
@@ -191,7 +197,7 @@ class CommentPage < Page
                                          @user_ban_state_label,
                                          Separator.new( Orientation::VERTICAL ),
                                          @subname_label ,
-                                         Separator.new( Orientation::VERTICAL ),
+                                         @subname_label_sep,
                                          )
     
     @button_area.setLeft( button_area_left )
@@ -823,11 +829,13 @@ class CommentPage < Page
     end
   end
 
-  def set_status(str , error = false)
+  def set_status(str , error = false , loading = false)
     Platform.runLater{
       @load_status.setText( str ) 
       if error
         @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_RED};")
+      elsif loading
+        @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};")
       else
         @load_status.setStyle("")
       end
@@ -870,6 +878,7 @@ class CommentPage < Page
 
   def reload( asread:false , user_present:true)
     set_load_button_enable( false )
+    set_status( "更新中…" , false , true)
     # submission#get では、コメントが深いレベルまでオブジェクト化されない問題
     ut = Thread.new{
       @user_state = UserState.from_username( @account_name )

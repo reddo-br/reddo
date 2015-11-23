@@ -8,9 +8,11 @@ require 'pref/subs'
 require 'pref/account'
 require 'app'
 require 'util'
+require 'user_state'
 
 require 'page'
 require 'account_selector'
+require 'user_ban_state_label'
 
 require 'url_handler'
 require 'html/html_entity'
@@ -94,6 +96,9 @@ class SubPage < Page
     @button_area = BorderPane.new
     @button_area_right = HBox.new(3.0)
     @button_area_right.setAlignment( Pos::CENTER_LEFT )
+    @button_area_left = HBox.new()
+    @button_area_left.setAlignment( Pos::CENTER_LEFT )
+
     @account_selector = AccountSelector.new( @account_name )
     # @account_selector.valueProperty().addListener{|ev|
     @account_selector.set_change_cb{ # アカウントリロード時には呼ばない
@@ -112,6 +117,11 @@ class SubPage < Page
         end
       end
     }
+    @user_ban_state_label = UserBanStateLabel.new
+    @button_area_left.getChildren.setAll( @account_selector , 
+                                          Label.new(" "),
+                                          @user_ban_state_label,
+                                          Separator.new(Orientation::VERTICAL))
 
     @title_label = Label.new( subpath_to_name(@page_info[:name]) )
     @title_label.setStyle("-fx-font-size:14pt")
@@ -159,8 +169,11 @@ class SubPage < Page
                                              @active_label ,
                                              @sub_menu_button)
 
-    BorderPane.setAlignment( @account_selector , Pos::CENTER_LEFT )
-    @button_area.setLeft( @account_selector )
+    account_area = HBox.new
+    
+
+    BorderPane.setAlignment( @button_area_left , Pos::CENTER_LEFT )
+    @button_area.setLeft( @button_area_left )
     BorderPane.setAlignment( @title_label , Pos::CENTER_LEFT )
     @button_area.setCenter( @title_label )
     BorderPane.setAlignment( @button_area_right , Pos::CENTER_RIGHT )
@@ -349,7 +362,7 @@ class SubPage < Page
     vote_column.set_cell_value_factory{|cdf|
       # p cdf.getValue() # Redd::Objects::Submission
       # SimpleObjectProperty.new( cdf.getValue() ) # 全データを渡す これでいいか
-      SimpleObjectProperty.new( [ cdf.getValue() , @account_name ] )
+      SimpleObjectProperty.new( [ cdf.getValue() ,self ] )
 
     }
     vote_column.set_cell_factory{|col| VoteCell.new() }
@@ -474,6 +487,10 @@ class SubPage < Page
     start_reload
   end # initialize
   
+  def is_votable
+    @account_name and not ( @user_state and  @user_state.user and  @user_state.user[:is_suspended] )
+  end
+
   def post_subscribed( subscribed )
     if @sub_info and @sub_info[:name] and @account_name
       Thread.new{
@@ -592,11 +609,13 @@ class SubPage < Page
              )
   end
 
-  def set_status(str , error = false)
+  def set_status(str , error = false , loading = false)
     Platform.runLater{
       @load_status.setText( str ) 
       if error
         @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_RED};")
+      elsif loading
+        @load_status.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};")
       else
         @load_status.setStyle("")
       end
@@ -606,7 +625,12 @@ class SubPage < Page
   def reload( add:false , count:100)
     $stderr.puts "reload"
     set_load_button_enable( false )
+    set_status( "更新中…" , false , true)
     Thread.new{ load_sub_info } if not @is_multireddit
+    ut = Thread.new{
+      @user_state = UserState.from_username( @account_name )
+      @user_state.refresh
+    }
 
     cl = App.i.client(@account_name)
     $stderr.puts cl.access.to_json ########
@@ -664,6 +688,10 @@ class SubPage < Page
                             {:limit => count , :t => timespan , after:after})
               end
 
+      ut.join
+      Platform.runLater{
+          @user_ban_state_label.set_data( @user_state.user , @user_state.is_shadowbanned) if @user_state
+      }
       # todo:存在しないsubの対応
       # todo:randomの対応
 
@@ -982,7 +1010,7 @@ class SubPage < Page
     end
     
     def updateItem( data_ac , is_empty_col )
-      data , @account_name = data_ac
+      data , sub_page = data_ac
       if is_empty_col
         @upvote_button.setVisible( false )
         @downvote_button.setVisible( false )
@@ -997,7 +1025,7 @@ class SubPage < Page
         @upvote_button.setUserData( data[:name] )
         @downvote_button.setUserData( data[:name] )
 
-        if @account_name
+        if sub_page.is_votable
           @upvote_button.setDisable( false )
           @downvote_button.setDisable( false )
         else

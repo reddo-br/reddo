@@ -24,11 +24,11 @@ class UserState
           cl = App.i.client( @username )
           @user = cl.me
           
-          # test
-          # if @user[:name] == 'reddo_br2'
-          #   @user[:is_suspended] = true
-          #   @user[:suspension_expiration_utc] = (Time.now + 3600).to_i
-          # end
+          ## test
+          #if @user[:name] == 'reddo_br2'
+          #  @user[:is_suspended] = true
+          #  @user[:suspension_expiration_utc] = (Time.now + 3600).to_i
+          #end
 
           cl_nouser = App.i.client(nil)
           begin
