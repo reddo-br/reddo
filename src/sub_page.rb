@@ -1428,16 +1428,7 @@ class SubPage < Page
       
       open_sub = MenuItem.new( "Subredditを開く")
       open_sub.setOnAction{|e|
-        if item = @table.getSelectionModel().getSelectedItem()
-          subname = item[:subreddit]
-          page_info = { 
-            type:"sub" , 
-            site:@page_info[:site] , 
-            name:subname ,
-            account_name: @account_name
-          }
-          App.i.open_by_page_info( page_info )
-        end
+        open_selected_item_subreddit
       }
       
       menu.getItems().add( open_sub )
@@ -1457,6 +1448,19 @@ class SubPage < Page
     }
 
     menu
+  end
+
+  def open_selected_item_subreddit(focus = true)
+    if item = @table.getSelectionModel().getSelectedItem()
+      subname = item[:subreddit]
+      page_info = { 
+        type:"sub" , 
+        site:@page_info[:site] , 
+        name:subname ,
+        account_name: @account_name
+      }
+      App.i.open_by_page_info( page_info , focus)
+    end
   end
 
   def item_to_comment_link( item )
@@ -1597,6 +1601,14 @@ class SubPage < Page
   def key_open_comment_without_focus
     $stderr.puts "sub_page.rb:key_o()"
     open_selected_submission(false)
+  end
+  
+  def key_open_sub
+    open_selected_item_subreddit()
+  end
+  
+  def key_open_sub_without_focus
+    open_selected_item_subreddit(false)
   end
   
   def key_add

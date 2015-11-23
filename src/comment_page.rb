@@ -180,7 +180,12 @@ class CommentPage < Page
 
     @load_status = Label.new("")
     
-    @subname_label = Label.new("")
+    # @subname_label = Label.new("")
+    @subname_label = Hyperlink.new
+    @subname_label.setOnAction{|ev|
+      open_sub
+    }
+
     @subname_label_sep = Separator.new( Orientation::VERTICAL )
     @subname_label_sep.setVisible(false)
     @subname_label.textProperty.addListener{|ov|
@@ -550,6 +555,15 @@ class CommentPage < Page
 
   end # initialize
   
+  def open_sub(focus = true)
+    if @subname and not @is_multireddit
+      @subname_label.setVisited(false) # visitedにしない
+      url = @url_handler.subname_to_url( @subname )
+      info = @url_handler.url_to_page_info( url )
+      App.i.open_by_page_info(info,focus)
+    end
+  end
+
   def make_page_url
     if @base_url
       comment_link = @base_url.to_s
@@ -1148,6 +1162,14 @@ class CommentPage < Page
     if url = @links && @links[0] && @links[0][:url]
       App.i.open_external_browser(Util.mobile_url(url))
     end
+  end
+
+  def key_open_sub
+    open_sub
+  end
+
+  def key_open_sub_without_focus
+    open_sub(false)
   end
 
 end
