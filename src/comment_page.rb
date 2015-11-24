@@ -181,18 +181,12 @@ class CommentPage < Page
     @load_status = Label.new("")
     
     # @subname_label = Label.new("")
-    @subname_label = Hyperlink.new("")
+    @subname_label = Hyperlink.new("...")
     # @subname_label.setStyle("-fx-text-fill:#{App.i.theme::COLOR::HTML_LINK}")
     @subname_label.setOnAction{|ev|
       open_sub
     }
-
     @subname_label_sep = Separator.new( Orientation::VERTICAL )
-    @subname_label_sep.setVisible(false)
-    @subname_label.textProperty.addListener{|ov|
-      text = ov.getValue
-      @subname_label_sep.setVisible( ((text != nil) and (text.length > 0)) )
-    }
 
     @title_label = Label.new( @title )
     @title_label.setStyle("-fx-font-size:14pt")
@@ -205,7 +199,16 @@ class CommentPage < Page
                                          @subname_label ,
                                          @subname_label_sep,
                                          )
-    
+    # 値が設定されたときに追加する
+    # @subname_label.textProperty.addListener{|ov|
+    #   text = ov.getValue
+    #   if ((text != nil) and (text.length > 0))
+    #     Platform.runLater{
+    #       button_area_left.getChildren.addAll( @subname_label , @subname_label_sep )
+    #     }
+    #   end
+    # }
+
     @button_area.setLeft( button_area_left )
     @button_area.setCenter( @title_label )
     @button_area.setRight( @comments_menu )
