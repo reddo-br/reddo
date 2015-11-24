@@ -478,4 +478,13 @@ class App
     }
   end
 
+  def close_pages
+    tabpane = @scene.lookup("#" + ID_TAB_PANE)
+    target_pages = tabpane.getTabs().map{|t| t.getContent() }.find_all{|p| yield(p) }
+    target_pages.each{|p|
+      p.close( false , false ) # focus_next , save
+    }
+    save_tabs # ここでまとめて
+  end
+
 end

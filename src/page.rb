@@ -6,6 +6,7 @@ require 'pref/preferences'
 require 'pref/account'
 require 'app'
 
+require 'sub_page'
 require 'rotate_transition_fps_limited'
 require 'button_unfocusable'
 
@@ -80,19 +81,33 @@ class Page < Java::JavafxSceneLayout::VBox
     # @tab.set_text_hack( label ) ### 失敗
 
 
-    ### タブ移動メニュー
+    ### タブコンテキストメニュー
     menu = ContextMenu.new
     item_up = MenuItem.new("上へ")
     item_up.setOnAction{|ev|
       tab_move( -1 )
     }
     menu.getItems().add( item_up )
+
     item_down = MenuItem.new("下へ")
     item_down.setOnAction{|ev|
       tab_move( 1 )
     }
     menu.getItems().add( item_down )
+    menu.getItems().add( SeparatorMenuItem.new)
 
+    item_close_other = MenuItem.new("このタブ以外を閉じる")
+    item_close_other.setOnAction{|ev|
+      App.i.close_pages{|p| not (p == self) }
+    }
+    menu.getItems().add( item_close_other )
+    
+    item_close_comment = MenuItem.new("サブレディット以外を閉じる")
+    item_close_comment.setOnAction{|ev|
+      App.i.close_pages{|p| not p.is_a?( SubPage ) }
+    }
+    menu.getItems().add( item_close_comment )
+    
     @tab.setContextMenu( menu )
 
     ### 
@@ -100,13 +115,13 @@ class Page < Java::JavafxSceneLayout::VBox
     @tab.setContent( self )
   end
 
-  def close( focus_next = false )
+  def close( focus_next = false , save = true)
     Event.fireEvent(@tab, Event.new(Tab::CLOSED_EVENT))
     if focus_next and @tab.isSelected()
       @tab.getTabPane().getSelectionModel().selectNext()
     end
     @tab.getTabPane().getTabs.remove( @tab )
-    App.i.save_tabs
+    App.i.save_tabs if save
   end
 
   def tab_move( move )
