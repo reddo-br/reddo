@@ -668,6 +668,15 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       comm_head.appendChild( dagger_mark )
     end
 
+    if obj[:upvote_ratio] # submissionの場合
+      percent = (obj[:upvote_ratio] * 100).to_i
+      upvote_ratio = @doc.createElement("span")
+      upvote_ratio.setAttribute("class","upvote_ratio")
+      upvote_ratio.setMember("innerHTML","(#{percent}%)")
+      comm_head.appendChild( upvote_ratio )
+      comm_head.appendChild( @doc.createTextNode(" "))
+    end
+
     comm_head.appendChild( @doc.createTextNode(" ") )
     if is_votable(obj)
       comm_head.appendChild( upvote )
