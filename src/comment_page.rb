@@ -181,7 +181,8 @@ class CommentPage < Page
     @load_status = Label.new("")
     
     # @subname_label = Label.new("")
-    @subname_label = Hyperlink.new
+    @subname_label = Hyperlink.new("")
+    # @subname_label.setStyle("-fx-text-fill:#{App.i.theme::COLOR::HTML_LINK}")
     @subname_label.setOnAction{|ev|
       open_sub
     }

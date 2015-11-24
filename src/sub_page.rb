@@ -138,7 +138,6 @@ class SubPage < Page
       if url.to_s.length > 0
         App.i.open_external_browser( url.to_s )
       end
-      
     }
     @sub_menu_button.getItems.add( external_browser_item )
 
@@ -151,6 +150,25 @@ class SubPage < Page
         end
       }
       @sub_menu_button.getItems.add( external_post_page_item )
+    end
+    copy_url_item = MenuItem.new("urlをコピー")
+    copy_url_item.setOnAction{|e|
+      url = get_sub_url # addressable
+      if url and url.to_s.length > 0
+        App.i.copy( url.to_s )
+      end
+    }
+    @sub_menu_button.getItems.add(copy_url_item)
+
+    if not @is_multireddit
+      copy_post_url_item = MenuItem.new("投稿ページurlをコピー")
+      copy_post_url_item.setOnAction{|ev|
+        url = get_sub_url
+        if url and url.to_s.length > 0
+          App.i.copy( url.to_s + "submit" )
+        end
+      }
+      @sub_menu_button.getItems.add(copy_post_url_item)
 
       @subscribed_check_item = CheckMenuItem.new()
       @subscribed_check_item.selectedProperty.addListener{|ov|
