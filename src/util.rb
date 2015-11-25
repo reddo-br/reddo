@@ -136,4 +136,16 @@ module Util
     end
   end
 
+  def is_cjk_text( str )
+    str.match /[\p{han}\p{katakana}\p{hiragana}\p{hangul}]/
+  end
+
+  def cjk_nobreak(str)
+    if is_cjk_text(str)
+      str.gsub(/ /,"\u00a0")
+    else
+      str
+    end
+  end
+
 end # module

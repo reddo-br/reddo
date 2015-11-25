@@ -5,6 +5,7 @@ require 'jrubyfx'
 require 'pref/preferences'
 require 'pref/account'
 require 'app'
+require 'util'
 
 require 'sub_page'
 require 'rotate_transition_fps_limited'
@@ -43,7 +44,8 @@ class Page < Java::JavafxSceneLayout::VBox
     @tab_label.setMaxHeight( 48 )
     @tab_label.setAlignment( Pos::CENTER_LEFT )
     @tab_label.setWrapText( true )
-    @tab_label.setText( label )
+    # @tab_label.setText( label )
+    set_tab_text( label )
     @tab_label.setPrefWidth( 150 )
     @tab_label.setMaxWidth( 150 )
     @tab_label.setMinWidth( 150 )
@@ -191,7 +193,7 @@ class Page < Java::JavafxSceneLayout::VBox
   end
   
   def set_tab_text( text )
-    @tab_label.setText( text )
+    @tab_label.setText( Util.cjk_nobreak(text) )
   end
 
   def on_user_present

@@ -1373,7 +1373,8 @@ class SubPage < Page
         
         @domain.setText( "(" + data[:domain].to_s + ")" )
 
-        @subm_title.setText( data[:title_decoded].to_s.strip  )
+        # @subm_title.setText( data[:title_decoded].to_s.strip  )
+        @subm_title.setText( Util.cjk_nobreak(data[:title_decoded].to_s.strip) )
         # height = calc_title_height( @subm_title.getWidth(),
         #                             data[:title_decoded].to_s.strip,
         #                             @subm_title.getStyle() )
