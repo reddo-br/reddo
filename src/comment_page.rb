@@ -486,12 +486,10 @@ class CommentPage < Page
             
             list = object_to_deep( list )
 
-            added = []
             comments_each(list){|c| 
-              added << c[:name] if c[:name]
+              mark_if_new(c)
             }
-            ReadCommentDB.instance.add( added )
-
+            
             Platform.runLater{
               stop_autoreload
               @comment_view.more_result( elem_id , true ) # moreボタンを消す
@@ -500,6 +498,8 @@ class CommentPage < Page
                 @comment_view.set_link_hook
                 highlight_word()
               }
+              show_num_new_comments
+              check_read2
             } # runLater
             
           rescue
@@ -559,6 +559,13 @@ class CommentPage < Page
 
   end # initialize
   
+  def mark_if_new(o)
+    if not ReadCommentDB.instance.is_read( o[:name] )
+      o[:reddo_new] = true
+      @new_comments << o
+    end
+  end
+
   def open_sub(focus = true)
     if @subname and not @is_multireddit
       @subname_label.setVisited(false) # visitedにしない
@@ -964,10 +971,7 @@ class CommentPage < Page
       ReadCommentDB.instance.add( reads )
     else
       comments_each(@comments){|o|
-        if not ReadCommentDB.instance.is_read( o[:name] )
-          o[:reddo_new] = true
-          @new_comments << o
-        end
+        mark_if_new(o)
       }
     end
     Platform.runLater{
