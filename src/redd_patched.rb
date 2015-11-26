@@ -62,11 +62,4 @@ module Redd
   #   end
   # end
 
-  class Access
-    # backport from 0.7.8
-    def expired?
-      Time.now > (@expires_at + 60)
-    end
-  end
-
 end

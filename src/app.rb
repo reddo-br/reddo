@@ -214,7 +214,8 @@ class App
     cl = CLIENTS[ account_name ]
     if account_name
       cl.synchronize{
-        if cl.access.expired?
+        #if cl.access.expired?
+        if cl.access.expires_at <= (Time.now + 5)
           $stderr.puts "トークンをリフレッシュします"
           cl.refresh_access!
           cl.reset_connection # redd_patched faradayの問題？
