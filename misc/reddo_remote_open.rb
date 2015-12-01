@@ -13,6 +13,7 @@ if url = ARGV.shift
     end
   rescue
     puts "接続できないようだ…"
+    exit(1)
   end
 end
 
