@@ -99,6 +99,10 @@ class FXApp < JRubyFX::Application
         stage.getScene().getStylesheets().add( App.res_url("/res/dark.css") )
       end
       
+      if App.i.pref["dont_use_transparent_window"]
+        stage.getScene().getStylesheets().add( App.res_url("/res/no-transparent-window.css") )
+      end
+      
       # an = App.i.pref["current_account"]
       # App.i.open_by_page_info( type:"sub" , name:"newsokur" , account_name:an )
       # App.i.open_by_page_info( {type:"sub" , name:"../" , account_name:an} , false )

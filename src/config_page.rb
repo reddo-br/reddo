@@ -53,6 +53,9 @@ class ConfigPage < Page
     items << make_bool_config( "ダークテーマ(試験的)" , 
                                "use_dark_theme" )
 
+    items << make_bool_config( "透過ウインドウの使用を避ける(一部のウィンドウに白い枠が出る場合などに)" , 
+                               "dont_use_transparent_window" )
+
     items << make_header("サブレディット画面")
 
     # スクロール量

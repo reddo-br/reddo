@@ -1,0 +1,15 @@
+
+/* controlfx */
+
+.auto-complete-popup > .list-view {
+  -fx-effect: null !important;
+  -fx-background-radius: 0, 0 !important;
+}
+
+.popover {
+  -fx-background-radius: 0, 0 !important;
+}
+
+.popover > .border {
+  -fx-effect:null !important;
+}

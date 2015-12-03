@@ -188,11 +188,16 @@ class UnreadPopOver < PopOver
     setAutoHide( true )
     setHideOnEscape( true )
     setArrowLocation( PopOver::ArrowLocation::TOP_RIGHT )
+    if App.i.pref["dont_use_transparent_window"]
+      setArrowSize(0)
+      setCornerRadius(0)
+    end
 
     setOnAutoHide{|e|
       self.getOwnerNode.popoverHidden
     }
-
+    
+    self.setStyle("-fx-effect:dropshadow(gaussian,0,0,0,0,0);")
   end
 
   def set_items( items )
