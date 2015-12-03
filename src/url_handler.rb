@@ -125,11 +125,15 @@ class UrlHandler
           if m = url_o.path.match( %r!^#{sub_top}/([\w\+]+)/?$!uo )
             {:site => site , :type => "sub" , :name => m[1] }
           elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/m/(\w+)/?$!uo )
-            {:site => site , :type => "sub" , :name => ".." + url_o.path }
+            # /u/だとapiは転送してくれない？
+            justified_path = url_o.path.sub( /^\/u\// , '/user/')
+            {:site => site , :type => "sub" , :name => ".." + justified_path }
           elsif @account_name and m = url_o.path.match( %r!^/me/m/(\w+)/?$!uo )
             {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] }
           elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
-            {:site => site , :type => "sub" , :name => ".." + url_o.path }
+            # /u/だとapiは転送してくれない？
+            justified_path = url_o.path.sub( /^\/u\// , '/user/')
+            {:site => site , :type => "sub" , :name => ".." + justified_path }
           elsif @account_name and m = url_o.path.match( %r!^/me/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
             {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/" + m[1] }
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )

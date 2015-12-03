@@ -710,7 +710,7 @@ class SubPage < Page
         end
 
       subms = 
-        if @is_user_submission_list and @account_name # アカウントが無いとデータの形式が違う？
+        if @is_user_submission_list and @account_name # アカウントが無いとデータの形式が違う？ので通常のサブレディットとして取る
           path = Pathname.new("/r/") / @page_info[:name]
           $stderr.puts "ユーザーリストの取得 #{path}"
           resp = cl.get( path.to_s , limit:count, sort:sort_type , 
