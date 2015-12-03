@@ -2,7 +2,6 @@
 require 'java'
 require 'jrubyfx'
 
-# require './lib/java/controlsfx-8.40.9.jar'
 import 'org.controlsfx.glyphfont.Glyph'
 import 'org.controlsfx.glyphfont.GlyphFont'
 import 'org.controlsfx.glyphfont.GlyphFontRegistry'
