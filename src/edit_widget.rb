@@ -187,7 +187,7 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     url_positions = []
     pos = 0
     while pos < str1.length
-      if m = str1.match(/(https?|ftp):\/\/\w+/o , pos)
+      if m = str1.match(/(https?|ftp):\/\/[^\s\/$.?#].[^\s]*/o , pos)
         url_positions << [ m.begin(0) , m.end(0) ]
         pos = m.end(0)
       else
