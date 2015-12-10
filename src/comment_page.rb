@@ -560,7 +560,7 @@ class CommentPage < Page
   end # initialize
   
   def mark_if_new(o)
-    if not ReadCommentDB.instance.is_read( o[:name] )
+    if o[:name] and (not ReadCommentDB.instance.is_read( o[:name] ))
       o[:reddo_new] = true
       @new_comments << o
     end
