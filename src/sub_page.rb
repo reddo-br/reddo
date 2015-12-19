@@ -1260,6 +1260,10 @@ class SubPage < Page
       @user_flair.setMaxWidth( 200 )
       @user_flair.setWrapText(false)
 
+      @gilded = Label.new
+      @gilded.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_YELLOW};")
+      @gilded.setWrapText(false)
+
       @domain = Label.new
       @domain.setWrapText(false)
       @domain.setStyle("-fx-padding:0 6px 0 6px;")
@@ -1274,6 +1278,7 @@ class SubPage < Page
       @hbox.getChildren().add( @datetime )
       @hbox.getChildren().add( @author )
       @hbox.getChildren().add( @user_flair )
+      @hbox.getChildren().add( @gilded )
 
       @hbox2 = HBox.new()
       @hbox2.setAlignment( Pos::CENTER_LEFT )
@@ -1371,6 +1376,14 @@ class SubPage < Page
           @user_flair.setVisible(false)
         end
         
+        if data[:gilded] == 1
+          @gilded.setText("★")
+        elsif data[:gilded] > 1
+          @gilded.setText("★" + data[:gilded].to_s )
+        else
+          @gilded.setText("")
+        end
+
         @domain.setText( "(" + data[:domain].to_s + ")" )
 
         # @subm_title.setText( data[:title_decoded].to_s.strip  )

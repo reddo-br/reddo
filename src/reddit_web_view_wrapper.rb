@@ -140,6 +140,11 @@ div.comment p {
   #{bold_style}
 }
 
+.gilded_mark {
+  color: #{App.i.theme::COLOR::STRONG_YELLOW};
+  #{bold_style};
+}
+
 .comment_footer {
   padding:0px 3px 0px 3px;
   color:#{App.i.theme::COLOR::HTML_TEXT_THIN};

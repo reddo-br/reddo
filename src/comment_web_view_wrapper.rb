@@ -685,6 +685,19 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     comm_head.appendChild( @doc.createTextNode(" ") )
     comm_head.appendChild( author )
 
+    if obj[:gilded] and obj[:gilded].to_i > 0
+      comm_head.appendChild( @doc.createTextNode(" ") )
+      gilded = @doc.createElement("span")
+      gilded.setAttribute("class","gilded_mark")
+      gilded_num = if obj[:gilded] == 1
+                     ""
+                   else
+                     obj[:gilded].to_s
+                   end
+      gilded.setTextContent( "★" + gilded_num )
+      comm_head.appendChild(gilded)
+    end
+
     comm_head.appendChild( @doc.createTextNode(" ") )
     comm_head.appendChild( time_str )
 
