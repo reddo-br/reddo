@@ -373,13 +373,8 @@ class CommentPage < Page
     }
 
     @comment_view.set_reply_cb{|obj|
-      resized = false
-      if @split_pane.getItems().size == 1
-        @split_edit_area.setVisible(true)
-        @split_pane.getItems().add( @split_edit_area )
-        resized = true
-      end
-
+      open_edit_area
+      
       @replying = obj
       @editing  = nil
 
@@ -389,13 +384,8 @@ class CommentPage < Page
     }
 
     @comment_view.set_edit_cb{|obj|
-      resized = false
-      if @split_pane.getItems().size == 1
-        @split_edit_area.setVisible(true)
-        @split_pane.getItems().add( @split_edit_area )
-        resized = true
-      end
-
+      open_edit_area
+      
       @replying = nil
       @editing  = obj
 
@@ -435,6 +425,7 @@ class CommentPage < Page
     
     @split_edit_area = EditWidget.new( account_name:@account_name ,
                                        site:@site ) # リンク生成用
+    @split_edit_area.setVisible(false)
     @split_edit_area.set_close_cb{
       @split_edit_area.set_error_message("")
       close_edit_area
@@ -588,6 +579,12 @@ class CommentPage < Page
       comment_link
     else
       nil
+    end
+  end
+
+  def focus_editarea_if_opened
+    if @split_pane.getItems().length > 1
+      @split_edit_area.focus_input
     end
   end
 
@@ -761,6 +758,35 @@ class CommentPage < Page
       @find_new_button.setDisable( true )
       @find_new_r_button.setDisable( true )
     end
+  end
+
+  def open_edit_area
+    if not @edit_ime_prepared
+      App.i.tab_pane.requestFocus # editを開く前にwebviewからフォーカスを外さないとimeがバグる javafx8
+    end
+    
+    if @split_pane.getItems().size == 1
+      @split_edit_area.setVisible(true)
+      @split_pane.getItems().add( @split_edit_area )
+    end
+      
+    Thread.new{
+      if not @edit_ime_prepared
+        tp = App.i.tab_pane
+        30.times{
+          # if @comment_view.webview.isFocused
+          if not tp.isFocused
+            sleep(0.05)
+          else
+            break
+          end
+         }
+      end
+      Platform.runLater{ 
+        @split_edit_area.focus_input 
+        @edit_ime_prepared = true
+      }
+    }
   end
 
   def close_edit_area

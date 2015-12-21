@@ -114,11 +114,11 @@ class EditWidget < Java::JavafxSceneLayout::VBox
       }
     }
     @mode = nil
+
   end # initialize
 
   def set_text( text , mode:"reply" )
     @text_area.setText( text )
-    @text_area.requestFocus
     @mode = mode
     if @mode == 'reply'
       @text_mode_button.setDisable(false)
@@ -132,6 +132,10 @@ class EditWidget < Java::JavafxSceneLayout::VBox
       @post_button.setText("編集")
       @post_button.setGraphic( GlyphAwesome.make("EDIT"))
     end
+  end
+
+  def focus_input
+    @text_area.requestFocus
   end
 
   def set_sub_link_style( style )
