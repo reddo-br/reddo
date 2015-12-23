@@ -36,6 +36,7 @@ class AccountSelector < Java::JavafxSceneControl::ChoiceBox
     if @selection.find{|a| a == ( old||NOT_LOGIN )  }
       set_account( old )
     else
+      set_account( nil )
       @change_cb.call if @change_cb
     end
     @enable_change_cb = true

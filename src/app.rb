@@ -492,4 +492,11 @@ class App
     save_tabs # ここでまとめて
   end
 
+  def refresh_account_selectors
+    ass =  root.lookupAll(".account-selector")
+    ass.each{|as|
+      as.load_accounts()
+    }
+  end
+
 end

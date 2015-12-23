@@ -10,6 +10,7 @@ require 'url_handler'
 require 'inbox_button'
 require 'sub_menu_button'
 require 'user_subs'
+require 'account_remove_dialog'
 
 # class AppToolbar < Java::JavafxSceneLayout::HBox
 class AppToolbar < Java::JavafxSceneLayout::BorderPane
@@ -25,10 +26,19 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     @menu_button = MenuButton.new("Menu")
     l_controls << @menu_button
     menus = []
-    menus << menuitem_add = MenuItem.new("アカウント追加" )
+    menus << menuitem_add = MenuItem.new("新規アカウント登録" )
     menuitem_add.setOnAction{|ev|
       AuthWindow.new.show()
     }
+
+    menus << @menuitem_account_remove = MenuItem.new("現在のアカウントの登録解除")
+    @menuitem_account_remove.setOnAction{|ev|
+      d = AccountRemoveDialog.new( App.i.pref['current_account'] )
+      d.show
+    }
+    refresh_menuitem_remove_account
+
+    menus << SeparatorMenuItem.new
 
     menus << menuitem_config = MenuItem.new("設定")
     menuitem_config.setOnAction{|ev|
@@ -63,6 +73,7 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
       ac = @account_selector.get_account
       App.i.pref["current_account"] = ac
       @submenu_button.set_account_name( ac )
+      refresh_menuitem_remove_account
     }
     l_controls << @account_selector
     
@@ -127,6 +138,14 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     right.getChildren.setAll( r_controls )
     setRight( right )
     
+  end
+
+  def refresh_menuitem_remove_account
+    if App.i.pref['current_account']
+      @menuitem_account_remove.setDisable( false )
+    else
+      @menuitem_account_remove.setDisable( true )
+    end
   end
 
   def open_text

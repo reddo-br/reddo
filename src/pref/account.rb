@@ -47,7 +47,7 @@ class Account < Prefbase
     end
   end
 
-  def name_to_path( name )
+  def self.name_to_path( name )
     accounts_dir = Util.get_appdata_pathname / "accounts"
     accounts_dir / ( name + ".json" ) # Pathname class
   end
@@ -69,7 +69,10 @@ class Account < Prefbase
   end
 
   def self.delete( name )
-    File.unlink( name_to_path( name ) )
+    path = name_to_path(name)
+    if File.exist?(path)
+      File.unlink( path )
+    end
   end
 
 end
