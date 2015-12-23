@@ -773,11 +773,10 @@ class CommentPage < Page
     Thread.new{
       if not @edit_ime_prepared
         tp = App.i.tab_pane
-        30.times{
-          # if @comment_view.webview.isFocused
-          if not tp.isFocused
-            sleep(0.05)
-          else
+        60.times{|c|
+          sleep(0.05)
+          if tp.isFocused
+            $stderr.puts "ime 問題フォーカス待ち #{c}回目"
             break
           end
          }
