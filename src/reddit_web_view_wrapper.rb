@@ -338,6 +338,8 @@ table {
 
 table, th, td {
     border: 1px solid #{App.i.theme::COLOR::HTML_TEXT_THIN};
+    padding-left:6px;
+    padding-right:6px;
 }
 
 .new_mark {
