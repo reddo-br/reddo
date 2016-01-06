@@ -175,6 +175,15 @@ class CommentPage < CommentPageBase
       App.i.copy( "https://redd.it/#{@page_info[:name]}" )
     }
     @comments_menu.getItems.add( copy_url_item_short )
+    
+    copy_url_md = MenuItem.new("URLをコピー(Markdown形式)")
+    copy_url_md.setOnAction{|e|
+      if url = make_page_url
+        title_escaped = Util.escape_md( @title )
+        App.i.copy( "[#{title_escaped}](#{url})" )
+      end
+    }
+    @comments_menu.getItems.add( copy_url_md )
 
     ####
 

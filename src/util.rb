@@ -187,4 +187,43 @@ module Util
 
     title
   end
+  
+  def escape_md( line )
+    # html escapeする
+    str1 = line.dup
+    str1.gsub!(/\&/o , "&amp;")
+    str1.gsub!(/\>/o , "&gt;")
+    str1.gsub!(/\</o , "&lt;")
+    str1.gsub!(/^ +/){|m|
+      "&nbsp;" * m.length
+    }
+    str1.gsub!(/ {2,}/){|m|
+      "&nbsp;" * m.length
+    }
+
+    url_positions = []
+    pos = 0
+    while pos < str1.length
+      if m = str1.match(/(https?|ftp):\/\/[^\s\/$.?#].[^\s]*/o , pos)
+        url_positions << [ m.begin(0) , m.end(0) ]
+        pos = m.end(0)
+      else
+        break
+      end
+    end
+
+    # . はエスケープしない
+    # url内部でのエスケープを止めたい
+    str1.gsub!( /[\`\*_\{\}\[\]\(\)\#\+\-\!\^\~\>\\]/o ){ |c| 
+      m = Regexp.last_match
+      pos = m.begin(0)
+      if url_positions.find{|b,e| b <= pos and pos < e }
+        c
+      else
+        "\\" + c
+      end
+    }
+    str1
+  end
+
 end # module
