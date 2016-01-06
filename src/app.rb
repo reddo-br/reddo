@@ -29,6 +29,7 @@ require 'comment_page'
 require 'message_area'
 require 'config_page'
 require 'google_search_page'
+require 'comment_post_list_page'
 
 require 'app_toolbar'
 
@@ -301,6 +302,8 @@ class App
                         ConfigPage.new(page_info)
                       when 'google_search'
                         GoogleSearchPage.new( page_info )
+                      when 'comment-post-list'
+                        CommentPostListPage.new( page_info )
                       end
         if target_page
           target_tab = target_page.tab_widget
@@ -430,7 +433,7 @@ class App
     root.lookup( "#" + ID_TAB_PANE )
   end
 
-  TYPE_FOR_SAVE = [ 'sub' , 'comment' ]
+  TYPE_FOR_SAVE = [ 'sub' , 'comment' , 'comment-post-list' ]
   def save_tabs
     page_infos = tab_pane.getTabs().map{|t| t.getContent().page_info }.find_all{|i| 
       i and TYPE_FOR_SAVE.find{|t| i[:type] == t }
@@ -497,6 +500,60 @@ class App
     ass.each{|as|
       as.load_accounts()
     }
+  end
+
+  # todo: ↓ ユーザー履歴関連を別モジュールにすること
+
+  def make_user_history_menuitems( username )
+    owned = Account.exist?( username )
+    USER_HISTORY_ITEMS.find_all{ |label , path , permitted | 
+      owned or permitted
+    }.map{ |label , path , need_account| 
+      label2 = label + " [#{username}]"
+      path2  = "#{username}#{path}"
+      make_user_history_item( path2 , label2 )
+    }
+  end
+
+  def make_user_history_item( path , label = nil)
+    label ||= name
+    item = MenuItem.new(label)
+    item.setOnAction{|ev|
+      url = "https://www.reddit.com/user/#{path}"
+      uh = UrlHandler.new
+      info = uh.url_to_page_info( url )
+      App.i.open_by_page_info(info)
+    }
+    item
+  end
+
+  USER_HISTORY_ITEMS = [["コメントと投稿" , "/" , true],
+                        ["コメント"  , "/comments/" ,true ],
+                        ["投稿" , "/submitted/" , true],
+
+                        ["upvoteした投稿" , "/upvoted/" , false ],
+                        ["downvoteした投稿","/downvoted/" , false ],
+                       
+                        ["saveしたもの" , "/saved/" , false ],
+                        ["hideした投稿" , "/hidden/", false ],
+
+                        ["goldを贈られたもの" , "/gilded/", true],
+                        ["goldを贈ったもの" , "/gilded/given/", false],
+                       ]
+  
+  def path_to_user_history( path )
+    if m = path.to_s.match( /\/u(?:ser)\/([\w\-]+)(\/[\w\/]+)?/ )
+      username = m[1]
+      type = if m[2].to_s[-1] == "/"
+               m[2].to_s
+             else
+               m[2].to_s + "/"
+             end
+      type_array = USER_HISTORY_ITEMS.rassoc( type )
+      [ username , type_array ]
+    else
+      nil
+    end
   end
 
 end

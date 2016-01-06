@@ -46,7 +46,8 @@ class UrlHandler
   end
 
   # [ is_multireddit , owner ]
-  REGEX_USER_SUBMISSION_LISTS = "(submitted|upvoted|downvoted|hidden)"
+  REGEX_USER_SUBMISSION_LISTS = "(?:submitted|upvoted|downvoted|hidden)"
+  REGEX_USER_COMMENT_LISTS = "(?:comments|saved|gilded\/given|gilded)"
   def path_is_multireddit(path)
     # reddit
     if m = path.match( /\/u(?:ser)?\/([\w\-]+)\/m\/\w+\/?$/ )
@@ -124,18 +125,29 @@ class UrlHandler
         else
           if m = url_o.path.match( %r!^#{sub_top}/([\w\+]+)/?$!uo )
             {:site => site , :type => "sub" , :name => m[1] }
+            
+            ###### マルチレディット
           elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/m/(\w+)/?$!uo )
             # /u/だとapiは転送してくれない？
             justified_path = url_o.path.sub( /^\/u\// , '/user/')
             {:site => site , :type => "sub" , :name => ".." + justified_path }
           elsif @account_name and m = url_o.path.match( %r!^/me/m/(\w+)/?$!uo )
             {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] }
+            
+            ###### user履歴 subreddit
           elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
             # /u/だとapiは転送してくれない？
             justified_path = url_o.path.sub( /^\/u\// , '/user/')
             {:site => site , :type => "sub" , :name => ".." + justified_path }
-          elsif @account_name and m = url_o.path.match( %r!^/me/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
-            {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/" + m[1] }
+          #elsif @account_name and m = url_o.path.match( %r!^/me/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
+          #  {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/" + m[1] }
+            
+            ##### user履歴 コメント
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/?$!uo )
+            {:site => site , :type => "comment-post-list" , :name => "/user/#{m[1]}" }
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+/#{REGEX_USER_COMMENT_LISTS})/?$!uo )
+            {:site => site , :type => "comment-post-list" , :name => "/user/#{m[1]}" }
+
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
             {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)!uo )

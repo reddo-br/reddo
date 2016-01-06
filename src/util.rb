@@ -7,7 +7,7 @@ require 'fileutils'
 
 #require 'app'
 require 'client_params'
-# require 'html/html_entity'
+require 'html/html_entity'
 require 'uri'
 
 module Util
@@ -148,4 +148,43 @@ module Util
     end
   end
 
+  def decoded_thumbnail_url( obj )
+    if obj[:thumbnail] =~ /^http/o
+      Html_entity.decode( obj[:thumbnail] )
+    else
+      url , w , h = Util.find_submission_preview(obj)
+      if url
+        Html_entity.decode( url )
+      else
+        nil
+      end
+    end
+  end
+
+  # https://github.com/reddit/reddit/blob/master/r2/r2/lib/utils/utils.py
+  def title_to_url(title , max_length = 50)
+    # $stderr.puts "#{title_to_url:#{title}"
+    title = title.encode( 'utf-8' , 
+                          :invalid => :replace , 
+                          :undef   => :replace ,
+                          :replace => "" )
+    # $stderr.puts "#{title_to_url encoded:#{title}"
+    title.gsub!(/\s+/o , '_')
+    title.gsub!(/[^[[:word:]]]+/o , '')
+    title.gsub!(/_+/o , '_')
+    title.gsub!(/_+$/o , '')
+    title.gsub!(/^_+/o , '')
+    title = title.downcase
+
+    if title.length > 50
+      title = title[0,50]
+      title.gsub!(/_[^_]*$/,'')
+    end
+    
+    if title.length == 0
+      title = '_'
+    end
+
+    title
+  end
 end # module

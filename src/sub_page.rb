@@ -49,7 +49,6 @@ class SubPage < Page
                 [ "論争中(年)" , "controversial" , :year ],
                 [ "論争中(全)" , "controversial" , :all  ],
                 
-
                ]
   
   def initialize( info )
@@ -250,8 +249,13 @@ class SubPage < Page
     @sort_button_group = ToggleGroup.new()
     @sort_buttons.each{|b| b.setToggleGroup( @sort_button_group) }
 
+    default_button = if @is_user_submission_list
+                       @sort_new
+                     else
+                       @sort_hot
+                     end
     Util.toggle_group_set_listener_force_selected( @sort_button_group ,
-                                                   @sort_hot){|btn| start_reload }
+                                                   default_button){|btn| start_reload }
     
     @sort_selector = MenuButton.new("")
     @sort_selector.getStyleClass.add("empty-menu-button")
@@ -489,7 +493,12 @@ class SubPage < Page
     self.class.setMargin( @table , Insets.new(3.0, 3.0 , 0 , 3.0) )
     
     # tab
-    prepare_tab( make_tab_name , App.i.theme::TAB_ICON_LIST)
+    tab_icon = if @is_user_submission_list
+                 App.i.theme::TAB_ICON_USER
+               else
+                 App.i.theme::TAB_ICON_LIST
+               end
+    prepare_tab( make_tab_name , tab_icon)
 
     @tab.setOnClosed{
       finish()
@@ -497,7 +506,7 @@ class SubPage < Page
       App.i.close_history.add( @page_info , make_tab_name )
     }
     
-    @permission_alert_ph = Label.new("注意：ユーザーのsubmission履歴表示には、新規の権限が必要です。旧バージョンで認可を与えたアカウントは、再度「アカウント追加」で認可を与える必要があります。")
+    @permission_alert_ph = Label.new("注意：ユーザーの履歴表示には、新規の権限が必要です。旧バージョンで認可を与えたアカウントは、再度「アカウント追加」で認可を与える必要があります。")
     
     # subのデータ取得
     if @is_user_submission_list
@@ -510,7 +519,8 @@ class SubPage < Page
 
     start_reload
   end # initialize
-  
+  attr_reader :is_user_submission_list
+
   def is_votable
     @account_name and not ( @user_state and  @user_state.user and  @user_state.user[:is_suspended] )
   end
@@ -547,12 +557,20 @@ class SubPage < Page
   def make_tab_name
     name = if @sub_info
              @sub_info[:display_name]
+           elsif @is_user_submission_list
+             path = Pathname.new("/r/") / @page_info[:name]
+             name , typedata = App.i.path_to_user_history( path.to_s )
+             if typedata
+               typedata[0]
+             else
+               subpath_to_name(@page_info[:name])
+             end
            else
              subpath_to_name(@page_info[:name])
            end
 
     owner = if @is_multireddit.is_a?(String)
-              " [by " + @is_multireddit + "]"
+              " [" + @is_multireddit + "]"
             else
               ""
             end
@@ -734,6 +752,11 @@ class SubPage < Page
           when 'top'
             cl.get_top( @page_info[:name] , 
                             {:limit => count , :t => timespan , after:after})
+          when 'gilded'
+            path = @url_handler.subname_to_url( @page_info[:name]).path.to_s
+            rpath = path + "/gilded.json"
+            raw = cl.get( rpath , limit:count , after:after).body
+            cl.object_from_body( raw )
           end
         end
       
@@ -763,16 +786,7 @@ class SubPage < Page
           obj[:title_decoded] = Html_entity.decode( obj[:title] )
           obj[:title_for_match] = obj[:title_decoded].to_s.unicode_normalize(:nfkc).downcase
           
-          obj[:reddo_thumbnail_decoded] = if obj[:thumbnail] =~ /^http/o
-                                            Html_entity.decode( obj[:thumbnail] )
-                                          else
-                                            url , w , h = Util.find_submission_preview(obj)
-                                            if url
-                                              Html_entity.decode( url )
-                                            else
-                                              nil
-                                            end
-                                          end
+          obj[:reddo_thumbnail_decoded] = Util.decoded_thumbnail_url( obj )
           
           set_num_comments_new( obj )
           

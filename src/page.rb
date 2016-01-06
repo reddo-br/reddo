@@ -106,7 +106,7 @@ class Page < Java::JavafxSceneLayout::VBox
     
     item_close_comment = MenuItem.new("サブレディット以外を閉じる")
     item_close_comment.setOnAction{|ev|
-      App.i.close_pages{|p| not p.is_a?( SubPage ) }
+      App.i.close_pages{|p| not (p.is_a?( SubPage ) and not p.is_user_submission_list) }
     }
     menu.getItems().add( item_close_comment )
     
@@ -132,7 +132,6 @@ class Page < Java::JavafxSceneLayout::VBox
     selected = @tab.isSelected
 
     new_pos = (index + move) % tabs.length
-
     tabs.remove( @tab )
     tabs.add( new_pos , @tab )
     if selected

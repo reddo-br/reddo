@@ -80,7 +80,7 @@ button {
 
 a:link { color: #{App.i.theme::COLOR::HTML_LINK}; }
 
-div.comment { 
+div.comment, div.post-in-list { 
   word-wrap:break-word;
   padding: 6px 6px 0px 6px;
   margin: 12px 12px 0px 12px;
@@ -90,6 +90,10 @@ div.comment {
   background-color: #{App.i.theme::COLOR::HTML_COMMENT_BG};
 }
 
+div.post-in-list {
+  border-style: dotted;
+  background-color: #{App.i.theme::COLOR::HTML_BG};
+}
 
 div.comment > div.comment {
   border-width: 0px 0px 0px 5px ;
@@ -120,12 +124,12 @@ div.comment p {
 
 }
 
-.comment_this {
+.comment_this, .post-in-list-inner {
   padding:6px 6px 6px 6px;
 
 }
 
-.comment_header {
+.comment_header , .user_history_comment_header {
   font-size:90%;
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
@@ -155,6 +159,10 @@ div.comment p {
 }
 
 .comment .comment .comment_footer {
+  font-size:90%;
+}
+
+.post-in-list-inner .comment_footer {
   font-size:90%;
 }
 
@@ -257,6 +265,15 @@ h1,h2,h3,h4,h5 { #{bold_style} }
   object-fit: contain;
 }
 
+.post-thumb-in-list {
+  float:left;
+  margin:5px;
+  max-height:80px;
+  max-width:240px;
+  height:auto;
+  width:auto;
+}
+
 #link_flair {
   color:#{App.i.theme::COLOR::HTML_BG};
   background-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
@@ -267,13 +284,17 @@ h1,h2,h3,h4,h5 { #{bold_style} }
   display:none;
 }
 
-a#linked_title {
-  font-size:110%;
+a#linked_title, a.link-title {
   text-decoration:none;
+  
+}
+
+a#linked_title, .post-in-list-inner .link-title {
+  font-size:110%;
   #{bold_style};
 }
 
-a#linked_title:hover {
+a#linked_title:hover, a.link-title:hover {
   text-decoration:underline;
 }
 
@@ -350,6 +371,23 @@ table, th, td {
 
   color: #{App.i.theme::COLOR::STRONG_RED};
   #{bold_style};
+}
+
+.userinfo_name {
+  font-size:120%;
+  #{bold_style}
+}
+
+.userinfo_karma {
+  color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
+}
+
+.userinfo_date {
+  color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
+}
+
+.userinfo {
+  margin:8px;
 }
 
 EOF

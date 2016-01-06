@@ -15,6 +15,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     @downvoted_img_url = App.res_url( App.i.theme::HTML_DOWNVOTED)
 
     $stderr.puts "internal url upvote #{@upvote_img_url}"
+
+    @self_text_visible = true
   end
   attr_reader :webview
 
@@ -86,13 +88,14 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     subreddit_info.appendChild( @doc.createTextNode("]"))
 
     subm = @doc.getElementById("submission")
-    if obj[:is_self] and obj[:selftext_html].to_s.length > 0
+    if obj[:is_self] and @self_text_visible and obj[:selftext_html].to_s.length > 0
       # $stderr.puts "*** selfテキスト表示"
       # $stderr.puts obj[:selftext_html]
       subm.setAttribute("style","display:block")
       subm.setMember( "innerHTML" , html_decode( obj[:selftext_html].to_s ))
     else
       subm.setAttribute( "style","display:none")
+      # subm.setMember("innerHTML" , "") # :empty -> display:none
     end
 
     if thumb = make_thumbnail_element( subm )
@@ -113,8 +116,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     imgb = @doc.getElementById("preview_box")
 
     if obj[:is_self]
-      img.setAttribute("style" , "visibility:none")
-      imgb.setAttribute("style" , "visibility:none")
+      img.setAttribute("style" , "visibility:hidden")
+      imgb.setAttribute("style" , "visibility:hidden")
     else
       
       image_url , w, h = Util.find_submission_preview( obj , 
@@ -133,8 +136,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
           # imgb.setAttribute("style", "width:140px; height:140px;")
           imgb.setAttribute("style", "width:140px; ")
         else
-          img.setAttribute("style" , "visibility:none")
-          imgb.setAttribute("style" , "visibility:none")
+          img.setAttribute("style" , "visibility:hidden")
+          imgb.setAttribute("style" , "visibility:hidden")
         end
       end
       
@@ -209,20 +212,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       if obj.is_a?( Redd::Objects::MoreComments )
         if obj.count > 0
 
-          $stderr.puts "コメント内のmore: #{obj}"
+          more , more_button , elem_id = create_more_element( "もっと見る(#{obj.count})" )
 
-          more = @doc.createElement("div")
-          more.setAttribute("class" , "more")
-          elem_id = java.util.UUID.randomUUID().toString()
-          more.setAttribute("id" , elem_id)
-          # more.setIdAttribute( "id" ,true) # not implemented
-          $stderr.puts "●attr id = #{more.getAttribute("id")}"
-          more_button = @doc.createElement("button")
-          more_button.setTextContent("もっと見る(#{obj.count})")
-          more.appendChild( more_button )
-          
-          result = @doc.createElement("span")
-          more.appendChild( result )
           parent.appendChild( more )
           
           if @account_name
@@ -251,20 +242,32 @@ class CommentWebViewWrapper < RedditWebViewWrapper
           parent.appendChild( continue_thread )
         end
 
-      else
+      else # obj.is_a?( Redd::Objects::MoreComments )
 
         old_comment_this = @doc.getElementById( "ct_" + obj[:name].to_s )
         # comment_this = make_comment_this_element( obj )
         if old_comment_this
           old_comment_this.setAttribute("id" , "") # id重複を避ける
-          comment_this = make_comment_this_element( obj )
+          comment_this = if obj[:kind] == 't3'
+                           make_post_in_list_inner_element(obj)
+                         else
+                           make_comment_this_element( obj )
+                         end
           comment = old_comment_this.parentNode()
           comment.replaceChild( comment_this, old_comment_this )
         else
-          comment_this = make_comment_this_element( obj )
+          comment_this = if obj[:kind] == 't3'
+                           make_post_in_list_inner_element(obj)
+                         else
+                           make_comment_this_element( obj )
+                         end
           comment = @doc.createElement("div")
           comment.setAttribute("id" , obj[:name])
-          comment.setAttribute("class" , "comment")
+          if obj[:kind] == 't3'
+            comment.setAttribute("class",  "post-in-list")
+          else
+            comment.setAttribute("class" , "comment")
+          end
           comment.appendChild( comment_this )
           if prepend
             parent.insertBefore( comment , find_first_child( parent ))
@@ -288,6 +291,38 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   end # add_comment
 
+  def add_list_more_button
+    comments = @doc.getElementById("comments")
+
+    more , more_button , elem_id = create_more_element
+
+    set_event( more_button , 'click' ,false ){
+      if @more_cb
+        more_button.setAttribute("disabled" , "disabled" )
+        Platform.runLater{
+          @more_cb.call( nil , elem_id )
+        }
+      end
+    }
+
+    comments.appendChild( more )
+  end
+  
+  def create_more_element( label = "もっと見る" )
+    more = @doc.createElement("div")
+    more.setAttribute("class" , "more")
+    elem_id = java.util.UUID.randomUUID().toString()
+    more.setAttribute("id" , elem_id)
+    more_button = @doc.createElement("button")
+    more_button.setTextContent(label)
+    more.appendChild( more_button )
+
+    result = @doc.createElement("span")
+    more.appendChild( result )
+
+    [ more , more_button , elem_id ]
+  end
+
   def remove_comment( name )
     element_id = name # そのまま
     target = @doc.getElementById( element_id )
@@ -301,6 +336,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
   def clear_comment
     clear_events # web_view_wrapper.rb # イベントリスナーの明示的解放
     
+    # set_message(nil) # 消さない
+
     # @div_comments.setMember("innerHTML" , "")
     # @div_submission.setMember("innerHTML","")
     empty("#submission")
@@ -335,6 +372,28 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     comment_this.setAttribute("class" , "comment_this")
     comment_this.setAttribute("id" , "ct_" + obj[:name].to_s )
     
+    if @comment_post_list_mode
+      link_area = @doc.createElement("div")
+      link_area.setAttribute("class","user_history_comment_header")
+      post_link = @doc.createElement("a")
+      post_link.setAttribute("href" , html_decode(obj[:link_url]))
+      post_link.setMember("innerHTML", html_decode(obj[:link_title]))
+      post_link.setAttribute("class" , "link-title")
+
+      link_area.appendChild( post_link )
+
+      link_area.appendChild( @doc.createTextNode(" ["))
+      
+      sub_link = @doc.createElement("a")
+      sub_link.setMember("innerHTML" , obj[:subreddit].to_s )
+      sub_link.setAttribute("href" , @uh.subname_to_url( obj[:subreddit]).to_s )
+      link_area.appendChild( sub_link )
+      
+      link_area.appendChild( @doc.createTextNode("]"))
+
+      comment_this.appendChild( link_area )
+    end
+
     comm_head = make_post_head_element( obj )
     comment_this.appendChild( comm_head )
 
@@ -353,6 +412,62 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     # comment.appendChild( comment_this )
     
     comment_this
+  end
+
+  def make_post_in_list_inner_element( obj )
+    post = @doc.createElement("div")
+    post.setAttribute("class","post-in-list-inner")
+    post.setAttribute("id" , "ct_" + obj[:name].to_s )
+    
+    post_head = make_post_head_element( obj )
+    post.appendChild( post_head )
+    
+    # thumb
+
+    post_title = @doc.createElement("div")
+
+    if thumb_url = Util.decoded_thumbnail_url( obj )
+      thumb = @doc.createElement("img")
+      thumb.setAttribute("class","post-thumb-in-list")
+      thumb.setAttribute("src" , thumb_url )
+      post_title.appendChild( thumb )
+    end
+
+    post_title.appendChild( make_link_title_in_list(obj))
+    post.appendChild( post_title )
+    c = @doc.createElement("div")
+    c.setAttribute("style","clear:both")
+    post.appendChild( c )
+
+    post_footer = make_footer_element( post , obj )
+    post.appendChild( post_footer )
+
+    post
+  end
+
+  # todo: いずれset_submissionと統合する
+  def make_link_title_in_list( obj )
+    linked_title_area = @doc.createElement("span")
+    linked_title = @doc.createElement("a")
+    linked_title.setAttribute("class","link-title")
+    linked_title.setAttribute("href", html_decode( obj[:url] ) )
+    linked_title.setMember("innerHTML" , html_decode(obj[:title].to_s))
+    linked_title_area.appendChild( linked_title )
+
+    domain = @doc.createElement("span")
+    domain.setMember( "innerHTML" , " (" + obj[:domain] + ")" )
+    linked_title_area.appendChild( domain )
+
+    subreddit_link = @doc.createElement("a")
+    subreddit_link.setMember("innerHTML" , obj[:subreddit].to_s )
+    subreddit_url = @uh.subname_to_url( obj[:subreddit] ).to_s
+    subreddit_link.setAttribute("href" , subreddit_url )
+    
+    linked_title_area.appendChild( @doc.createTextNode(" ["))
+    linked_title_area.appendChild( subreddit_link )
+    linked_title_area.appendChild( @doc.createTextNode("]"))
+
+    linked_title_area
   end
 
   def make_thumbnail_element( elem )
@@ -408,6 +523,18 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
   end
 
+  def user_history_comment_to_permalink( obj )
+    link_id_without_kind = obj[:link_id].sub(/^t\d_/ , '')
+    title_url = Util.title_to_url( html_decode(obj[:link_title].to_s) )
+    "/r/#{obj[:subreddit]}/comments/#{link_id_without_kind}/#{title_url}/#{obj[:id]}"
+  end
+
+  def user_history_comment_to_post_url( obj )
+    link_id_without_kind = obj[:link_id].sub(/^t\d_/ , '')
+    title_url = Util.title_to_url( html_decode(obj[:link_title].to_s) )
+    "/r/#{obj[:subreddit]}/comments/#{link_id_without_kind}/#{title_url}/"
+  end
+
   def make_footer_element( mouseover_element , obj )
     comment_foot = @doc.createElement("span")
     comment_foot.setAttribute("class" , "comment_footer")
@@ -415,14 +542,23 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     #  comment_foot.setAttribute("style", "font-size:90%;")
     #end
 
-    parmalink_this = if obj[:kind] == 't1'
-                       @permalink + obj[:id]
-                     else
-                       @permalink
-                     end
+    parmalink_this = 
+      if obj[:kind] == 't1'
+        if @permalink
+          @permalink + obj[:id]
+        else
+          user_history_comment_to_permalink( obj )
+        end
+      else
+        @permalink || obj[:permalink]
+      end
 
     comment_foot_open = @doc.createElement("a")
-    comment_foot_open.setTextContent("ここから表示")
+    if obj[:kind] == 't3'
+      comment_foot_open.setTextContent("全体表示")
+    else
+      comment_foot_open.setTextContent("単独")
+    end
     # partial comment pathを作れない問題
     comment_foot_open.setAttribute("href" , parmalink_this )
 
@@ -431,12 +567,21 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     
     if obj[:parent_id] =~ /^t1/
       comment_foot_open_thread = @doc.createElement("a")
-      comment_foot_open_thread.setTextContent("このスレ")
+      comment_foot_open_thread.setTextContent("親")
       comment_foot_open_thread.setAttribute("href" , parmalink_this + "?context=8")
       comment_foot.appendChild( comment_foot_open_thread )
       comment_foot.appendChild( @doc.createTextNode(" "))
     end
     
+    if obj[:kind] == 't1' and @comment_post_list_mode
+      comment_foot_full_comment = @doc.createElement("a")
+      comment_foot_full_comment.setTextContent("全体")
+      comment_foot_full_comment.setAttribute("href" , 
+                                             user_history_comment_to_post_url(obj))
+      comment_foot.appendChild( comment_foot_full_comment )
+      comment_foot.appendChild( @doc.createTextNode(" "))
+    end
+
     if obj[:kind] == 't1'
       comment_foot_open_ex = @doc.createElement("a")
       comment_foot_open_ex.setTextContent("外部ブラウザ")
@@ -539,11 +684,31 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     comment_foot
   end
 
+  def set_user_info(obj)
+    empty("#headline")
+    headline = @doc.getElementById("headline")
+    created = Time.at(obj[:created_utc].to_f).strftime("%Y-%m-%d %H:%M:%S")
+    html = <<EOF
+<div class="userinfo">
+<div>
+<span class="userinfo_name">#{obj[:name]}</span>
+<span class="userinfo_karma">リンクカルマ:#{obj[:link_karma]} コメントカルマ:#{obj[:comment_karma]}</span>
+</div>
+<div>
+<span class="userinfo_date">登録:#{created}</span>
+</div>
+</div>
+EOF
+
+    headline.setMember("innerHTML" , html )
+  end
+
   def is_deletable(obj)
     (obj[:author] == @account_name) and (not is_deleted(obj)) and (not obj[:archived])
   end
   def is_repliable(obj)
-    (not @locked) and @account_name and (not obj[:archived]) and (not @user_suspended )
+    (not @locked) and @account_name and (not obj[:archived]) and (not @user_suspended ) and
+      (not @comment_post_list_mode)
   end
   def is_editable(obj)
     obj[:author] == @account_name and ( obj[:kind] == 't1' or obj[:is_self] ) and
@@ -711,6 +876,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       comm_head.appendChild( @doc.createTextNode(" ") )
       comm_head.appendChild( edit_time )
     end
+
     comm_head
   end
 
@@ -725,7 +891,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
                when "moderator"
                  " user_name_mod"
                else
-                 if obj[:kind] == 't1' and (not deleted) and author == @original_poster
+                 op = obj[:link_author] || @original_poster # :link_authorはuser履歴の場合のみある
+                 if obj[:kind] == 't1' and (not deleted) and author == op
                    " user_name_op"
                  else
                    ""
@@ -833,7 +1000,38 @@ EOF
 EOF
     
   end
-    
+  
+  def set_self_text_visible( visible )
+    @self_text_visible = visible
+    #if @doc
+    #  if subm = @doc.getElementById("submission")
+    #    disp = if visible
+    #             "block"
+    #           else
+    #             "none"
+    #           end
+    #    subm.setAttribute("style" , "display:#{disp}")
+    #  end
+    #end
+  end
+
+  def set_comment_post_list_mode( mode )
+    @comment_post_list_mode = mode
+    if @doc
+      vis = if mode
+              "hidden"
+            else
+              "visible"
+            end
+      post = @doc.getElementById("post_area")
+      post.setAttribute("style" , "visibility:#{vis}; height:0")
+      
+      #if users
+      #  remove( "#post_area")
+      #end
+    end
+  end
+
   def clear_replying( name )
     
     selector = if name =~ /^t1/
@@ -850,6 +1048,15 @@ EOF
     }
 EOF
     @replying = nil
+  end
+
+  def set_message( html )
+    if html
+      me = @doc.getElementById("message")
+      me.setMember("innerHTML",html)
+    else
+      empty("#message")
+    end
   end
 
   JS_SCROLL_ELEMENT_IN_VIEW = <<EOF
@@ -903,14 +1110,18 @@ html = <<EOF
 <style id="additional-style">#{@additional_style}</style>
 </head>
 <body id="top">
+<div id="message"></div>
+<div id="headline"></div>
+<div id="post_area">
 <div id="preview_box"><img src="" id="preview" /></div>
 <div id="title_area">
 <span id="subm_head"></span><br>
 <span id="link_flair"></span><a id="linked_title"></a> <span id="domain"></span> <span id="subreddit"></span>
-</div>
+</div><!-- title_area -->
 <div style="clear:both"></div>
 <div id="submission"></div>
 <div id="submission_command"></div>
+</div><!-- post area -->
 <div id="comments"></div>
 </body>
 </html>
