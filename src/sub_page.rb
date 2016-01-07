@@ -145,7 +145,7 @@ class SubPage < Page
       external_post_page_item.setOnAction{|e|
         url = get_sub_url
         if url.to_s.length > 0
-          App.i.open_external_browser( url.to_s + "submit" )
+          App.i.open_external_browser( url.to_s + "/submit" )
         end
       }
       @sub_menu_button.getItems.add( external_post_page_item )
@@ -159,16 +159,33 @@ class SubPage < Page
     }
     @sub_menu_button.getItems.add(copy_url_item)
 
+
     if not @is_multireddit
       copy_post_url_item = MenuItem.new("投稿ページurlをコピー")
       copy_post_url_item.setOnAction{|ev|
         url = get_sub_url
         if url and url.to_s.length > 0
-          App.i.copy( url.to_s + "submit" )
+          App.i.copy( url.to_s + "/submit" )
         end
       }
       @sub_menu_button.getItems.add(copy_post_url_item)
+    end
+    
+    # サブレディットのコメント/gold一覧
+    @sub_menu_button.getItems.add( SeparatorMenuItem.new)
+    sub_comments_item = MenuItem.new("新着コメント")
+    sub_comments_item.setOnAction{|e| App.i.open_url( get_sub_url.to_s + "/comments" ) }
+    @sub_menu_button.getItems.add( sub_comments_item )
+    sub_gilded_item = MenuItem.new("ゴールドを贈られたもの")
+    sub_gilded_item.setOnAction{|e| App.i.open_url( get_sub_url.to_s + "/gilded") }
+    @sub_menu_button.getItems.add( sub_gilded_item )
 
+    if @is_user_submission_list
+      @sub_menu_button.getItems.add( SeparatorMenuItem.new )
+      @sub_menu_button.getItems.addAll( App.i.make_user_history_menuitems( @is_user_submission_list ))
+    end
+
+    if not @is_multireddit
       @subscribed_check_item = CheckMenuItem.new()
       @subscribed_check_item.selectedProperty.addListener{|ov|
         sel = ov.getValue
@@ -183,6 +200,7 @@ class SubPage < Page
       @sub_menu_button.getItems.add( @subscribed_check_item )
 
     end
+
     @button_area_right.getChildren().addAll( Separator.new( Orientation::VERTICAL ),
                                              @active_label ,
                                              @sub_menu_button)
@@ -555,26 +573,15 @@ class SubPage < Page
   end
 
   def make_tab_name
-    name = if @sub_info
-             @sub_info[:display_name]
-           elsif @is_user_submission_list
-             path = Pathname.new("/r/") / @page_info[:name]
-             name , typedata = App.i.path_to_user_history( path.to_s )
-             if typedata
-               typedata[0]
-             else
-               subpath_to_name(@page_info[:name])
-             end
-           else
-             subpath_to_name(@page_info[:name])
-           end
-
-    owner = if @is_multireddit.is_a?(String)
-              " [" + @is_multireddit + "]"
-            else
-              ""
-            end
-    name + owner
+    if @is_multireddit or @is_user_submission_list # url_handler内で決めたタイトルを使う
+      @page_info[:title] || "no title"
+    else
+      if @sub_info
+        @sub_info[:display_name]
+      else
+        subpath_to_name(@page_info[:name])
+      end
+    end
   end
 
   def load_sub_info
@@ -821,10 +828,16 @@ class SubPage < Page
 
   def get_sub_url
     if @sub_info
-      # 相対パスである
-      @url_handler.linkpath_to_url(@sub_info[:url])
+      # "/r/newsokur/" など 最後に/がある
+      sub_url = @sub_info[:url].sub(/\/$/,'')
+      @url_handler.linkpath_to_url( sub_url ) 
     else
-      @url_handler.subname_to_url( @page_info[:name] )
+      au = @url_handler.subname_to_url( @page_info[:name] )
+      if au.path == '/'
+        au.path = ""
+      end
+      $stderr.puts "■get_sub_url: #{au.to_s}"
+      au
     end
   end
 

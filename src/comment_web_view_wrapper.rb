@@ -824,6 +824,14 @@ EOF
       comm_head.appendChild( new_mark )
       comm_head.appendChild( @doc.createTextNode(" "))
     end
+    
+    if obj[:stickied]
+      sticky_mark = @doc.createElement("span")
+      sticky_mark.setAttribute("class","sticky_mark")
+      sticky_mark.setMember("innerHTML","sticky")
+      comm_head.appendChild( sticky_mark )
+      comm_head.appendChild( @doc.createTextNode(" ") )
+    end
 
     comm_head.appendChild( score )
     if obj[:controversiality] and obj[:controversiality].to_i > 0
@@ -847,6 +855,7 @@ EOF
       comm_head.appendChild( upvote )
       comm_head.appendChild( downvote )
     end
+
     comm_head.appendChild( @doc.createTextNode(" ") )
     comm_head.appendChild( author )
 

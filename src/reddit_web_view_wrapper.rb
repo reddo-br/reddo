@@ -200,6 +200,11 @@ div.comment p {
   background-color: #{App.i.theme::COLOR::STRONG_BLUE}
 }
 
+.sticky_mark {
+  color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
+  background-color: #{App.i.theme::COLOR::STRONG_GREEN}
+}
+
 .upvote , .downvote {
   height:16px;
   vertical-align: -2px;

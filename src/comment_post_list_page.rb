@@ -44,7 +44,7 @@ class CommentPostListPage < CommentPageBase
     @page_info[:site] ||= 'reddit'
     @page_info[:type] ||= 'comment-post-list'
 
-    @target_path = @page_info[:name] # username/(saved|hidden|gilded|gilded/given)?
+    @target_path = @page_info[:name]
     @url_handler = UrlHandler.new( @page_info[:site] )
     @base_url = @url_handler.linkpath_to_url( @target_path )
     
@@ -87,9 +87,13 @@ class CommentPostListPage < CommentPageBase
       App.i.save_tabs
     }
 
-    
-    @title = create_title
-    
+    @title = info[:title]
+    @target_user =  @url_handler.path_is_user_comment_list( @target_path ) # ユーザー履歴でなければnil
+        # subのコメントリストでは、ソートは使わない
+    if not @target_user
+      @sort_selector.setDisable(true)
+    end
+
     # name = @account_name || "なし"
     # @account_label = Label.new("アカウント:" + name)
     @account_selector = AccountSelector.new( @account_name )
@@ -101,6 +105,7 @@ class CommentPostListPage < CommentPageBase
         start_reload
       end
     }
+
     @user_ban_state_label = UserBanStateLabel.new
     ###
     @comments_menu = MenuButton.new("その他")
@@ -120,7 +125,9 @@ class CommentPostListPage < CommentPageBase
       end
     }
     @comments_menu.getItems.add( copy_url_item )
-    set_user_history_menuitems
+    if @target_user
+      set_user_history_menuitems
+    end
     ####
 
     @load_status = Label.new("")
@@ -351,8 +358,12 @@ class CommentPostListPage < CommentPageBase
     
     getChildren().add( @split_pane )
 
-    prepare_tab( @title || "取得中" , App.i.theme::TAB_ICON_USER )
-    
+    icon = if @target_user
+             App.i.theme::TAB_ICON_USER
+           else
+             App.i.theme::TAB_ICON_COMMENT2
+           end
+    prepare_tab( @title , icon )
     # Page
     @tab.setOnClosed{|ev|
       # ここはタブを明示的に閉じたときしか来ない
@@ -424,8 +435,10 @@ class CommentPostListPage < CommentPageBase
 
   def set_load_button_enable( enable )
     start_buttons = [ @reload_button , @split_edit_area.post_button , 
-                      @sort_selector , 
                       @account_selector]
+    if @target_user
+      start_buttons << @sort_selector
+    end
     stop_buttons  = [ @load_stop_button ]
 
     set_load_button_enable2( enable , start_buttons , stop_buttons )
@@ -531,9 +544,11 @@ class CommentPostListPage < CommentPageBase
 
     cl = App.i.client( @account_name )
     target_user_info = nil
-    ut2 = Thread.new{
-      target_user_info = cl.user_from_name( @target_user )
-    }
+    if @target_user
+      ut2 = Thread.new{
+        target_user_info = cl.user_from_name( @target_user )
+      }
+    end
     after = if @comments.length > 0
               @comments.last[:name]
             else
@@ -553,7 +568,7 @@ class CommentPostListPage < CommentPageBase
       @comment_view.set_user_suspended( @user_state.user[:is_suspended] )
     end
     
-    ut2.join
+    ut2.join if @target_user
     Platform.runLater{
       @user_ban_state_label.set_data( @user_state.user , @user_state.is_shadowbanned) if @user_state
       @comment_view.clear_comment if not add

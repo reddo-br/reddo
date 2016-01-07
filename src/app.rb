@@ -506,39 +506,38 @@ class App
 
   def make_user_history_menuitems( username )
     owned = Account.exist?( username )
-    USER_HISTORY_ITEMS.find_all{ |label , path , permitted | 
+    USER_HISTORY_ITEMS.find_all{ |path , permitted | 
       owned or permitted
-    }.map{ |label , path , need_account| 
-      label2 = label + " [#{username}]"
-      path2  = "#{username}#{path}"
-      make_user_history_item( path2 , label2 )
+    }.map{ | path , need_account| 
+      path2  = "/user/#{username}#{path}"
+      make_user_history_item( path2 )
     }
   end
 
-  def make_user_history_item( path , label = nil)
-    label ||= name
-    item = MenuItem.new(label)
-    item.setOnAction{|ev|
-      url = "https://www.reddit.com/user/#{path}"
-      uh = UrlHandler.new
-      info = uh.url_to_page_info( url )
-      App.i.open_by_page_info(info)
-    }
+  def make_user_history_item( path )
+    uh = UrlHandler.new
+    info = uh.url_to_page_info( path )
+    item = MenuItem.new(info[:title])
+    if info
+      item.setOnAction{|ev|
+        App.i.open_by_page_info(info)
+      }
+    end
     item
   end
 
-  USER_HISTORY_ITEMS = [["コメントと投稿" , "/" , true],
-                        ["コメント"  , "/comments/" ,true ],
-                        ["投稿" , "/submitted/" , true],
+  USER_HISTORY_ITEMS = [[ "" , true],
+                        [ "/comments" ,true ],
+                        [ "/submitted" , true],
 
-                        ["upvoteした投稿" , "/upvoted/" , false ],
-                        ["downvoteした投稿","/downvoted/" , false ],
+                        [ "/upvoted" , false ],
+                        [ "/downvoted" , false ],
                        
-                        ["saveしたもの" , "/saved/" , false ],
-                        ["hideした投稿" , "/hidden/", false ],
+                        [ "/saved" , false ],
+                        [ "/hidden", false ],
 
-                        ["goldを贈られたもの" , "/gilded/", true],
-                        ["goldを贈ったもの" , "/gilded/given/", false],
+                        [ "/gilded", true],
+                        [ "/gilded/given", false],
                        ]
   
   def path_to_user_history( path )

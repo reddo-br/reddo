@@ -48,6 +48,8 @@ class UrlHandler
   # [ is_multireddit , owner ]
   REGEX_USER_SUBMISSION_LISTS = "(?:submitted|upvoted|downvoted|hidden)"
   REGEX_USER_COMMENT_LISTS = "(?:comments|saved|gilded\/given|gilded)"
+
+  REGEX_SUBMISSION_COMMENT_LIST = "(?:comments|gilded)"
   def path_is_multireddit(path)
     # reddit
     if m = path.match( /\/u(?:ser)?\/([\w\-]+)\/m\/\w+\/?$/ )
@@ -70,6 +72,26 @@ class UrlHandler
   def path_is_user_submission_list(path)
     if m = path.match( /\/u(?:ser)?\/([\w\-]+)\/#{REGEX_USER_SUBMISSION_LISTS}\/?$/ )
       m[ 1 ]
+    else
+      nil
+    end
+  end
+
+  def path_is_user_comment_list(path)
+    if m = path.match( /\/u(?:ser)?\/([\w\-]+)\/#{REGEX_USER_COMMENT_LISTS}\/?$/ )
+      m[ 1 ]
+    elsif m = path.match( /\/u(?:ser)?\/([\w\-]+)\/?$/ )
+      m[ 1 ]
+    else
+      nil
+    end
+  end
+
+  def path_is_subreddit_comment_list(path)
+    if m = path.match( /\/r\/([\w\-]+)\/(comments|gilded)\/?$/ )
+      [ m[ 1 ] , m[ 2 ] ]
+    elsif m = path.match( /\/(comments|gilded)\/?$/ )
+      [ nil , m[1] ]
     else
       nil
     end
@@ -105,13 +127,13 @@ class UrlHandler
       return {:type => "other" , :url => url }
     end
 
-    abs_url_o = if url_o.relative?
-                  base_url.join( url_o )
-                else
-                  url_o
-                end
+    url_o = if url_o.relative?
+              base_url.join( url_o )
+            else
+              url_o
+            end
 
-    if rxp_site = TARGET_HOSTS.find{|r,s| abs_url_o.host =~ r }
+    if rxp_site = TARGET_HOSTS.find{|r,s| url_o.host =~ r }
       site = rxp_site[1]
       is_short = rxp_site[2]
       
@@ -120,34 +142,63 @@ class UrlHandler
           if m = url_o.path.match( %r!^/(\w+)/?$! )
             {:site => site , :type => 'comment' , :name => m[1] }
           else
-            {:type => "other" , :url => abs_url_o.to_s }
+            {:type => "other" , :url => url_o.to_s }
           end
         else
+          ####### sub
           if m = url_o.path.match( %r!^#{sub_top}/([\w\+]+)/?$!uo )
-            {:site => site , :type => "sub" , :name => m[1] }
+            title = m[1] # 暫定
+            {:site => site , :type => "sub" , :name => m[1] , :title => title}
+
+            ##### subのコメント一覧
+          elsif m = url_o.path.match( %r!^#{sub_top}/([\w\+]+)/(#{REGEX_SUBMISSION_COMMENT_LIST})/?$!uo)
+            title = submission_comment_list_title( m[2] ) + " [#{m[1]}]"
+            {:site => site , :type => "comment-post-list" , :name => url_o.path , :title => title }
+          elsif m = url_o.path.match( %r!^/(#{REGEX_SUBMISSION_COMMENT_LIST})/?$!uo)
+            title = submission_comment_list_title( m[1] ) + " [フロント]"
+            {:site => site , :type => "comment-post-list" , :name => url_o.path , :title => title }
             
             ###### マルチレディット
-          elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/m/(\w+)/?$!uo )
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/m/(\w+)/?$!uo )
             # /u/だとapiは転送してくれない？
             justified_path = url_o.path.sub( /^\/u\// , '/user/')
-            {:site => site , :type => "sub" , :name => ".." + justified_path }
+            title = "#{m[2]} (#{m[1]})"
+            {:site => site , :type => "sub" , :name => ".." + justified_path , :title => title}
           elsif @account_name and m = url_o.path.match( %r!^/me/m/(\w+)/?$!uo )
-            {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] }
+            title = "#{m[1]} (#{@account_name})"
+            {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] ,
+            :title => title}
             
-            ###### user履歴 subreddit
-          elsif m = url_o.path.match( %r!^/u(?:ser)?/[\w\-]+/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
+            ###### マルチレディットのコメント一覧
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/m/(\w+)/(#{REGEX_SUBMISSION_COMMENT_LIST})/?$!uo )
             # /u/だとapiは転送してくれない？
             justified_path = url_o.path.sub( /^\/u\// , '/user/')
-            {:site => site , :type => "sub" , :name => ".." + justified_path }
-          #elsif @account_name and m = url_o.path.match( %r!^/me/#{REGEX_USER_SUBMISSION_LISTS}/?$!uo )
-          #  {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/" + m[1] }
+            title1 = submission_comment_list_title( m[3] )
+            title = "#{title1} [#{m[2]}](#{m[1]})"
+            {:site => site , :type => "comment-post-list" , :name => justified_path , :title => title}
+          elsif @account_name and m = url_o.path.match( %r!^/me/m/(\w+)/(#{REGEX_SUBMISSION_COMMENT_LIST})/?$!uo )
+            title1 = submission_comment_list_title( m[2] )
+            title = "#{title1} [#{m[1]}](#{@account_name})"
+            {:site => site , :type => 'comment-post-list' , :name => "/user/" + @account_name + "/m/" + m[1] + "/" + m[2] ,
+            :title => title}
+            
+            ###### user履歴 submission
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/(#{REGEX_USER_SUBMISSION_LISTS})/?$!uo )
+            # /u/だとapiは転送してくれない？
+            justified_path = url_o.path.sub( /^\/u\// , '/user/')
+            title = user_list_title( m[2] ) + " (#{m[1]})"
+            {:site => site , :type => "sub" , :name => ".." + justified_path , :title => title}
             
             ##### user履歴 コメント
           elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/?$!uo )
-            {:site => site , :type => "comment-post-list" , :name => "/user/#{m[1]}" }
-          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+/#{REGEX_USER_COMMENT_LISTS})/?$!uo )
-            {:site => site , :type => "comment-post-list" , :name => "/user/#{m[1]}" }
+            title = "コメントと投稿 (#{m[1]})"
+            {:site => site , :type => "comment-post-list" , :name => "/user/#{m[1]}" , :title => title}
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/(#{REGEX_USER_COMMENT_LISTS})/?$!uo )
+            title = user_list_title( m[2] ) + " (#{m[1]})"
+            {:site => site , :type => "comment-post-list" , :name => "/user/#{m[1]}/#{m[2]}" , 
+            :title => title}
 
+            ##### comment画面
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
             {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)!uo )
@@ -155,10 +206,12 @@ class UrlHandler
           #elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/(\w+)!uo ) 
           # この形式がコメントかどうかをクライアント側で判定することはできない。redirect先を見るしかない
           #  {:site => site ,:type=> "comment" , :name => m[2] }
+
+            ##### ほか
           elsif url_o.path == '/'
-            {:site => site , :type => "sub" , :name => "../" } # front
+            {:site => site , :type => "sub" , :name => "../" , :title => "フロントページ" } # front
           else # 非対応パス
-            {:type => "other" , :url => abs_url_o.to_s }
+            {:type => "other" , :url => url_o.to_s }
           end
         end
 
@@ -171,7 +224,38 @@ class UrlHandler
       info[:account_name] = @account_name
       info
     else # 非対応サイト
-      {:type => "other" , :url => abs_url_o.to_s }
+      {:type => "other" , :url => url_o.to_s }
+    end
+  end
+
+  USER_LIST_TITLES = { 
+    "" => "コメントと投稿",
+    "comments" => "コメント",
+    "submitted" => "投稿",
+    "upvoted" => "upvoteした投稿",
+    "downvoted" => "downvoteした投稿",
+    "saved" => "saveした投稿",
+    "hidden" => "hideした投稿",
+    "gilded" => "goldを贈られたもの",
+    "gilded/given" => "goldを贈ったもの",
+  }
+  def user_list_title( type )
+    if t = USER_LIST_TITLES[ type ]
+      t
+    else
+      "no title"
+    end
+  end
+
+  SUBMISSION_COMMENT_LIST_TITLES = {
+    "comments" => "新着コメント",
+    "gilded"   => "ゴールドを贈られたもの",
+  }
+  def submission_comment_list_title( type )
+    if t = SUBMISSION_COMMENT_LIST_TITLES[ type ]
+      t
+    else
+      "no title"
     end
   end
 
