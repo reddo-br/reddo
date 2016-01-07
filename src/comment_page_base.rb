@@ -192,4 +192,8 @@ class CommentPageBase < Page
     end
   end
 
+  def on_select
+    App.i.set_url_area_text( @base_url.to_s )
+  end
+
 end # class

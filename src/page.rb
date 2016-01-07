@@ -203,6 +203,10 @@ class Page < Java::JavafxSceneLayout::VBox
 
   end
   
+  def on_select
+    App.i.set_url_area_text( "" )
+  end
+
   #####
 
   def key_close

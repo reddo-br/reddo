@@ -930,6 +930,11 @@ class CommentPage < CommentPageBase
     if perm = @links[0][:permalink]
       @base_url = @url_handler.linkpath_to_url( perm )
       @comment_view.set_base_url( @base_url )
+      if @tab.isSelected
+        Platform.runLater{
+          App.i.set_url_area_text( @base_url.to_s )
+        }
+      end
     end
 
     @new_comments = []

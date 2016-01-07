@@ -101,13 +101,35 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     self.class.setMargin( @url_text, Insets.new( 0.0 , 0.0 , 0.0 , 8.0 ))
     setCenter( @url_text )
 
-    # glyph_paste = Glyph.new("FontAwesome", "PASTE").sizeFactor(0.9).color(Color::LIGHTBLUE).useGradientEffect()
-
     r_controls = []
-    r_controls << (@copy_button = Button.new("貼") )
-    r_controls << (@open_button = Button.new("開"))
-    r_controls << (@clear_button = Button.new("消"))
-    @copy_button.setOnAction{|ev|
+    # r_controls << (@copy_button = Button.new("貼") )
+    # r_controls << (@open_button = Button.new("開"))
+    r_controls << (@clear_button = Button.new("" , GlyphAwesome.make("TIMES_CIRCLE")) )
+    # @copy_button.setOnAction{|ev|
+    #   clip = Clipboard.getSystemClipboard()
+    #   data = if clip.hasString()
+    #            clip.getString()
+    #          elsif clip.hasUrl()
+    #            clip.getUrl()
+    #          else
+    #            nil
+    #          end
+    #   if data
+    #     @url_text.setText(data)
+    #   end
+    # }
+    # @open_button.setOnAction{|ev|
+    #   open_text
+    # }
+    @clear_button.setOnAction{|ev|
+      @url_text.setText("")
+    }
+    
+    ##
+    App.i.make_pill_buttons( [ @url_text ] + r_controls )
+
+    @open_clipboard_button = Button.new("" , GlyphAwesome.make("CLIPBOARD"))
+    @open_clipboard_button.setOnAction{|ev|
       clip = Clipboard.getSystemClipboard()
       data = if clip.hasString()
                clip.getString()
@@ -116,19 +138,15 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
              else
                nil
              end
+      
       if data
-        @url_text.setText(data)
+        # @url_text.setText(data)
+        App.i.open_url( data )
       end
     }
-    @open_button.setOnAction{|ev|
-      open_text
-    }
-    @clear_button.setOnAction{|ev|
-      @url_text.setText("")
-    }
-
-    ##
-    App.i.make_pill_buttons( [ @url_text ] + r_controls )
+    @open_clipboard_button.setTooltip( Tooltip.new("クリップボード内のurlを開く"))
+    r_controls << Label.new(" ")
+    r_controls << @open_clipboard_button
 
     r_controls << Label.new(" ")
     r_controls << InboxButton.new
@@ -178,6 +196,10 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
       App.i.open_by_page_info( info )
     end
 
+  end
+
+  def set_text(str)
+    @url_text.setText(str)
   end
 
   #####

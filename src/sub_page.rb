@@ -1555,6 +1555,10 @@ class SubPage < Page
     end
   end
 
+  def on_select
+    App.i.set_url_area_text( get_sub_url.to_s )
+  end
+
   #####
   #
   # key

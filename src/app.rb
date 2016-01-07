@@ -83,6 +83,8 @@ class FXApp < JRubyFX::Application
           message_area
         }
       end # scene
+      
+
       base_font = App.i.pref["fonts"]
       if base_font
         stage.getScene().getRoot().setStyle("-fx-font-family:\"#{base_font}\"")
@@ -114,6 +116,16 @@ class FXApp < JRubyFX::Application
       if not Account.list.find{|a| a == an }
         App.i.pref["current_account"] = nil
       end
+      
+      # タブフォーカス時の呼び出し
+      App.i.tab_pane.getSelectionModel.selectedItemProperty().addListener{|ov|
+        if tab = ov.getValue
+          page = tab.getContent
+          if page.respond_to?(:on_select)
+            page.on_select
+          end
+        end
+      }
 
       # セッション再生
       # コマンドラインオプションにより、セッションを破棄する
@@ -500,6 +512,12 @@ class App
     ass.each{|as|
       as.load_accounts()
     }
+  end
+
+  def set_url_area_text( str )
+    if app_toolbar = @scene.lookup(".app-toolbar")
+      app_toolbar.set_text( str.to_s )
+    end
   end
 
   # todo: ↓ ユーザー履歴関連を別モジュールにすること
