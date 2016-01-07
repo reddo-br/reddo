@@ -712,7 +712,7 @@ EOF
       (not @comment_post_list_mode)
   end
   def is_editable(obj)
-    obj[:author] == @account_name and ( obj[:kind] == 't1' or obj[:is_self] ) and
+    obj[:author] == @account_name and ( obj[:kind] == 't1' or (obj[:is_self] and not @comment_post_list_mode)) and
       (not obj[:archived]) and (not @user_suspended)
   end
   def is_votable(obj)
