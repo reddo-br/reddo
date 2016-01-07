@@ -212,8 +212,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       if obj.is_a?( Redd::Objects::MoreComments )
         if obj.count > 0
 
-          more , more_button , elem_id = create_more_element( "もっと見る(#{obj.count})" )
-
+          more , more_button , elem_id , result = create_more_element( "もっと見る(#{obj.count})" )
           parent.appendChild( more )
           
           if @account_name
@@ -294,7 +293,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
   def add_list_more_button
     comments = @doc.getElementById("comments")
 
-    more , more_button , elem_id = create_more_element
+    more , more_button , elem_id , result = create_more_element
 
     set_event( more_button , 'click' ,false ){
       if @more_cb
@@ -320,7 +319,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     result = @doc.createElement("span")
     more.appendChild( result )
 
-    [ more , more_button , elem_id ]
+    [ more , more_button , elem_id , result]
   end
 
   def remove_comment( name )
