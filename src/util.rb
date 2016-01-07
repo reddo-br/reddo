@@ -226,4 +226,8 @@ module Util
     str1
   end
 
+  def comma_separated_int( integer )
+    integer.to_s.sub(/\d+$/){|s| s.reverse.scan(/.{1,3}/).join(",").reverse }
+  end
+
 end # module

@@ -687,11 +687,13 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     empty("#headline")
     headline = @doc.getElementById("headline")
     created = Time.at(obj[:created_utc].to_f).strftime("%Y-%m-%d %H:%M:%S")
+    lc = Util.comma_separated_int( obj[:link_karma] )
+    cc = Util.comma_separated_int( obj[:comment_karma] )
     html = <<EOF
 <div class="userinfo">
 <div>
 <span class="userinfo_name">#{obj[:name]}</span>
-<span class="userinfo_karma">リンクカルマ:#{obj[:link_karma]} コメントカルマ:#{obj[:comment_karma]}</span>
+<span class="userinfo_karma">リンクカルマ:#{lc} コメントカルマ:#{cc}</span>
 </div>
 <div>
 <span class="userinfo_date">登録:#{created}</span>

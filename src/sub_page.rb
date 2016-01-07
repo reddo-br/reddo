@@ -595,7 +595,9 @@ class SubPage < Page
           set_tab_text( make_tab_name )
           set_subscribed_check_item_label( @account_name )
           @subscribed_check_item.setSelected( @subscribed )
-          @active_label.setText("ユーザー数: #{@sub_info[:accounts_active].to_i}/#{@sub_info[:subscribers]}")
+          active = Util.comma_separated_int( @sub_info[:accounts_active].to_i )
+          subscribers = Util.comma_separated_int(@sub_info[:subscribers].to_i )
+          @active_label.setText("ユーザー数: #{active} / #{subscribers}")
         }
       end
     rescue
