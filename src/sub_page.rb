@@ -187,19 +187,24 @@ class SubPage < Page
 
     if not @is_multireddit
       @subscribed_check_item = CheckMenuItem.new()
-      @subscribed_check_item.selectedProperty.addListener{|ov|
-        sel = ov.getValue
-        $stderr.puts sel
-        if @subscribed != sel
-          post_subscribed( sel )
-          @subscribed = sel
-        end
+      @subscribed_check_item.setOnAction{|ev|
+        sel = @subscribed_check_item.isSelected
+        # $stderr.puts sel
+        post_subscribed( sel )
       }
       set_subscribed_check_item_label( @account_name )
       @sub_menu_button.getItems.add( SeparatorMenuItem.new )
       @sub_menu_button.getItems.add( @subscribed_check_item )
 
     end
+    
+    @sub_menu_button.showingProperty.addListener{|ov|
+      if ov.getValue
+        if @subscribed_check_item
+          @subscribed_check_item.setSelected( @subscribed )
+        end
+      end
+    }
 
     @button_area_right.getChildren().addAll( Separator.new( Orientation::VERTICAL ),
                                              @active_label ,
@@ -403,10 +408,10 @@ class SubPage < Page
     vote_column.set_cell_value_factory{|cdf|
       # p cdf.getValue() # Redd::Objects::Submission
       # SimpleObjectProperty.new( cdf.getValue() ) # 全データを渡す これでいいか
-      SimpleObjectProperty.new( [ cdf.getValue() ,self ] )
+      SimpleObjectProperty.new( cdf.getValue() )
 
     }
-    vote_column.set_cell_factory{|col| VoteCell.new() }
+    vote_column.set_cell_factory{|col| VoteCell.new(self) }
     vote_column.setMinWidth( 0 )
     vote_column.setPrefWidth( 40 )
     vote_column.setResizable( false)
@@ -545,16 +550,25 @@ class SubPage < Page
 
   def post_subscribed( subscribed )
     if @sub_info and @sub_info[:name] and @account_name
-      Thread.new{
+      action_name = if subscribed
+                      "購読しました"
+                    else
+                      "購読解除しました"
+                    end
+
+      App.i.background_network_job( "#{@sub_info[:display_name]}を#{action_name}" ,
+                                    "購読処理失敗" ){
         cl = App.i.client( @account_name )
         act = if subscribed
                 'sub'
               else
                 'unsub'
               end
-        ret = cl.post( '/api/subscribe.json' , sr:@sub_info[:name] , # not display name
+        ret = cl.post( '/api/subscribe.json' , 
+                       sr:@sub_info[:name] , # not display name
                        action:act ).body
-        $stderr.puts ret
+        @subscribed = subscribed
+        # $stderr.puts ret
       }
     end
   end
@@ -594,7 +608,7 @@ class SubPage < Page
           @title_label.setText( Html_entity.decode(title) )
           set_tab_text( make_tab_name )
           set_subscribed_check_item_label( @account_name )
-          @subscribed_check_item.setSelected( @subscribed )
+          # @subscribed_check_item.setSelected( @subscribed ) # メニュー表示時にやる
           active = Util.comma_separated_int( @sub_info[:accounts_active].to_i )
           subscribers = Util.comma_separated_int(@sub_info[:subscribers].to_i )
           @active_label.setText("ユーザー数: #{active} / #{subscribers}")
@@ -1014,8 +1028,9 @@ class SubPage < Page
   class VoteCell < Java::JavafxSceneControl::TableCell
     include JRubyFX::DSLControl
     STYLE_BASE = "-fx-font-size:12px;"
-    def initialize()
+    def initialize(page)
       super()
+      @page = page
       @upvote_button = ToggleButton.new("▲")
       @upvote_button.setStyle(STYLE_BASE)
       @upvote_button.getStyleClass().add("upvote-button")
@@ -1051,32 +1066,15 @@ class SubPage < Page
             item[:reddo_score] = item[:score] - item[:reddo_orig_vote_score] + vote_score
             item[:reddo_vote_score] = vote_score
 
-            # p item.client.
-
-            Thread.new{
-              $stderr.puts "vote thread start"
-              begin
-                c = App.i.client( @account_name ) # token更新のため
-                # $stderr.puts "リフレッシュ"
-                case vote_score
-                when 1
-                  item.upvote
-                when -1
-                  item.downvote
-                when 0
-                  item.clear_vote
-                end
-                App.i.mes("投票しました #{item[:name]}")
-              rescue Redd::Error => e
-                $stderr.puts $!
-                $stderr.puts $@
-                App.i.mes("投票エラー #{e.inspect}")
-              rescue
-                $stderr.puts $!
-                $stderr.puts $@
-                App.i.mes("投票エラー")
-              end
-            }
+            vote_val = case vote_score
+                       when 1
+                         true
+                       when -1
+                         false
+                       when 0
+                         nil
+                       end
+            page.vote( item , vote_val )
             item
           }
         end
@@ -1092,8 +1090,8 @@ class SubPage < Page
 
     end
     
-    def updateItem( data_ac , is_empty_col )
-      data , sub_page = data_ac
+    def updateItem( data , is_empty_col )
+      sub_page = @page
       if is_empty_col
         @upvote_button.setVisible( false )
         @downvote_button.setVisible( false )
@@ -1495,6 +1493,23 @@ class SubPage < Page
       menu.getItems().add( open_sub )
     end
 
+    ### toggleメニュー
+    menu.getItems().add( SeparatorMenuItem.new )
+    hide_item = CheckMenuItem.new("hide")
+    hide_item.setOnAction{|ev| # onShowingで呼ばれないようにactionで
+      if obj = @table.getSelectionModel().getSelectedItem()
+        set_object_hidden( obj , hide_item.isSelected)
+      end
+    }
+    menu.getItems().add( hide_item )
+    save_item = CheckMenuItem.new("save")
+    save_item.setOnAction{|ev| # onShowingで呼ばれないようにactionで
+      if obj = @table.getSelectionModel().getSelectedItem()
+        set_object_saved( obj , save_item.isSelected)
+      end
+    }
+    menu.getItems().add( save_item )
+
     # 対象によるメニュー内容の切り変え
     menu.setOnShowing{|e|
       item = @table.getSelectionModel().getSelectedItem()
@@ -1506,6 +1521,10 @@ class SubPage < Page
       else
         open_external.setVisible( false)
       end
+
+      # toggle系
+      hide_item.setSelected( item[:hidden] )
+      save_item.setSelected( item[:saved] )
     }
 
     menu

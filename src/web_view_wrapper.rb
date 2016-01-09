@@ -23,23 +23,10 @@ class WebViewWrapper
     @dom_prepared_cb = cb
     @webview = WebView.new
     @webview.setOnMousePressed{|ev|
-      if ev.isPopupTrigger() # プラットフォームにより、pressで来るときとreleaseで来るときがある
-        # $stderr.puts "popup検出"
-        Platform.runLater{ popup( ev.getScreenX , ev.getScreenY , ev.getX , ev.getY) }
-        ev.consume
-      else
-        if @menu
-          @menu.hide
-          @menu = nil
-        end
-      end
+      on_mouse_pressed( ev )
     }
     @webview.setOnMouseReleased{|ev|
-      if ev.isPopupTrigger()
-        # $stderr.puts "popup検出"
-        Platform.runLater{ popup( ev.getScreenX , ev.getScreenY , ev.getX , ev.getY) }
-        ev.consume
-      end
+      on_mouse_released( ev )
     }
     @webview.setContextMenuEnabled( false )
     @webview.setStyle("-fx-font-smoothing-type:gray")
@@ -85,6 +72,27 @@ class WebViewWrapper
     @worker_stop_cb = cb
   end
   
+  def on_mouse_pressed( ev )
+    if ev.isPopupTrigger() # プラットフォームにより、pressで来るときとreleaseで来るときがある
+      # $stderr.puts "popup検出"
+      Platform.runLater{ popup( ev.getScreenX , ev.getScreenY , ev.getX , ev.getY) }
+      ev.consume
+    else
+      if @menu
+        @menu.hide
+        @menu = nil
+      end
+    end
+  end
+  
+  def on_mouse_released( ev )
+    if ev.isPopupTrigger()
+      # $stderr.puts "popup検出"
+      Platform.runLater{ popup( ev.getScreenX , ev.getScreenY , ev.getX , ev.getY) }
+      ev.consume
+    end
+  end
+
   def popup( x , y , rx , ry)
     sel = get_selected_text.to_s
     href = get_href_text( rx , ry ).to_s

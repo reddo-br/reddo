@@ -180,6 +180,59 @@ class Page < Java::JavafxSceneLayout::VBox
     end
   end
 
+  ### thingsのバックグラウンド操作関係
+  def set_object_hidden( obj , hidden )
+    action = if hidden 
+               "hide"
+             else
+               "unhide"
+             end
+    App.i.background_network_job( "#{action}しました" ,
+                                  "#{action}失敗"){
+        cl = App.i.client( @account_name )
+        if hidden
+          obj.hide
+        else
+          obj.unhide
+        end
+        obj[:hidden] = hidden
+    }
+  end
+
+  def set_object_saved( obj , saved )
+    action = if saved
+               "save"
+             else
+               "unsave"
+             end
+    App.i.background_network_job( "#{action}しました" ,
+                                  "#{action}失敗"){
+        cl = App.i.client( @account_name )
+        if saved
+          obj.save
+        else
+          obj.unsave
+        end
+        obj[:saved] = saved
+    }
+  end
+  
+  def vote( thing , val )
+    App.i.background_network_job( "投票しました" , "投票エラー" ){
+      c = App.i.client(@account_name) # refresh
+      case val
+      when true
+        thing.upvote
+      when false
+        thing.downvote
+      else
+        thing.clear_vote
+      end
+    }
+  end
+
+  ######
+
   def abort_loading
     if @loading_thread and @loading_thread.alive?
       @loading_thread.kill

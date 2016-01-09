@@ -266,7 +266,7 @@ class App
   
   def mes(mes , err = false)
     Platform.runLater{
-      @scene.lookup("#" + ID_MESSAGE_AREA).set_message(mes)
+      @scene.lookup("#" + ID_MESSAGE_AREA).set_message(mes , err)
     }
   end
 
@@ -518,6 +518,24 @@ class App
     if app_toolbar = @scene.lookup(".app-toolbar")
       app_toolbar.set_text( str.to_s )
     end
+  end
+
+  def background_network_job( mes , errmes , &job )
+    Thread.new{
+      begin
+        App.i.mes( "通信中…" )
+        job.call
+        App.i.mes( mes )
+      rescue Redd::Error => e
+        $stderr.puts $!
+        $stderr.puts $@
+        App.i.mes("#{errmes} #{e.inspect}" , true)
+      rescue
+        $stderr.puts $!
+        $stderr.puts $@
+        App.i.mes("#{errmes}" , true)
+      end
+    }
   end
 
   # todo: ↓ ユーザー履歴関連を別モジュールにすること

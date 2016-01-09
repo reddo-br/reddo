@@ -353,28 +353,7 @@ class CommentPage < CommentPageBase
     @comment_view.set_url_handler( @url_handler )
 
     @comment_view.set_vote_cb{|thing , val|
-      Thread.new{
-        begin
-          c = App.i.client(@account_name) # refresh
-          case val
-          when true
-            thing.upvote
-          when false
-            thing.downvote
-          else
-            thing.clear_vote
-          end
-          App.i.mes("投票しました")
-        rescue Redd::Error => e
-          $stderr.puts $!
-          $stderr.puts $@
-          App.i.mes("投票エラー #{e.inspect}")
-        rescue
-          $stderr.puts $!
-          $stderr.puts $@
-          App.i.mes("投票エラー")
-        end
-      }
+      vote( thing , val )
     }
 
     @comment_view.set_link_cb{|link, shift |
@@ -431,7 +410,13 @@ class CommentPage < CommentPageBase
                  )
       end
     }
-
+    @comment_view.set_hide_cb{|obj, hide |
+      set_object_hidden( obj , hide )
+    }
+    @comment_view.set_save_cb{|obj, save |
+      set_object_saved( obj , save )
+    }
+    
     @split_comment_area.getChildren().add( @comment_view.webview )
     
     @split_edit_area = EditWidget.new( account_name:@account_name ,

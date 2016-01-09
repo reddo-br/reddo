@@ -4,6 +4,9 @@ require 'jrubyfx'
 require 'reddit_web_view_wrapper'
 require 'html/html_entity'
 
+import 'javafx.scene.control.SeparatorMenuItem'
+import 'javafx.scene.control.CheckMenuItem'
+
 class CommentWebViewWrapper < RedditWebViewWrapper
 
   def initialize(sjis_art:true , &dom_prepared_cb)
@@ -42,6 +45,14 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   def set_delete_cb(&cb)
     @delete_cb = cb
+  end
+
+  def set_hide_cb(&cb)
+    @hide_cb = cb
+  end
+  
+  def set_save_cb(&cb)
+    @save_cb = cb
   end
 
   def set_account_name( name )
@@ -595,17 +606,14 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       comment_foot.appendChild( @doc.createTextNode(" "))
     end
     
-    space1 = @doc.createElement("span")
-    space1.setAttribute("style" , "margin-right:0.5em;")
-    comment_foot.appendChild( space1 )
-    
-    if obj[:archived]
-      comment_foot_archived = @doc.createElement("span")
-      comment_foot_archived.setTextContent("[アーカイブ済み]")
-      comment_foot.appendChild( comment_foot_archived )
-    elsif is_deleted( obj )
-      #
-    else
+    ### 編集関係コマンド
+    if not obj[:archived] and not is_deleted(obj)
+      if is_repliable(obj) or is_editable(obj) or is_deletable(obj)
+        space1 = @doc.createElement("span")
+        space1.setAttribute("style" , "margin-right:0.5em;")
+        comment_foot.appendChild( space1 )
+      end
+
       if is_repliable(obj)
         comment_foot_reply = @doc.createElement("a")
         comment_foot_reply.setTextContent("返信")
@@ -659,13 +667,34 @@ class CommentWebViewWrapper < RedditWebViewWrapper
         comment_foot.appendChild( comment_foot_delete )
       end
 
-      if @locked
-        comment_foot_locked = @doc.createElement("span")
-        comment_foot_locked.setTextContent("[ロックされたポスト]")
-        comment_foot.appendChild( comment_foot_locked )
-      end
-
     end # archived?
+    
+    space2 = @doc.createElement("span")
+    space2.setAttribute("style" , "margin-right:0.5em;")
+    comment_foot.appendChild( space2 )
+
+    #### その他メニュー
+    comment_foot_others = @doc.createElement("a")
+    comment_foot_others.setTextContent("▼")
+    comment_foot_others.setAttribute("href","#")
+    set_event( comment_foot_others , 'click' , false ){|ev|
+      show_others_menu( obj , ev.getScreenX , ev.getScreenY )
+    }
+    comment_foot.appendChild( @doc.createTextNode(" "))
+    comment_foot.appendChild( comment_foot_others )
+
+    #### 投稿禁止状態の表示
+    if obj[:archived]
+      comment_foot_archived = @doc.createElement("span")
+      comment_foot_archived.setTextContent("[アーカイブ済み]")
+      comment_foot.appendChild( comment_foot_archived )
+    end
+    
+    if @locked
+      comment_foot_locked = @doc.createElement("span")
+      comment_foot_locked.setTextContent("[ロックされたポスト]")
+      comment_foot.appendChild( comment_foot_locked )
+    end
 
     # event
     if( mouseover_element )
@@ -681,6 +710,56 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
     
     comment_foot
+  end
+
+  def show_others_menu( obj , x , y )
+    @footer_others_menu_target = obj
+    @footer_others_menu ||= create_footer_others_menu
+    @footer_others_menu.show( @webview , x , y )
+  end
+
+  def create_footer_others_menu
+    menu = ContextMenu.new
+    items = []
+    items << MenuItem.new("その他")
+    items << SeparatorMenuItem.new
+    items << save_item = CheckMenuItem.new("save")
+    save_item.setOnAction{|ev|
+      if @save_cb and @footer_others_menu_target
+        @save_cb.call( @footer_others_menu_target , save_item.isSelected )
+      end
+    }
+    items << hide_item = CheckMenuItem.new("hide")
+    hide_item.setOnAction{|ev|
+      if @hide_cb and @footer_others_menu_target
+        @hide_cb.call( @footer_others_menu_target , hide_item.isSelected )
+      end
+    }
+
+    menu.getItems.addAll( items )
+
+    menu.setOnShowing{|ev|
+      if @footer_others_menu_target and 
+          @footer_others_menu_target[:kind] == 't3'
+        hide_item.setVisible( true )
+      else
+        hide_item.setVisible( false )
+      end
+
+      save_item.setSelected( @footer_others_menu_target[:saved] )
+      hide_item.setSelected( @footer_others_menu_target[:hidden] )
+    }
+    menu
+  end
+
+  # others_menuを消す
+  def on_mouse_pressed(ev)
+    super(ev)
+    if not ev.isPopupTrigger
+      if @footer_others_menu
+        @footer_others_menu.hide
+      end
+    end
   end
 
   def set_user_info(obj)
