@@ -208,7 +208,7 @@ class UrlHandler
           #  {:site => site ,:type=> "comment" , :name => m[2] }
 
             ##### ほか
-          elsif url_o.path == '/'
+          elsif url_o.path == '/' or url_o.path == ''
             {:site => site , :type => "sub" , :name => "../" , :title => "フロントページ" } # front
           else # 非対応パス
             {:type => "other" , :url => url_o.to_s }

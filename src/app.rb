@@ -141,8 +141,9 @@ class FXApp < JRubyFX::Application
         }
       else
         # 何もなければfrontを開く
-        an = App.i.pref["current_account"]
-        App.i.open_by_page_info( {type:"sub" , name:"../" , account_name:an} , true )
+        # an = App.i.pref["current_account"]
+        # App.i.open_by_page_info( {type:"sub" , name:"../" , account_name:an} , true )
+        App.i.open_url( "https://www.reddit.com/" )
       end
       
       # コマンドラインのurlを開く

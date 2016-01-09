@@ -588,7 +588,15 @@ class SubPage < Page
 
   def make_tab_name
     if @is_multireddit or @is_user_submission_list # url_handler内で決めたタイトルを使う
-      @page_info[:title] || "no title"
+      if @page_info[:title]
+        @page_info[:title]
+      else
+        if @page_info[:name] = "../"
+          "フロントページ"
+        else
+          "no title"
+        end
+      end
     else
       if @sub_info
         @sub_info[:display_name]
