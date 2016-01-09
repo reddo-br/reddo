@@ -26,40 +26,30 @@
 
 /* メニューボタンのpill化 */
 
-.button.left-pill,
-.menu-buton.left-pill,
-.toggle-button.left-pill {
+.menu-buton.left-pill {
     -fx-background-radius: 3 0 0 3, 3 0 0 3, 2 0 0 2, 1 0 0 1;
     -fx-background-insets: 0 0 -1 0, 0, 1, 2;
     -fx-padding: 0.333333em 0.666667em 0.333333em 0.75em; /* 4 8 4 9 */
 }
-.button.center-pill,
-.menu-buton.center-pill,
-.toggle-button.center-pill {
+.menu-buton.center-pillx {
     -fx-background-radius: 0;
     -fx-background-insets: 0 0 -1 0, 0 0 0 0, 1 1 1 0, 2 2 2 1 ;
 }
-.button.right-pill,
-.menu-button.right-pill,
-.toggle-button.right-pill {
+.menu-button.right-pill {
     -fx-background-radius: 0 3 3 0, 0 3 3 0, 0 2 2 0, 0 1 1 0;
     -fx-background-insets: 0 0 -1 0, 0, 1 1 1 0, 2 2 2 1 ;
 }
-.button.left-pill:focused,
-.menu-button.left-pill:focused,
-.toggle-button.left-pill:focused {
+
+.menu-button.left-pill:focused {
     -fx-background-insets: -0.2 0 -0.2 -0.2, 1, 2, -1.4 0 -1.4 -1.4, 2.6;
     -fx-background-radius: 3 0 0 3, 2 0 0 2, 1 0 0 1, 4 0 0 4, 1 0 0 1;
 }
-.button.center-pill:focused,
-.menu-button.center-pill:focused,
-.toggle-button.center-pill:focused {
+.menu-button.center-pill:focused {
     -fx-background-insets: -0.2 0 -0.2 -1, 1 1 1 0, 2 2 2 1, -1.4 0 -1.4 -1, 2.6 2.6 2.6 1.6;
     -fx-background-radius: 0, 0, 0, 0, 0;
 }
-.button.right-pill:focused,
-.menu-button.right-pill:focused,
-.toggle-button.right-pill:focused {
+
+.menu-button.right-pill:focused {
     -fx-background-insets: -0.2 -0.2 -0.2 -1, 1 1 1 0, 2 2 2 1, -1.4 -1.4 -1.4 -1, 2.6 2.6 2.6 1.6;
     -fx-background-radius: 0 3 3 0, 0 2 2 0, 0 1 1 0, 0 4 4 0, 0 1 1 0;
 }
