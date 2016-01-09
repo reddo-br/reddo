@@ -48,12 +48,19 @@ class CommentPostListPage < CommentPageBase
     @url_handler = UrlHandler.new( @page_info[:site] )
     @base_url = @url_handler.linkpath_to_url( @target_path )
     
+    @target_user =  @url_handler.path_is_user_comment_list( @target_path ) # ユーザー履歴でなければnil
+    owned_target_user = if Account.exist?( @target_user )
+                          @target_user
+                        else
+                          nil
+                        end
     # すでに存在しないアカウントの棄却
     if not Account.exist?( @page_info[:account_name] )
       @page_info[:account_name] = nil
     end
-    @account_name = @page_info[:account_name] || App.i.pref['current_account']
+    @account_name = owned_target_user || @page_info[:account_name] || App.i.pref['current_account']
     
+
     queried_sort = if is_valid_sort_type( @page_info[:sort] )
               @page_info[:sort]
             else
@@ -88,7 +95,7 @@ class CommentPostListPage < CommentPageBase
     }
 
     @title = info[:title]
-    @target_user =  @url_handler.path_is_user_comment_list( @target_path ) # ユーザー履歴でなければnil
+
         # subのコメントリストでは、ソートは使わない
     if not @target_user
       @sort_selector.setDisable(true)
