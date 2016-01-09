@@ -568,10 +568,24 @@ class CommentPage < CommentPageBase
       if @top_comment
         comment_link += @top_comment
       end
+      
+      query_hash = {}
+
       sort = get_current_sort
       if sort != @default_sort
-        comment_link += ( "?sort=" + sort )
+        # comment_link += ( "?sort=" + sort )
+        query_hash[ 'sort'] = sort
       end
+
+      if @comment_context
+        query_hash[ 'context' ] = @comment_context
+      end
+
+      if query_hash.length > 0
+        query = query_hash.to_a.map{|k,v| "#{k}=#{v}"}.join("&")
+        comment_link += "?#{query}"
+      end
+      
       comment_link
     else
       nil
@@ -917,7 +931,7 @@ class CommentPage < CommentPageBase
       @comment_view.set_base_url( @base_url )
       if @tab.isSelected
         Platform.runLater{
-          App.i.set_url_area_text( @base_url.to_s )
+          App.i.set_url_area_text( make_page_url.to_s )
         }
       end
     end
