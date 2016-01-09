@@ -151,6 +151,8 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     r_controls << Label.new(" ")
     r_controls << InboxButton.new
 
+    App.i.adjust_height( [ @url_text ] + r_controls )
+
     right = HBox.new
     right.setAlignment( Pos::CENTER_LEFT )
     right.getChildren.setAll( r_controls )
