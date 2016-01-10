@@ -15,6 +15,10 @@ class Prefbase
 
   end
   
+  def default
+    {}
+  end
+
   def set( key ,val )
     h = load_hash
     h[key] = val
@@ -35,20 +39,21 @@ class Prefbase
 
   private
   def load_hash
-    if @path.exist?
-      begin
-        o = JSON.load( File.read(@path) )
-        if o
-          o
+    r = if @path.exist?
+          begin
+            o = JSON.load( File.read(@path) )
+            if o
+              o
+            else
+              {}
+            end
+          rescue
+            {}
+          end
         else
           {}
         end
-      rescue
-        {}
-      end
-    else
-      {}
-    end
+    default.merge(r)
   end
 
   def save_hash(h)

@@ -38,11 +38,24 @@ class ConfigPage < Page
     @font_selector.getSelectionModel.select( get_font )
     @font_selector.valueProperty.addListener{|ev|
       set_font( ev.getValue )
+      set_font_sample
     }
     items << [ Label.new("フォント") , @font_selector ]
 
-    items << make_bool_config( "太字フォントをcss shadowで再現する(太字が表示できない場合に試してください)" ,
-                               "artificial_bold" )
+    # items << make_bool_config( "太字フォントをcss shadowで再現する(太字が表示できない場合に試してください)" ,
+    # "artificial_bold" )
+
+    @artificial_bold_check = CheckBox.new
+    @artificial_bold_check.setSelected( App.i.pref[ 'artificial_bold' ] )
+    @artificial_bold_check.selectedProperty.addListener{|ov|
+      App.i.pref[ 'artificial_bold' ] = ov.getValue
+      set_font_sample
+    }
+
+    items << [ Label.new("太字フォントをcss shadowで再現する(太字が表示できないフォントで試してください)" ),
+               @artificial_bold_check ]
+
+    items << [ Label.new("") , make_font_sample ]
 
     items << make_bool_config( "外部ブラウザを開く別の方法を試す(うまくいかない場合に)" ,
                                "browse_alternative_method" )
@@ -89,6 +102,9 @@ class ConfigPage < Page
     items << [ Label.new("コメントページでのマウスホイールスクロールの最大加速"),
                @accel_spinner ]
     
+    items << make_bool_config( "連続するunicode結合文字を省略する(コメントにより描画に非常に時間がかかる問題を回避する)" ,
+                               "suppress_combining_mark")
+
     ########## itemをgridpaneに入れる
 
     items.each_with_index{|row , rownum|
@@ -169,4 +185,33 @@ class ConfigPage < Page
     end
   end
 
+  def make_font_sample
+    h = HBox.new
+    @font_sample_1 = Label.new("フォントサンプル")
+    @font_sample_2 = Label.new("太字サンプル")
+    set_font_sample
+    h.getChildren.addAll( @font_sample_1 , 
+                       Label.new(" "),
+                       @font_sample_2 )
+    h
+  end
+
+  def set_font_sample
+    $stderr.puts "set_font_sample"
+    family = App.i.pref["fonts"]
+    family_css = if family
+                   "-fx-font-family:\"#{family}\";"
+                 else
+                   ""
+                 end
+    bold_css = if App.i.pref["artificial_bold"]
+                 "-fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );"
+               else
+                 "-fx-font-weight:bold;"
+               end
+    p "#{family_css} #{bold_css}"
+    @font_sample_1.setStyle("#{family_css}")
+    @font_sample_2.setStyle("#{family_css} #{bold_css}")
+
+  end
 end

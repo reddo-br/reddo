@@ -9,4 +9,8 @@ class Preferences < Prefbase
     super( @file )
   end
 
+  def default
+    {"suppress_combining_mark" => true }
+  end
+
 end

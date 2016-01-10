@@ -103,7 +103,12 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       # $stderr.puts "*** selfテキスト表示"
       # $stderr.puts obj[:selftext_html]
       subm.setAttribute("style","display:block")
-      subm.setMember( "innerHTML" , html_decode( obj[:selftext_html].to_s ))
+      selftext_html = if App.i.pref["suppress_combining_mark"]
+                        obj[:selftext_html].gsub(/(\p{M})+/,'\1')
+                      else
+                        obj[:selftext_html]
+                      end
+      subm.setMember( "innerHTML" , html_decode( selftext_html.to_s ))
     else
       subm.setAttribute( "style","display:none")
       # subm.setMember("innerHTML" , "") # :empty -> display:none
@@ -409,7 +414,12 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
     comment_text = @doc.createElement("div")
     comment_text.setAttribute("class" , "comment_text")
-    comment_text.setMember("innerHTML" , html_decode(obj[:body_html].strip) )
+    body_html = if App.i.pref["suppress_combining_mark"]
+                  obj[:body_html].gsub(/(\p{M})+/ , '\1')
+                else
+                  obj[:body_html]
+                end
+    comment_text.setMember("innerHTML" , html_decode(body_html.strip) )
     
     comment_this.appendChild( comment_text )
 

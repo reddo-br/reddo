@@ -55,7 +55,10 @@ class SubStyle
               sel3 = sel2
               decl3 = decl2
             end
-            stamp_css << "#{sel3.strip} {#{decl3}}\n"
+            # animation関連は消す どうせcss-parserは @keyframe を解析できない
+            decl4 = decl3.split(/;/).delete_if{|d| d =~ /animation[^"]*?:/}.join(";")
+            
+            stamp_css << "#{sel3.strip} {#{decl4}}\n"
           end
         }
       }

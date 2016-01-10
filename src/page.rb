@@ -40,7 +40,11 @@ class Page < Java::JavafxSceneLayout::VBox
 
     ### label版
     @tab_label = Label.new( label )
-    @tab_label.setStyle( "-fx-word-wrap:break-word ;" )
+    if Util.is_cjk_text( label )
+      @tab_label.setStyle( "-fx-word-break:break-all;" )
+    else
+      @tab_label.setStyle( "-fx-word-wrap:break-word;" )
+    end
     @tab_label.setMaxHeight( 48 )
     @tab_label.setAlignment( Pos::CENTER_LEFT )
     @tab_label.setWrapText( true )

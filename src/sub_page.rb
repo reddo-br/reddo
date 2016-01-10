@@ -1245,13 +1245,11 @@ class SubPage < Page
       # @subm_title = Label.new
       @subm_title = Text.new
       color = if App.i.pref['use_dark_theme']
-        # @subm_title.setFill( Color::WHITE )
                 'white'
               else
                 'black'
               end
       
-      # @subm_title.setWrapText(true)
       if artificial_bold
         # drowshadow ( blur-type , color , radius , spread, offset_x , offset_y )
         # @subm_title.setStyle( "-fx-font-size:14px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
