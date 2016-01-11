@@ -521,7 +521,7 @@ class CommentPostListPage < CommentPageBase
     set_status( "更新中…" , false , true)
 
     
-    if @account_name and not (Account.byname( @account_name ).scopes.index("history"))
+    if @account_name and @target_user and not (Account.byname( @account_name ).scopes.index("history"))
       Platform.runLater{@comment_view.set_message("注意：ユーザーの履歴表示には、新規の権限が必要です。旧バージョンで認可を与えたアカウントは、再度「アカウント追加」で認可を与える必要があります。")}
     else
       Platform.runLater{@comment_view.set_message(nil)}
