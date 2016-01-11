@@ -161,7 +161,7 @@ class ConfigPage < Page
   def make_header( label_string )
     label = Label.new( label_string )
     if App.i.pref["artificial_bold"]
-      label.setStyle("-fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
+      label.setStyle("-fx-effect: dropshadow( one-pass-box , -fx-text-base-color , 0,0,1,0 );")
     else
       label.setStyle("-fx-font-weight:bold;")
     end
@@ -205,7 +205,7 @@ class ConfigPage < Page
                    ""
                  end
     bold_css = if App.i.pref["artificial_bold"]
-                 "-fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );"
+                 "-fx-effect: dropshadow( one-pass-box , -fx-text-base-color , 0,0,1,0 );"
                else
                  "-fx-font-weight:bold;"
                end
