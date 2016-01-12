@@ -108,7 +108,8 @@ class CommentPageBase < Page
     set_load_button_enable( false )
     cl = App.i.client( @account_name ) # refresh
     comm = obj_edit.edit( md_text ) # commのbody_htmlは変更されない、注意
-    comm = obj_edit.client.from_fullname( obj_edit[:name] ).to_a[0]
+    comm = obj_edit.client.from_fullname( obj_edit[:name] ).to_a[0] # 再取得
+    comm = obj_edit.merge( comm ) # user履歴上のcommentの情報を維持する
     Platform.runLater{
       if comm[:kind] == 't3'
         @comment_view.set_submission( comm )
