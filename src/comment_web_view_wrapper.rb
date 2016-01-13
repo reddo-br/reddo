@@ -845,8 +845,13 @@ EOF
     time_str.setTextContent( Time.at( obj[:created_utc] ).strftime("%Y-%m-%d %H:%M:%S"))
     
     score = @doc.createElement("span")
-    score.setAttribute("class" , "score")
-    score.setTextContent( obj[:score].to_s + "ポイント")
+    if obj[:score_hidden]
+      score.setAttribute("class" , "score_hidden")
+      score.setTextContent("[score hidden]")
+    else
+      score.setAttribute("class" , "score")
+      score.setTextContent( obj[:score].to_s + "ポイント")
+    end
 
     obj[:reddo_vote_score] = if obj[:likes] == true
                                1
@@ -887,7 +892,9 @@ EOF
           obj[:reddo_vote_score] = 1
           @vote_cb.call( obj , true ) if @vote_cb
         end
-        score.setTextContent( (obj[:reddo_raw_score] + obj[:reddo_vote_score]).to_s + "ポイント")
+        if not obj[:score_hidden]
+          score.setTextContent( (obj[:reddo_raw_score] + obj[:reddo_vote_score]).to_s + "ポイント")
+        end
       
       }
       set_event(downvote , "click" , false){
@@ -901,7 +908,9 @@ EOF
           obj[:reddo_vote_score] = -1
           @vote_cb.call( obj , false ) if @vote_cb
         end
-        score.setTextContent( (obj[:reddo_raw_score] + obj[:reddo_vote_score]).to_s + "ポイント")
+        if not obj[:score_hidden]
+          score.setTextContent( (obj[:reddo_raw_score] + obj[:reddo_vote_score]).to_s + "ポイント")
+        end
       }
     end # is_votable
     
