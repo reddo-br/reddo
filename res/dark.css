@@ -43,6 +43,7 @@
 
     -fx-outer-border: derive(-fx-color,-12%);
 */
+
 }
 
 .text-field {
@@ -66,7 +67,8 @@
         -fx-text-box-border, 
         linear-gradient(from 0px 0px to 0px 5px, -fx-box-border, derive(-fx-box-border, -40%));
     */
-   -fx-background-color:#151515;
+    /*-fx-background-color:#151515;*/
+    -fx-background-color: -fx-outer-border , -fx-color, #151515;
 }
 
 .table-view,
