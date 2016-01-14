@@ -455,6 +455,11 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
     post_title.appendChild( make_link_title_in_list(obj))
     post.appendChild( post_title )
+
+    num_comments = @doc.createElement("div")
+    num_comments.setTextContent("#{obj[:num_comments]}コメント")
+    post.appendChild( num_comments )
+
     c = @doc.createElement("div")
     c.setAttribute("style","clear:both")
     post.appendChild( c )
