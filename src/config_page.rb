@@ -187,8 +187,8 @@ class ConfigPage < Page
 
   def make_font_sample
     h = HBox.new
-    @font_sample_1 = Label.new("フォントサンプル")
-    @font_sample_2 = Label.new("太字サンプル")
+    @font_sample_1 = Label.new("フォントサンプル abc 012")
+    @font_sample_2 = Label.new("太字サンプル abc 012")
     set_font_sample
     h.getChildren.addAll( @font_sample_1 , 
                        Label.new(" "),
