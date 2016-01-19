@@ -124,7 +124,7 @@ class SubPage < Page
                                           Separator.new(Orientation::VERTICAL))
 
     @title_label = Label.new( make_tab_name )
-    @title_label.setStyle("-fx-font-size:14pt")
+    @title_label.setStyle("-fx-font-size:140%")
 
     @active_label = Label.new()
 
@@ -1035,7 +1035,7 @@ class SubPage < Page
 
   class VoteCell < Java::JavafxSceneControl::TableCell
     include JRubyFX::DSLControl
-    STYLE_BASE = "-fx-font-size:12px;"
+    STYLE_BASE = "-fx-font-size:100%;"
     def initialize(page)
       super()
       @page = page
@@ -1189,7 +1189,7 @@ class SubPage < Page
     def initialize
       super()
       @number = Label.new
-      @number.setStyle( "-fx-font-size:20px")
+      @number.setStyle( "-fx-font-size:150%")
       setAlignment( Pos::CENTER_RIGHT )
       setGraphic(@number)
     end
@@ -1209,7 +1209,7 @@ class SubPage < Page
     def initialize
       super()
       @number = Label.new
-      @number.setStyle( "-fx-font-size:20px")
+      @number.setStyle( "-fx-font-size:150%")
       setAlignment( Pos::CENTER_RIGHT )
       setGraphic(@number)
     end
@@ -1218,11 +1218,11 @@ class SubPage < Page
       if data and not is_empty_col
         case data[:reddo_vote_score]
         when 1
-          @number.setStyle( "-fx-font-size:20px;-fx-text-fill:#{App.i.theme::COLOR::UPVOTED}")
+          @number.setStyle( "-fx-font-size:150%;-fx-text-fill:#{App.i.theme::COLOR::UPVOTED}")
         when -1
-          @number.setStyle( "-fx-font-size:20px;-fx-text-fill:#{App.i.theme::COLOR::DOWNVOTED}")
+          @number.setStyle( "-fx-font-size:150%;-fx-text-fill:#{App.i.theme::COLOR::DOWNVOTED}")
         else
-          @number.setStyle( "-fx-font-size:20px;")
+          @number.setStyle( "-fx-font-size:150%;")
         end
         
         @number.setText(data[:reddo_score].to_s )
@@ -1253,9 +1253,9 @@ class SubPage < Page
       if artificial_bold
         # drowshadow ( blur-type , color , radius , spread, offset_x , offset_y )
         # @subm_title.setStyle( "-fx-font-size:14px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
-        @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:14px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , #{color} , 0,0,1,0 );")
+        @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , #{color} , 0,0,1,0 );")
       else
-        @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:14px; -fx-font-weight: bold; -fx-word-wrap:break-word")
+        @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-font-weight: bold; -fx-word-wrap:break-word")
       end
 
       if @show_subreddit

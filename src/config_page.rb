@@ -134,7 +134,7 @@ class ConfigPage < Page
     grid_pane.getColumnConstraints().addAll(column_1, column_2)
 
     label_top = Label.new("設定の反映にはだいたい再起動が必要です")
-    label_top.setStyle("-fx-font-size:16px")
+    label_top.setStyle("-fx-font-size:130%")
     getChildren.add( label_top )
     getChildren.add( scroll_pane )
     self.class.setMargin( label_top , Insets.new(3.0 , 3.0 , 3.0 , 3.0) )

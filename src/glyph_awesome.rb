@@ -18,12 +18,12 @@ module GlyphAwesome
       # $stderr.puts "グリフをロード"
       GlyphFontRegistry.register("fontawesome" ,
                                  App.res( '/res/fontawesome-webfont.ttf'),
-                                 11.5 )
+                                 11 ) # default font size なぜかint
       @@gf = GlyphFontRegistry.font("fontawesome")
     end
     # glyph = Glyph.new( 'FontAwesome' , glyph_name )
     glyph = @@gf.create( glyph_name )
-    glyph.size( size ) if size
+    glyph.size( size ) if size # double
     glyph.useGradientEffect if gradient
     glyph.useHoverEffect if hover
     glyph.color( Color.web( color )) if color.is_a?(String)

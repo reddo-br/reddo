@@ -198,7 +198,7 @@ class CommentPage < CommentPageBase
     @subname_label_sep = Separator.new( Orientation::VERTICAL )
 
     @title_label = Label.new( @title )
-    @title_label.setStyle("-fx-font-size:14pt")
+    @title_label.setStyle("-fx-font-size:140%")
     button_area_left = HBox.new
     button_area_left.setAlignment( Pos::CENTER_LEFT )
     button_area_left.getChildren.setAll( @account_selector , 
