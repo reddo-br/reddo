@@ -52,14 +52,30 @@ module Redd
 
   end # module Objects
 
-  # class Error < StandardError
-  #   class RateLimited < Error
-  #     def initialize(env)
-  #       p env
-  #       @time = env[:body][:json][:ratelimit] || 60*60
-  #       super
-  #     end
-  #   end
-  # end
+  class Error < StandardError
+    class RateLimited < Error
+      def initialize(env)
+        p env
+        @time = env[:body][:json][:ratelimit] || 60*60
+        super
+      end
+    end
+
+    def self.parse_error(body) # rubocop:disable all
+      return "NOT_HASH" unless body.is_a?(Hash) # どうせhashでなければerrorは作れない
+
+      if body.key?(:json) && body[:json].key?(:errors)
+        body[:json][:errors].first
+      elsif body.key?(:jquery)
+        body[:jquery]
+      elsif body.key?(:error)
+        body[:error]
+      elsif body.key?(:code) && body[:code] == "NO_TEXT"
+        "NO_TEXT"
+      end
+    end
+
+
+  end
 
 end
