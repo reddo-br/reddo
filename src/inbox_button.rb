@@ -4,7 +4,7 @@ require 'jrubyfx'
 
 require 'glyph_awesome'
 require 'html/html_entity'
-
+require 'thread'
 import 'org.controlsfx.control.PopOver'
 
 class InboxButton < Java::JavafxSceneControl::ToggleButton
@@ -35,18 +35,16 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
     @check_thread = Thread.new{
       sleep( 5 )
       loop{
-        
         begin
           @mes = get_inbox_unread
         rescue
           
         end
-      
+        
         Platform.runLater{
           set_num( @mes.length )
           @popover.set_items( @mes )
         }
-        
         sleep(60)
       }
     }
@@ -70,7 +68,6 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
               # cl.read_all_messages
               ids = mails.map{|m| m[:name] }.join(",")
               ret = cl.post("/api/read_message.json" , id:ids ).body
-              $stderr.puts ret
             rescue
               $stderr.puts $!
               $stderr.puts $@
@@ -111,8 +108,9 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
     all_account_messages = []
     Account.list.each{|account_name|
       cl = App.i.client( account_name )
-      all_account_messages += cl.my_messages( "unread" , count:100 )
+      all_account_messages += cl.my_messages( "unread" , count:100 ).find_all{|m| m[:new] }
     }
+    all_account_messages.uniq!{|m| m[:name] }
     uh = UrlHandler.new
     all_account_messages.each{|m|
       if m[:context].to_s.length > 0
@@ -197,7 +195,7 @@ class UnreadPopOver < PopOver
       self.getOwnerNode.popoverHidden
     }
     
-    self.setStyle("-fx-effect:dropshadow(gaussian,0,0,0,0,0);")
+    # self.setStyle("-fx-effect:dropshadow(gaussian,0,0,0,0,0);")
   end
 
   def set_items( items )
