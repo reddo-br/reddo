@@ -1071,18 +1071,7 @@ class SubPage < Page
         it = getTableRow().getItem
         if it and it[:reddo_vote_score] != vote_score
           getTableView().getItems().subList( index , index + 1).replaceAll{|item| 
-            item[:reddo_score] = item[:score] - item[:reddo_orig_vote_score] + vote_score
-            item[:reddo_vote_score] = vote_score
-
-            vote_val = case vote_score
-                       when 1
-                         true
-                       when -1
-                         false
-                       when 0
-                         nil
-                       end
-            page.vote( item , vote_val )
+            page.set_vote_score_and_vote( item , vote_score )
             item
           }
         end
@@ -1582,6 +1571,45 @@ class SubPage < Page
     end
   end
 
+  def calc_new_vote_score( obj , upvote_key )
+    if obj[:reddo_vote_score].to_i == 0
+      if upvote_key
+        1
+      else
+        -1
+      end
+    elsif obj[:reddo_vote_score].to_i == 1
+      if upvote_key
+        0
+      else
+        -1
+      end
+    elsif obj[:reddo_vote_score].to_i == -1
+      if upvote_key
+        1
+      else
+        0
+      end
+    else
+      0
+    end
+  end
+
+  def set_vote_score_and_vote( obj , vote_score )
+    obj[:reddo_score] = obj[:score] - obj[:reddo_orig_vote_score] + vote_score
+    obj[:reddo_vote_score] = vote_score
+
+    vote_val = case vote_score
+               when 1
+                 true
+               when -1
+                 false
+               when 0
+                 nil
+               end
+    vote( obj , vote_val ) # Page
+  end
+
   def on_select
     App.i.set_url_area_text( get_sub_url.to_s )
   end
@@ -1665,6 +1693,14 @@ class SubPage < Page
     @table.getSelectionModel().select( index ) # TableView.TableViewSelectionModel#
   end
 
+  def set_focus_on_selection()
+    si = @table.getSelectionModel.getSelectedIndex
+    fi = @table.getFocusModel.getFocusedIndex
+    if si >= 0 and fi != si
+      @table.getFocusModel.focus(si)
+    end
+  end
+
   #
   #
   #
@@ -1720,20 +1756,22 @@ class SubPage < Page
   end
 
   def key_upvote()
-    item = @table.getSelectionModel().getSelectedItem()
-    if item
-      name = item[:name]
-      btn = @table.lookupAll(".upvote-button").find{|btn| btn.getUserData() == item[:name] }
-      btn.fire() if btn and not btn.isDisable()
+    if is_votable
+      item = @table.getSelectionModel().getSelectedItem()
+      new_score = calc_new_vote_score( item , true )
+      replace_item( item )
+      set_vote_score_and_vote( item , new_score )
+      Platform.runLater{ set_focus_on_selection }
     end
   end
 
   def key_downvote
-    item = @table.getSelectionModel().getSelectedItem()
-    if item
-      name = item[:name]
-      btn = @table.lookupAll(".downvote-button").find{|btn| btn.getUserData() == item[:name] }
-      btn.fire() if btn and not btn.isDisable()
+    if is_votable
+      item = @table.getSelectionModel().getSelectedItem()
+      new_score = calc_new_vote_score( item , false )
+      replace_item( item )
+      set_vote_score_and_vote( item , new_score )
+      Platform.runLater{ set_focus_on_selection }
     end
   end
 
