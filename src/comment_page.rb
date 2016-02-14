@@ -988,6 +988,10 @@ class CommentPage < CommentPageBase
     }
   end
 
+  def on_select
+    App.i.set_url_area_text( make_page_url.to_s )
+  end
+
   #####
 
   def key_reload
