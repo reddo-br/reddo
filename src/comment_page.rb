@@ -51,6 +51,7 @@ class CommentPage < CommentPageBase
 
     @link_id = @page_info[:name] # commentではid not fullname
     @top_comment = @page_info[:top_comment] # todo: 単独コメント機能
+    @scroll_to = @top_comment
     @comment_context = @page_info[:context]
     @url_handler = UrlHandler.new( @page_info[:site] )
 
@@ -686,6 +687,7 @@ class CommentPage < CommentPageBase
 
   def set_top_comment( top_comment_id , context = nil)
     @top_comment = top_comment_id
+    @scroll_to = @top_comment
     @comment_context = context
     show_single_thread_bar( true )
     start_reload( asread:false )
@@ -702,6 +704,7 @@ class CommentPage < CommentPageBase
     if changed
       @top_comment = info[:top_comment]
       @comment_context = info[:context]
+      @scroll_to = @top_comment
       if @top_comment
         show_single_thread_bar( true )
       else
@@ -977,6 +980,10 @@ class CommentPage < CommentPageBase
       set_status(App.i.now + " 更新")
       highlight_word()
       highlight_replying(move:false)
+      if @scroll_to
+        @comment_view.scroll_to_id_center( "t1_" + @scroll_to )
+        @scroll_to = nil
+      end
     }
   end
 

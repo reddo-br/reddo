@@ -340,8 +340,14 @@ $('html,body').stop().animate({
 EOF
   end
   
+  def scroll_to_id_center( id )
+    if pos = id_to_pos(id)
+      scroll_to_pos_center(pos)
+    end
+  end
+  
   def id_to_pos( element_id )
-    @e.executeScript( "$('##{element_id}').offset().top" )
+    @e.executeScript( "if($('##{element_id}').length){$('##{element_id}').offset().top;}else{false;}" )
   end
 
   def current_pos()
