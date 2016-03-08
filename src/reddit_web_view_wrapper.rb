@@ -65,6 +65,8 @@ EOF
                  end
     base_font = "\"#{App.i.pref["fonts"]}\",sans-serif" || '"DejaVu Sans",Tahoma,Arial,"Helvetica Neue","Lucida Grande",sans-serif'
 
+    line_height = App.i.pref["line_height"] || 100
+
     style = <<EOF
 html {
   font-family:#{base_font};
@@ -257,6 +259,8 @@ h1,h2,h3,h4,h5 { #{bold_style} }
 #submission code {
 #{code_style}
 }
+
+.md { line-height:#{line_height}%; }
 
 #preview_box {
   // display:inline-block;

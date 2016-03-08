@@ -105,6 +105,14 @@ class ConfigPage < Page
     items << make_bool_config( "連続するunicode結合文字を省略する(コメントにより描画に非常に時間がかかる問題を回避する)" ,
                                "suppress_combining_mark")
 
+    # line height
+    line_height = App.i.pref['line_height'] || 100
+    @line_height_spinner = Spinner.new( 100 , 200 , line_height , 5 )
+    @line_height_spinner.getValueFactory.valueProperty.addListener{|ev|
+      App.i.pref['line_height'] = ev.getValue
+    }
+    items << [ Label.new("行間(%)") , @line_height_spinner ]
+    
     ########## itemをgridpaneに入れる
 
     items.each_with_index{|row , rownum|
@@ -160,11 +168,13 @@ class ConfigPage < Page
 
   def make_header( label_string )
     label = Label.new( label_string )
-    if App.i.pref["artificial_bold"]
-      label.setStyle("-fx-effect: dropshadow( one-pass-box , -fx-text-base-color , 0,0,1,0 );")
+    style = "-fx-padding:1em 0 0 0;-fx-underline:true;"
+    style += if App.i.pref["artificial_bold"]
+      "-fx-effect: dropshadow( one-pass-box , -fx-text-base-color , 0,0,1,0 );"
     else
-      label.setStyle("-fx-font-weight:bold;")
+      "-fx-font-weight:bold;"
     end
+    label.setStyle( style )
     [ label , nil ]
   end
 
