@@ -69,8 +69,8 @@ class SubStyle
   def get_css_url( subreddit_name )
     url = "https://www.reddit.com/r/#{subreddit_name}/search"
     # p url
-    body = open( url , "Range" => "bytes=-4096" ){|cn| cn.read }
-    if m = body.match( /https?:\/\/[\w\-\.]+\.redditmedia\.com\/[\w\-]+\.css/)
+    body = open( url , "Range" => "bytes=-4096" , "Cookie" => "over18=1" ){|cn| cn.read }
+    if m = body.match( /https?:\/\/[\w\-\.]+\.redditmedia\.com\/[\w\-\_]+\.css/)
       m[0]
     else
       nil
