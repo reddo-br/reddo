@@ -97,7 +97,7 @@ div.post-in-list {
   background-color: #{App.i.theme::COLOR::HTML_BG};
 }
 
-div.comment > div.comment {
+div.comment div.comment {
   border-width: 0px 0px 0px 5px ;
   border-style: solid none none solid;
   margin: 0px 0px 0px 10px;
@@ -126,12 +126,12 @@ div.comment p {
 
 }
 
-.comment_this, .post-in-list-inner {
+.comment_this, .post-in-list-inner , .comment-hidden {
   padding:6px 6px 6px 6px;
 
 }
 
-.comment_header , .user_history_comment_header {
+.comment_header , .user_history_comment_header , .comment-hidden {
   font-size:90%;
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
@@ -156,7 +156,7 @@ div.comment p {
   color:#{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
-#comments > .comment > .comment_this > .comment_footer {
+#comments > .comment .comment_this > .comment_footer {
   font-size:90%;
 }
 
@@ -212,7 +212,7 @@ div.comment p {
   vertical-align: -2px;
 }
 
-.upvote:hover , .downvote:hover{
+.upvote:hover , .downvote:hover , .close-switch {
   cursor: pointer;
 }
 

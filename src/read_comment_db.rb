@@ -57,6 +57,17 @@ class ReadCommentDB
     map.get( subm_id )
   end
 
+  # commentツリーの開閉
+  def set_closed( comment_id , state)
+    map = @db.getHashMap("closed")
+    map.put( comment_id , state)
+    @db.commit()
+  end
+  def get_closed( comment_id )
+    map = @db.getHashMap("closed")
+    map.get( comment_id )
+  end
+
   def close
     @db.close()
   end

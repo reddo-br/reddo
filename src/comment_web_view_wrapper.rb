@@ -201,15 +201,16 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   def add_comment( obj , parent = nil , recursive:true , prepend:false )
     
-    parent = @doc.getElementById(parent) if parent.is_a?(String)
+    parent = @doc.getElementById("cs_" + parent) if parent.is_a?(String)
 
     if not parent or obj.is_a?(Redd::Objects::MoreComments) # moreは階層の中に入ってないこともある
       if obj.kind_of?(Hash)
         parent_id = obj[:parent_id]
         if parent_id =~ /^t3/
           parent = @doc.getElementById("comments")
-        else
-          parent = @doc.getElementById( parent_id )
+        elsif parent_id
+          # parent = @doc.getElementById( parent_id )
+          parent = @doc.getElementById( "cs_" + parent_id )
         end
         # 部分コメント用 いちおうトップにしておく
         parent ||= @doc.getElementById("comments")
@@ -218,7 +219,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
         if parent_id =~ /^t3/
           parent = @doc.getElementById("comments")
         else
-          parent = @doc.getElementById(parent_id) # moreは階層の中に入ってないこともある
+          parent = @doc.getElementById("cs_" + parent_id) # moreは階層の中に入ってないこともある
         end
       end
     end
@@ -268,8 +269,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
                          else
                            make_comment_this_element( obj )
                          end
-          comment = old_comment_this.parentNode()
-          comment.replaceChild( comment_this, old_comment_this )
+          comment_shown = old_comment_this.parentNode()
+          comment_shown.replaceChild( comment_this, old_comment_this )
         else
           comment_this = if obj[:kind] == 't3'
                            make_post_in_list_inner_element(obj)
@@ -278,12 +279,26 @@ class CommentWebViewWrapper < RedditWebViewWrapper
                          end
           comment = @doc.createElement("div")
           comment.setAttribute("id" , obj[:name])
+
           if obj[:kind] == 't3'
             comment.setAttribute("class",  "post-in-list")
           else
             comment.setAttribute("class" , "comment")
           end
-          comment.appendChild( comment_this )
+          
+          comment_hidden = create_comment_hidden_block(obj)
+          comment_shown  = create_comment_shown_block(obj)
+          if is_folded_object(obj)
+            comment_hidden.setAttribute("style","display:block")
+            comment_shown.setAttribute("style","display:none")
+          else
+            comment_hidden.setAttribute("style","display:none")
+            comment_shown.setAttribute("style","display:block")
+          end
+          comment.appendChild( comment_hidden )
+          comment.appendChild( comment_shown )
+
+          comment_shown.appendChild( comment_this )
           if prepend
             parent.insertBefore( comment , find_first_child( parent ))
           else
@@ -297,7 +312,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
           if children = obj[:replies] and children.class == Redd::Objects::Listing
             children.each{|cc|
               # p cc
-              add_comment( cc , comment , recursive:recursive , prepend:prepend )
+              add_comment( cc , comment_shown , recursive:recursive , prepend:prepend )
             }
           end
         end
@@ -305,6 +320,61 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
 
   end # add_comment
+
+  def is_folded_object(obj)
+    obj[:reddo_ignored] or ReadCommentDB.instance.get_closed( obj[:name] )
+  end
+
+  def comment_expand( id , expand )
+    comment = @doc.getElementById( id )
+    if comment
+      child_nodes = comment.getChildNodes()
+      hidden = child_nodes.item(0)
+      shown  = child_nodes.item(1)
+
+      if expand
+        hidden.setAttribute("style","display:none")
+        shown.setAttribute("style","display:block")
+      else
+        hidden.setAttribute("style","display:block")
+        shown.setAttribute("style","display:none")
+      end
+    end
+  end
+  
+  def create_comment_hidden_block(obj)
+    comment_hidden = @doc.createElement("div")
+    comment_hidden.setAttribute("class","comment-hidden")
+    comment_hidden.setAttribute("id" , "ch_" + obj[:name].to_s )
+    
+    comment_hidden_switch = @doc.createElement("span")
+    comment_hidden_switch.setAttribute("class" , "close-switch")
+    comment_hidden_switch.setTextContent("[+]")
+    set_event( comment_hidden_switch , "click" , false ) {
+      ReadCommentDB.instance.set_closed( obj[:name] , false )
+      comment_expand( obj[:name] , true )
+      # todo: ignoreでなければ、dbに状態を書き込む
+    }
+    comment_hidden.appendChild( comment_hidden_switch )
+
+    comment_hidden.appendChild( @doc.createTextNode("閉じられたコメント"))
+
+    comment_hidden_reason = @doc.createElement("span")
+    comment_hidden_reason.setAttribute("class","comment-hidden-reason")
+    if obj[:reddo_ignored]
+      comment_hidden_reason.setTextContent("[Ignored]")
+    end
+    comment_hidden.appendChild( comment_hidden_reason )
+
+    comment_hidden
+  end
+
+  def create_comment_shown_block( obj )
+    comment_shown = @doc.createElement("div")
+    comment_shown.setAttribute("class","comment-shown")
+    comment_shown.setAttribute("id" , "cs_" + obj[:name].to_s )
+    comment_shown
+  end
 
   def add_list_more_button
     comments = @doc.getElementById("comments")
@@ -920,6 +990,17 @@ EOF
     end # is_votable
     
     # ヘッダ部
+    if obj[:kind] == 't1' or @comment_post_list_mode
+      fold_switch = @doc.createElement('span')
+      fold_switch.setAttribute("class","close-switch")
+      fold_switch.setTextContent("[-]")
+      set_event(fold_switch , 'click' , false ){
+        ReadCommentDB.instance.set_closed( obj[:name] , true )
+        comment_expand( obj[:name] , false )
+      }
+      comm_head.appendChild( fold_switch )
+      comm_head.appendChild( @doc.createTextNode(" "))
+    end      
 
     if obj[:reddo_new]
       new_mark = @doc.createElement("span")
@@ -1060,7 +1141,8 @@ EOF
     @replying = name
 
     selector = if name =~ /^t1/
-                 "##{name} > .comment_this"
+                 # "##{name} > .comment-shown > .comment_this"
+                 "#ct_#{name}"
                else
                  "#submission_command"
                end
@@ -1148,7 +1230,8 @@ EOF
   def clear_replying( name )
     
     selector = if name =~ /^t1/
-                 "##{name} > .comment_this"
+                 # "##{name} > .comment_this"
+                 "#ct_#{name}"
                else
                  "#submission_command"
                end
