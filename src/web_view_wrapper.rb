@@ -413,6 +413,18 @@ EOF
     end # length > 0
 
   end
+  
+  def is_id_hidden?( element_id )
+script = <<EOF
+var el = $('##{element_id}');
+if(el.length){
+  el.get(0).offsetParent == null;
+}else{
+  false;
+}
+EOF
+    @e.executeScript( script )
+  end
 
   def is_inputting
     @e.executeScript('$(document.activeElement).is(":input")')

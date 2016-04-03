@@ -1,5 +1,5 @@
 require 'uri'
-class YoutubeThumb
+class YoutubeThumb < ThumbnailScript
   def get_thumb( url_string )
     begin
       url = URI.parse(url_string)
@@ -24,10 +24,10 @@ class YoutubeThumb
   end
 
   def id_to_thumb( url , vid )
-    "<a href=\"#{url}\"><img src=\"http://img.youtube.com/vi/#{vid}/1.jpg\"></a>"
+    "http://img.youtube.com/vi/#{vid}/1.jpg"
   end
 
 end
 
-$thumbnail_plugins << YoutubeThumb.new
+
 

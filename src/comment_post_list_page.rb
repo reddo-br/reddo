@@ -552,6 +552,7 @@ class CommentPostListPage < CommentPageBase
 
     # force_comment_clear
     comment_fetched = object_to_deep( comments_raw )
+    comment_fetched.each{|c| mark_to_ignore(c) }
     @comments += comment_fetched
 
     @comment_view.set_base_url( @base_url )

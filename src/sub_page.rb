@@ -13,6 +13,7 @@ require 'user_state'
 require 'page'
 require 'account_selector'
 require 'user_ban_state_label'
+require 'ignore_checker'
 
 require 'url_handler'
 require 'html/html_entity'
@@ -973,6 +974,11 @@ class SubPage < Page
     filter_upvoted = @filter_upvoted.isSelected()
 
     subms = subms_in
+
+    subms = subms.find_all{|subm| 
+      IgnoreChecker.instance.check(subm) == IgnoreScript::SHOW or subm[:author] == @account_name
+    }
+
     if( word.length > 0 )
       subms = subms.find_all{|subm|
         subm[:title_for_match].to_s.index( word ) or

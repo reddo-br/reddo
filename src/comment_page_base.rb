@@ -4,6 +4,7 @@ require 'jrubyfx'
 
 require 'app'
 require 'page'
+require 'ignore_checker'
 
 import 'javafx.application.Platform'
 
@@ -197,4 +198,10 @@ class CommentPageBase < Page
     App.i.set_url_area_text( @base_url.to_s )
   end
 
+  def mark_to_ignore(o)
+    if not o[:reddo_ignored]
+      o[:reddo_ignored] = IgnoreChecker.instance.check(o)
+    end
+  end
+  
 end # class

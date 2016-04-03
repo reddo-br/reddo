@@ -3,6 +3,7 @@ require 'java'
 require 'jrubyfx'
 require 'reddit_web_view_wrapper'
 require 'html/html_entity'
+require 'thumbnail_plugins'
 
 import 'javafx.scene.control.SeparatorMenuItem'
 import 'javafx.scene.control.CheckMenuItem'
@@ -20,6 +21,9 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     $stderr.puts "internal url upvote #{@upvote_img_url}"
 
     @self_text_visible = true
+    
+    @hard_ignored_item = {}
+    @fold_state = {}
   end
   attr_reader :webview
 
@@ -200,18 +204,26 @@ class CommentWebViewWrapper < RedditWebViewWrapper
   end
 
   def add_comment( obj , parent = nil , recursive:true , prepend:false )
-    
     parent = @doc.getElementById("cs_" + parent) if parent.is_a?(String)
 
     if not parent or obj.is_a?(Redd::Objects::MoreComments) # moreは階層の中に入ってないこともある
       if obj.kind_of?(Hash)
+        if obj[:reddo_ignored] == IgnoreScript::HARD_IGNORE and obj[:author] != @account_name
+          @hard_ignored_item[ obj[:name] ] = true
+          return
+        end
+        
         parent_id = obj[:parent_id]
-        if parent_id =~ /^t3/
+        if @hard_ignored_item[ parent_id ]
+          @hard_ignored_item[ obj[:name] ] = true
+          return
+        elsif parent_id =~ /^t3/
           parent = @doc.getElementById("comments")
         elsif parent_id
           # parent = @doc.getElementById( parent_id )
           parent = @doc.getElementById( "cs_" + parent_id )
         end
+        
         # 部分コメント用 いちおうトップにしておく
         parent ||= @doc.getElementById("comments")
       else # MoreCommentなど
@@ -288,12 +300,14 @@ class CommentWebViewWrapper < RedditWebViewWrapper
           
           comment_hidden = create_comment_hidden_block(obj)
           comment_shown  = create_comment_shown_block(obj)
-          if is_folded_object(obj)
+          if is_to_fold_object(obj)
             comment_hidden.setAttribute("style","display:block")
             comment_shown.setAttribute("style","display:none")
+            @fold_state[ obj[:name] ] = {:folded => true , :parent => obj[:parent_id] }
           else
             comment_hidden.setAttribute("style","display:none")
             comment_shown.setAttribute("style","display:block")
+            @fold_state[ obj[:name] ] = {:folded => false , :parent => obj[:parent_id] }
           end
           comment.appendChild( comment_hidden )
           comment.appendChild( comment_shown )
@@ -321,8 +335,27 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   end # add_comment
 
-  def is_folded_object(obj)
-    obj[:reddo_ignored] or ReadCommentDB.instance.get_closed( obj[:name] )
+  def is_to_fold_object(obj)
+    (obj[:reddo_ignored] == IgnoreScript::IGNORE and obj[:author] != @account_name) or 
+      ReadCommentDB.instance.get_closed( obj[:name] )
+  end
+
+  def is_folded?( name )
+    if st = @fold_state[ name ]
+      # $stderr.puts "is_folded? #{st}"
+      if st[ :folded ]
+        true
+      else
+        if st[ :parent ]
+          is_folded?( st[ :parent ] )
+        else
+          # 頂点までたぐった
+          false
+        end
+      end
+    else
+      false
+    end
   end
 
   def comment_expand( id , expand )
@@ -332,16 +365,36 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       hidden = child_nodes.item(0)
       shown  = child_nodes.item(1)
 
+      st = @fold_state[ id ]
       if expand
         hidden.setAttribute("style","display:none")
         shown.setAttribute("style","display:block")
+        if st
+          st[:folded] = false
+        end
       else
         hidden.setAttribute("style","display:block")
         shown.setAttribute("style","display:none")
+        if st
+          st[:folded] = true
+        end
       end
+
     end
   end
   
+  # 結局使ってない
+  def find_child_comments( name )
+    script = "$('##{name}').find('.comment_this').map(function(){return $(this).prop('id');});"
+    jsarray = @e.executeScript( script )
+    ret = []
+    $stderr.puts "length:#{jsarray.getMember('length')}"
+    0.upto( jsarray.getMember( 'length' ) - 1 ){|i|
+      ret << jsarray.getSlot(i)
+    }
+    ret
+  end
+
   def create_comment_hidden_block(obj)
     comment_hidden = @doc.createElement("div")
     comment_hidden.setAttribute("class","comment-hidden")
@@ -361,8 +414,10 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
     comment_hidden_reason = @doc.createElement("span")
     comment_hidden_reason.setAttribute("class","comment-hidden-reason")
-    if obj[:reddo_ignored]
+    if obj[:reddo_ignored] == IgnoreScript::IGNORE
       comment_hidden_reason.setTextContent("[Ignored]")
+    else
+      comment_hidden_reason.setTextContent("[手動]")
     end
     comment_hidden.appendChild( comment_hidden_reason )
 
@@ -420,8 +475,9 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   def clear_comment
     clear_events # web_view_wrapper.rb # イベントリスナーの明示的解放
-    
     # set_message(nil) # 消さない
+    @hard_ignored_item = {}
+    @fold_state = {}
 
     # @div_comments.setMember("innerHTML" , "")
     # @div_submission.setMember("innerHTML","")
@@ -571,9 +627,9 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       href = anchor.getAttribute("href").to_s
       if href.length > 0
         thumb_html = nil
-        $thumbnail_plugins.each{|p|
+        ThumbnailPlugins.instance.plugins.each{|p|
           if t = p.get_thumb( href )
-            thumb_html = t
+            thumb_html = "<a href=\"#{href}\"><img src=\"#{t}\" style=\"max-height:90px\"></a>"
             break
           end
         }
@@ -795,6 +851,12 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
     
     comment_foot
+  end
+
+  def is_comment_hidden?( name )
+    ret = (@hard_ignored_item[ name ] or is_folded?( name ) )
+    # $stderr.puts "#{name} is_comment_hidden? : #{ret}"
+    ret
   end
 
   def show_others_menu( obj , x , y )

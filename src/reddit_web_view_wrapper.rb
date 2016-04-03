@@ -350,12 +350,13 @@ a#linked_title:hover, a.link-title:hover {
 
 .thumb_area {
   padding: 2px;
-  background-color: #{App.i.theme::COLOR::HTML_THUMB_AREA_BG}
+  background-color: #{App.i.theme::COLOR::HTML_THUMB_AREA_BG};
 }
 
 .thumb_box {
   padding: 4px;
   display:inline-block;
+  max-height:98px;
 }
 
 .thumb_over {

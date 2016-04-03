@@ -15,6 +15,8 @@ require 'pref/account'
 require 'sub_style'
 require 'user_state'
 
+require 'user_script_base'
+
 require 'account_selector'
 require 'user_ban_state_label'
 
@@ -473,12 +475,14 @@ class CommentPage < CommentPageBase
             list = subm.expand_more_hack( more , sort:"new")
             
             list = object_to_deep( list )
-
+            
             comments_each(list){|c| 
+              mark_to_ignore(c) # ignoreを先にやる: ignoreされた者はnew扱いにしないので
               mark_if_new(c)
             }
-            
+
             Platform.runLater{
+              
               stop_autoreload
               @comment_view.more_result( elem_id , true ) # moreボタンを消す
               list.each{|c| 
@@ -548,9 +552,16 @@ class CommentPage < CommentPageBase
   end # initialize
   
   def mark_if_new(o)
-    if o[:name] and (not ReadCommentDB.instance.is_read( o[:name] ))
-      o[:reddo_new] = true
-      @new_comments << o
+    if o[:name]
+      if o[:reddo_ignored] != IgnoreScript::SHOW
+        # ReadCommentDB.instance.add( o[:name] ) # 遅い 外でやる
+      elsif o[:parent_id] and @comment_view.is_comment_hidden?( o[:parent_id] )
+        # 親がすでに畳まれているものも既読にする
+        # ReadCommentDB.instance.add( o[:name] ) # 遅い
+      elsif (not ReadCommentDB.instance.is_read( o[:name] ))
+        o[:reddo_new] = true
+        @new_comments << o
+      end
     end
   end
 
@@ -940,21 +951,21 @@ class CommentPage < CommentPageBase
     end
 
     @new_comments = []
-    # todo:特定のコメントだけ表示する場合に対応
-    # top = @comments
     if asread
       reads = []
       comments_each(@comments){|o| reads << o[:name] }
       ReadCommentDB.instance.add( reads )
     else
+      reads_or_folded = []
       comments_each(@comments){|o|
+        mark_to_ignore(o)
         mark_if_new(o)
+        reads_or_folded << o[:name] if not o[:reddo_new]
       }
+      ReadCommentDB.instance.add( reads_or_folded )
     end
-    Platform.runLater{
-      show_num_new_comments
-    }
-    
+    Platform.runLater{show_num_new_comments}
+
     ut.join
     if @user_state and @user_state.user
       @comment_view.set_user_suspended( @user_state.user[:is_suspended] )

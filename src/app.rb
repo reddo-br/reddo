@@ -35,6 +35,8 @@ require 'app_toolbar'
 
 require 'read_comment_db'
 require 'app_key'
+require 'datadir_skeleton'
+require 'user_script_loader'
 
 import 'javafx.scene.layout.Region'
 import 'javafx.application.Platform'
@@ -424,11 +426,9 @@ class App
       require 'theme/theme'
       @theme = Theme
     end
-
-    $thumbnail_plugins = []
-    load( 'thumbnail_plugins/imgur.rb' , true )
-    load( 'thumbnail_plugins/youtube.rb' , true )
-    # todo ユーザーディレクトリからロード
+    
+    DatadirSkeleton.setup
+    UserScriptLoader.load
 
     FXApp.launch
   end

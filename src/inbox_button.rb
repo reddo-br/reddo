@@ -5,6 +5,8 @@ require 'jrubyfx'
 require 'glyph_awesome'
 require 'html/html_entity'
 require 'thread'
+require 'ignore_checker'
+
 import 'org.controlsfx.control.PopOver'
 
 class InboxButton < Java::JavafxSceneControl::ToggleButton
@@ -35,19 +37,33 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
     @check_thread = Thread.new{
       sleep( 5 )
       loop{
+        $stderr.puts "■メールチェック開始"
         begin
           @mes = get_inbox_unread
         rescue
           
         end
-        
-        Platform.runLater{
-          set_num( @mes.length )
-          @popover.set_items( [] )
-          @popover.set_items( @mes )
-        }
+        $stderr.puts "メールチェックignored検査開始"
+        begin
+          ignored = @mes.find_all{|m| IgnoreChecker.instance.check( m ) != IgnoreScript::SHOW }
+          $stderr.puts "メールチェックignored:#{ignored}"
+          @mes -= ignored
+
+          Platform.runLater{
+            set_num( @mes.length )
+            @popover.set_items( [] )
+            @popover.set_items( @mes )
+          }
+          
+          set_read( ignored )
+          
+        rescue
+          $stderr.puts $!
+          $stderr.puts $@
+        end
+        $stderr.puts "■メールチェック終了"
         sleep(60)
-      }
+      } # loop
     }
   end
 
@@ -56,27 +72,32 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
     @check_thread = nil
   end
 
-  def read_all
+  def set_read(mes)
+    u_m = user_to_mails(mes)
+    u_m.each{|user,mails|
+      cl = App.i.client(user)
+      if cl
+        begin
+          # cl.read_all_messages
+          ids = mails.map{|m| m[:name] }.join(",")
+          ret = cl.post("/api/read_message.json" , id:ids ).body
+        rescue
+          $stderr.puts $!
+          $stderr.puts $@
+        end
+      end
+    }
+  end
+
+  def read_all()
     if @mes.length > 0
       check_thread_stop
-      u_m = user_to_mails(@mes)
+      mes = @mes
       @mes = []
       Thread.new{
-        u_m.each{|user,mails|
-          cl = App.i.client(user)
-          if cl
-            begin
-              # cl.read_all_messages
-              ids = mails.map{|m| m[:name] }.join(",")
-              ret = cl.post("/api/read_message.json" , id:ids ).body
-            rescue
-              $stderr.puts $!
-              $stderr.puts $@
-            end
-          end
-        }
-        check_thread_start
-      } # thread
+        set_read( mes )
+        check_thread_start  
+      }
     end
   end
 
@@ -112,6 +133,7 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
       all_account_messages += cl.my_messages( "unread" , count:100 ).find_all{|m| m[:new] }
     }
     all_account_messages.uniq!{|m| m[:name] }
+
     uh = UrlHandler.new
     all_account_messages.each{|m|
       if m[:context].to_s.length > 0
@@ -260,6 +282,7 @@ class UnreadPopOver < PopOver
         # p inboxObj
         # p inboxObj.class
         @h1.setVisible( true )
+        @summary.setVisible(true)
         if inboxObj[:kind] == 't1'
           @type_label.setText( "(コメント)" )
           @submission.setVisible(true)
@@ -282,6 +305,8 @@ class UnreadPopOver < PopOver
         
       else
         @h1.setVisible(false)
+        @summary.setVisible(false)
+        @submission.setVisible(false)
         @summary.setText("")
         @submission.setText("")
       end
