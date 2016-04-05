@@ -21,7 +21,7 @@ class ReadCommentDB
 
     map = @db.getHashMap("read")
     comment_ids.each{|comment_id|
-      map.put( comment_id, true )
+      map.put( comment_id, true ) if comment_id
     }
     @db.commit()
   end
