@@ -107,25 +107,25 @@ module AppKey
       # when [ KeyCode::I , false , false ]
       #   key_send( page , :key_input )
         
-      when [ KeyCode::DIGIT1 , false , false ,true] # alt-1
+      when [ KeyCode::DIGIT1 , false , false ,false] # alt-1
         select_tab(0)
-      when [ KeyCode::DIGIT2 , false , false ,true] 
+      when [ KeyCode::DIGIT2 , false , false ,false] 
         select_tab(1)
-      when [ KeyCode::DIGIT3 , false , false ,true]
+      when [ KeyCode::DIGIT3 , false , false ,false]
         select_tab(2)
-      when [ KeyCode::DIGIT4 , false , false ,true]
+      when [ KeyCode::DIGIT4 , false , false ,false]
         select_tab(3)
-      when [ KeyCode::DIGIT5 , false , false ,true]
+      when [ KeyCode::DIGIT5 , false , false ,false]
         select_tab(4)
-      when [ KeyCode::DIGIT6 , false , false ,true]
+      when [ KeyCode::DIGIT6 , false , false ,false]
         select_tab(5)
-      when [ KeyCode::DIGIT7 , false , false ,true]
+      when [ KeyCode::DIGIT7 , false , false ,false]
         select_tab(6)
-      when [ KeyCode::DIGIT8 , false , false ,true]
+      when [ KeyCode::DIGIT8 , false , false ,false]
         select_tab(7)
-      when [ KeyCode::DIGIT9 , false , false ,true]
+      when [ KeyCode::DIGIT9 , false , false ,false]
         select_tab(8)
-      when [ KeyCode::DIGIT0 , false , false ,true]
+      when [ KeyCode::DIGIT0 , false , false ,false]
         select_tab(9)
 
       end

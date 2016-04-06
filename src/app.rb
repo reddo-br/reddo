@@ -86,7 +86,6 @@ class FXApp < JRubyFX::Application
         }
       end # scene
       
-
       base_font = App.i.pref["fonts"]
       if base_font
         stage.getScene().getRoot().setStyle("-fx-font-family:\"#{base_font}\"")
@@ -128,7 +127,26 @@ class FXApp < JRubyFX::Application
           end
         end
       }
+      
+      # tabのナンバリング
+      App.i.tab_pane.getTabs.addListener{|ov|
+        lists = App.i.tab_pane.getTabs()
+        lists.each_with_index{|tab,n|
+          num = if n < 9
+                  n + 1
+                elsif n == 9
+                  0
+                else
+                  nil
+                end
 
+          page = tab.getContent
+          if page
+            page.set_number( num )
+          end
+        }
+      }
+      
       # セッション再生
       # コマンドラインオプションにより、セッションを破棄する
       if $opts.discard_session
@@ -176,6 +194,7 @@ class FXApp < JRubyFX::Application
         App.i.finish_tabs
       }
       
+
       if splash = java.awt.SplashScreen.getSplashScreen()
         splash.close()
       end

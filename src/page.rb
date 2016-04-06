@@ -54,6 +54,15 @@ class Page < Java::JavafxSceneLayout::VBox
     @tab_label.setMaxWidth( 150 )
     @tab_label.setMinWidth( 150 )
 
+    @leftside = Pane.new
+    @leftside.setPrefSize( 20 , 38 )
+    @leftside.setMinHeight( 48 )
+    @tab_number = Label.new("x")
+    @tab_number.setStyle("-fx-font-size:85%;")
+    # BorderPane.setAlignment( @tab_number , Pos::TOP_LEFT )
+    @tab_number.relocate(0,0)
+    @leftside.getChildren.add( @tab_number )
+    
     if icon_res_url_or_im
       if icon_res_url_or_im.is_a?( String)
         @im = Image.new( App.res( icon_res_url_or_im ),16,16,true,true)
@@ -66,9 +75,14 @@ class Page < Java::JavafxSceneLayout::VBox
       @iv.setFitWidth(16)
       @iv.setFitHeight(16)
       # tabh.add( @iv )
-      tabh.setLeft( @iv )
-      BorderPane.setAlignment( @iv , Pos::CENTER)
+      #tabh.setLeft( @iv ) # 多段にする
+      # BorderPane.setAlignment( @iv , Pos::CENTER)
+      # @leftside.setCenter( @iv )
+      @iv.relocate( 1, 16 )
+      @leftside.getChildren.add( @iv )
     end
+
+    tabh.setLeft( @leftside )
 
     # tabh.add( @tab_label )
     # tabh.add( @tab_close_button ) if close_button
@@ -119,6 +133,14 @@ class Page < Java::JavafxSceneLayout::VBox
     ### 
     @tab.setGraphic( tabh )
     @tab.setContent( self )
+  end
+
+  def set_number(num)
+    if num
+      @tab_number.setText(num.to_s)
+    else
+      @tab_number.setText("")
+    end
   end
 
   def close( focus_next = false , save = true)
