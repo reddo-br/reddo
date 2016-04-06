@@ -207,13 +207,18 @@ div.comment p {
   background-color: #{App.i.theme::COLOR::STRONG_GREEN}
 }
 
-.upvote , .downvote {
+.upvote , .downvote , .dummy_arrow {
   height:16px;
   vertical-align: -2px;
 }
 
-.upvote:hover , .downvote:hover , .close-switch {
+.dummy_arrow {
+  visibility:hidden;
+}
+
+.upvote:hover , .downvote:hover , .close-switch , #submission_switch {
   cursor: pointer;
+  font-family:monospace;
 }
 
 .user_flair {
@@ -322,11 +327,11 @@ a#linked_title:hover, a.link-title:hover {
   display:none; // 開始時
 }
 
-/*
-#submission:empty{
-  display:none;
+#submission_switch_area {
+  margin-bottom:2px;
+  font-size:90%;
+  color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
-*/
 
 #submission_command {
   margin: 8px;

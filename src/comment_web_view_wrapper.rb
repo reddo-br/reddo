@@ -24,6 +24,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     
     @hard_ignored_item = {}
     @fold_state = {}
+
   end
   attr_reader :webview
 
@@ -87,6 +88,10 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     @original_poster = obj[:author]
     @permalink = obj[:permalink]
     @locked = obj[:locked]
+    @link_id = obj[:name]
+
+    prepare_submission_switch
+
     set_title( html_decode(obj[:title].to_s) , html_decode(obj[:url]) , obj[:is_self])
     domain = @doc.getElementById("domain")
     domain.setMember("innerHTML" , "(" + obj[:domain] + ")" )
@@ -102,6 +107,13 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     subreddit_info.appendChild( subreddit_link )
     subreddit_info.appendChild( @doc.createTextNode("]"))
 
+    #subm_switch = @doc.getElementById("submission_switch")
+    #subm_switch.setTextContent("[-]") #
+    if @link_id
+      subm_text_closed = ReadCommentDB.instance.get_closed( "st_" + @link_id )
+      submission_text_expand( (not subm_text_closed))
+    end
+    
     subm = @doc.getElementById("submission")
     if obj[:is_self] and @self_text_visible and obj[:selftext_html].to_s.length > 0
       # $stderr.puts "*** selfテキスト表示"
@@ -112,14 +124,16 @@ class CommentWebViewWrapper < RedditWebViewWrapper
                       else
                         obj[:selftext_html]
                       end
-      subm.setMember( "innerHTML" , html_decode( selftext_html.to_s ))
+
+      subm_text = @doc.getElementById("submission_text")
+      subm_text.setMember( "innerHTML" , html_decode( selftext_html.to_s ))
+
+      if thumb = make_thumbnail_element( subm_text )
+        subm_text.appendChild( thumb )
+      end
     else
       subm.setAttribute( "style","display:none")
       # subm.setMember("innerHTML" , "") # :empty -> display:none
-    end
-
-    if thumb = make_thumbnail_element( subm )
-      subm.appendChild( thumb )
     end
 
     subm_head = make_post_head_element( obj , true )
@@ -168,6 +182,37 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     # command.setMember("innerHTML" , "" )
     empty("#submission_command")
     command.appendChild( foot )
+  end
+  
+  def prepare_submission_switch
+    if not @submission_switch_prepared
+      sw = @doc.getElementById("submission_switch")
+      set_event( sw , "click" , false){
+        if @link_id
+          ReadCommentDB.instance.set_closed( "st_" + @link_id , @submission_expanded)
+        end
+        submission_text_expand( (not @submission_expanded) )
+        
+      }
+      @submission_switch_prepared = true
+    end
+  end
+
+  def submission_text_expand( expand )
+    text = @doc.getElementById( "submission_text")
+    sw = @doc.getElementById("submission_switch")
+    mes = @doc.getElementById("submission_switch_message")
+    if expand
+      @submission_expanded = true
+      text.setAttribute("style","display:block")
+      sw.setTextContent("[-]")
+      mes.setTextContent("")
+    else
+      @submission_expanded = false
+      text.setAttribute("style","display:none")
+      sw.setTextContent("[+]")
+      mes.setTextContent("閉じられた投稿テキスト")
+    end
   end
 
   def find_first_child( comment_node )
@@ -412,6 +457,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
     comment_hidden.appendChild( @doc.createTextNode("閉じられたコメント"))
 
+
     comment_hidden_reason = @doc.createElement("span")
     comment_hidden_reason.setAttribute("class","comment-hidden-reason")
     if obj[:reddo_ignored] == IgnoreScript::IGNORE
@@ -421,6 +467,12 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
     comment_hidden.appendChild( comment_hidden_reason )
 
+    # 高さを合わせる
+    dummy_arrow_image = @doc.createElement("img")
+    # dummy_arrow_image.setAttribute("src",@upvoted_img_url)
+    dummy_arrow_image.setAttribute("class","dummy_arrow")
+    comment_hidden.appendChild( dummy_arrow_image )
+    
     comment_hidden
   end
 
@@ -481,7 +533,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
     # @div_comments.setMember("innerHTML" , "")
     # @div_submission.setMember("innerHTML","")
-    empty("#submission")
+    empty("#submission_text")
     empty("#comments")
     
     #if t = @doc.getElementById("linked_title")
@@ -1377,7 +1429,7 @@ html = <<EOF
 <span id="link_flair"></span><a id="linked_title"></a> <span id="domain"></span> <span id="subreddit"></span>
 </div><!-- title_area -->
 <div style="clear:both"></div>
-<div id="submission"></div>
+<div id="submission"><div id="submission_switch_area"><span id="submission_switch"></span><span id="submission_switch_message"></span></div><div id="submission_text"></div></div>
 <div id="submission_command"></div>
 </div><!-- post area -->
 <div id="comments"></div>
