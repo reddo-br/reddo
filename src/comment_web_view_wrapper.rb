@@ -187,7 +187,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
   def prepare_submission_switch
     if not @submission_switch_prepared
       sw = @doc.getElementById("submission_switch")
-      set_event( sw , "click" , false){
+      set_event( sw , "click" , false , free_explicitly:false){
         if @link_id
           ReadCommentDB.instance.set_closed( "st_" + @link_id , @submission_expanded)
         end

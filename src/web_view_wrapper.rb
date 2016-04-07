@@ -237,12 +237,12 @@ class WebViewWrapper
     end
     become_java!
   end
-  # イベント付けやすいよう、引数の順序を変えただけ
-  def set_event( element , evname , consume )
+
+  def set_event( element , evname , consume , free_explicitly:true)
     proc = Proc.new
     po = RubyProcWrapper.new{|ev| proc.call(ev) }
     @venet_listeners ||= []
-    @event_listeners << [ element , evname , po ,consume]
+    @event_listeners << [ element , evname , po ,consume] if free_explicitly
     element.addEventListener( evname , po , consume)
   end
   def clear_events
