@@ -19,7 +19,7 @@ class Page < Java::JavafxSceneLayout::VBox
   
   attr_accessor :page_info
 
-  def prepare_tab(label , icon_res_url_or_im = nil , close_button = true)
+  def prepare_tab(label , icon_res_url_or_im = nil , close_button = true , alt_icon_res_url:nil)
     # tab
     @tab = Tab.new()
     #tabh = HBox.new()
@@ -41,10 +41,15 @@ class Page < Java::JavafxSceneLayout::VBox
     ### label版
     @tab_label = Label.new( label )
     if Util.is_cjk_text( label )
-      @tab_label.setStyle( "-fx-word-break:break-all;" )
+      # @tab_label.setStyle( "-fx-word-break:break-all;" )
+      @tab_style_base = "-fx-word-break:break-all;"
     else
-      @tab_label.setStyle( "-fx-word-wrap:break-word;" )
+      # @tab_label.setStyle( "-fx-word-wrap:break-word;" )
+      @tab_style_base = "-fx-word-wrap:break-word;"
     end
+    @tab_style_color = ""
+    set_tab_label_style
+
     @tab_label.setMaxHeight( 48 )
     @tab_label.setAlignment( Pos::CENTER_LEFT )
     @tab_label.setWrapText( true )
@@ -65,10 +70,15 @@ class Page < Java::JavafxSceneLayout::VBox
     
     if icon_res_url_or_im
       if icon_res_url_or_im.is_a?( String)
-        @im = Image.new( App.res( icon_res_url_or_im ),16,16,true,true)
+        @im_icon = Image.new( App.res( icon_res_url_or_im ),16,16,true,true)
       else
-        @im = icon_res_url_or_im
+        @im_icon = icon_res_url_or_im
       end
+      if alt_icon_res_url
+        @im_icon_alt = Image.new( App.res( alt_icon_res_url ),16,16,true,true)
+      end
+      @im = @im_icon
+
       @loading_im = Image.new( App.res( '/res/loading.png'), 16 ,16 , true , true)
       @iv = ImageView.new(@im)
       @iv.setPreserveRatio(true)
@@ -135,6 +145,31 @@ class Page < Java::JavafxSceneLayout::VBox
     @tab.setContent( self )
   end
 
+  def set_tab_label_style
+    @tab_label.setStyle( @tab_style_base + @tab_style_color )
+  end
+
+  def set_tab_label_color(color)
+    if color
+      @tab_style_color = "-fx-text-fill:#{color};"
+    else
+      @tab_style_color = ""
+    end
+    set_tab_label_style
+  end
+
+  def set_alt_icon_status( enable )
+    if @im_icon_alt
+      if enable
+        @im = @im_icon_alt
+        @iv.setImage( @im ) unless @rt
+      else
+        @im = @im_icon
+        @iv.setImage( @im ) unless @rt
+      end
+    end
+  end
+
   def set_number(num)
     if num
       @tab_number.setText(num.to_s)
@@ -179,6 +214,7 @@ class Page < Java::JavafxSceneLayout::VBox
     if @rt
       @rt.stop
       @iv.setImage( @im )
+      @rt = nil
     end
   end
   

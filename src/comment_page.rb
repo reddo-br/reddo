@@ -517,7 +517,8 @@ class CommentPage < CommentPageBase
     
     getChildren().add( @split_pane )
 
-    prepare_tab( @title || "取得中" , App.i.theme::TAB_ICON_COMMENT )
+    prepare_tab( @title || "取得中" , App.i.theme::TAB_ICON_COMMENT , 
+                 alt_icon_res_url:App.i.theme::TAB_ICON_COMMENT_NEW )
     
     # Page
     @tab.setOnClosed{|ev|
@@ -870,6 +871,8 @@ class CommentPage < CommentPageBase
       check_read2
       Platform.runLater{
         set_tab_text( @title )
+        # set_alt_icon_status(false)
+        set_tab_label_color( nil )
       }
       @shown_to_user = true
     end
@@ -979,8 +982,12 @@ class CommentPage < CommentPageBase
       if @new_comments.length > 0 and not user_present
         set_tab_text( "(#{@new_comments.length})" + title )
         # icon color
+        # set_alt_icon_status(true)
+        set_tab_label_color( App.i.theme::COLOR::STRONG_GREEN )
       else
         set_tab_text( title )
+        # set_alt_icon_status(false)
+        set_tab_label_color( nil )
       end
       @title_label.setText( title )
       @comments.each{|c| @comment_view.add_comment( c ) }
