@@ -218,7 +218,7 @@ div.comment p {
 
 .upvote:hover , .downvote:hover , .close-switch , #submission_switch {
   cursor: pointer;
-  font-family:monospace;
+  // font-family:monospace;
 }
 
 .user_flair {
