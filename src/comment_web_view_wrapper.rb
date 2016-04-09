@@ -675,6 +675,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   def make_thumbnail_element( elem )
     anchors = nl2a(elem.getElementsByTagName("a"))
+    anchors.uniq!{|a| a.getAttribute("href").to_s } # 同じ画像は見ない
     anchors_with_thumb = anchors.inject([]){|ret,anchor| 
       href = anchor.getAttribute("href").to_s
       if href.length > 0
