@@ -11,11 +11,15 @@ class IgnoreChecker
   end
 
   def check( obj )
-    if v = @cache[ obj[:name] ]
+    if v = @cache[  keyval(obj)  ]
       v
     else
-      @cache[ obj[:name] ] = IgnoreScript.ignore?( obj )
+      @cache[ keyval(obj) ] = IgnoreScript.ignore?( obj )
     end
+  end
+
+  def keyval( obj )
+    obj[:name] + ":" + obj[:edited].to_s
   end
 
 end
