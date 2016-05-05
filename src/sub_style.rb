@@ -4,6 +4,7 @@ require 'url_handler'
 require 'css_parser'
 require 'fileutils'
 require 'util'
+require 'client_params'
 
 class SubStyle
   @@cache = {}
@@ -20,6 +21,7 @@ class SubStyle
     FileUtils.mkdir_p( @styles_cache_dir )
 
     @stamp_style = nil
+    @css_url_cache = nil
   end
 
   def get_stamp_style
@@ -69,11 +71,21 @@ class SubStyle
   def get_css_url( subreddit_name )
     url = "https://www.reddit.com/r/#{subreddit_name}/search"
     # p url
-    body = open( url , "Range" => "bytes=-4096" , "Cookie" => "over18=1" ){|cn| cn.read }
+    # todo:アカウントが無いので、すぐ429する問題
+    begin
+      # body = open( url , "Range" => "bytes=-4096" , "Cookie" => "over18=1" ){|cn| cn.read }
+      body = open( url ,  
+                   "Cookie" => "over18=1" , 
+                   "User-Agent" => ClientParams::USER_AGENT){|cn| cn.read }
+    rescue
+      $stderr.puts $@
+      $stderr.puts $!
+      body = ""
+    end
     if m = body.match( /https?:\/\/[\w\-\.]+\.redditmedia\.com\/[\w\-\_]+\.css/)
-      m[0]
+      @css_url_cache = m[0]
     else
-      nil
+      @css_url_cache
     end
   end
 
