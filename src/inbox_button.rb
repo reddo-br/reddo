@@ -51,7 +51,7 @@ class InboxButton < Java::JavafxSceneControl::ToggleButton
 
           Platform.runLater{
             set_num( @mes.length )
-            # @popover.set_items( [] )
+            @popover.set_items( [] )
             $stderr.puts @mes
             @popover.set_items( @mes )
           }
