@@ -301,7 +301,16 @@ class App
   end
 
   def open_external_browser(url)
-    if @pref['browse_alternative_method']
+    if @pref['specify_browser_in_command']
+      com = @pref['browser_command']
+      p com
+      begin
+        process = java.lang.ProcessBuilder.new( com , url ).start()
+      rescue
+        $stderr.puts $!
+        $stderr.puts $@
+      end
+    elsif @pref['browse_alternative_method']
       begin
         java.awt.Desktop.getDesktop().browse(java.net.URI.new(url.to_s))
       rescue

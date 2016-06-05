@@ -57,9 +57,6 @@ class ConfigPage < Page
 
     items << [ Label.new("") , make_font_sample ]
 
-    items << make_bool_config( "外部ブラウザを開く別の方法を試す(うまくいかない場合に)" ,
-                               "browse_alternative_method" )
-
     items << make_bool_config( "新規タブを現在のタブの直後に挿入する",
                                "new_tab_after_current" )
 
@@ -68,6 +65,36 @@ class ConfigPage < Page
 
     items << make_bool_config( "透過ウインドウの使用を避ける(一部のウィンドウに白い枠が出る場合などに)" , 
                                "dont_use_transparent_window" )
+    
+    ####################################
+    items << make_header("外部ブラウザ")
+    
+    items << make_bool_config( "外部ブラウザを開く別の方法を試す(うまくいかない場合に)" ,
+                               "browse_alternative_method" )
+
+    ol ,oc = make_bool_config( "外部ブラウザをコマンドで指定" ,
+                               "specify_browser_in_command" )
+    items << [ol,oc]
+
+    shell_command_field = TextField.new("")
+    shell_command_field.setDisable( (not oc.selected) )
+    # shell_command_field.setPromptText("例: firefox -new-tab \"%u\"")
+    shell_command_field.setText( App.i.pref["browser_command" ] )
+
+    items << [ Label.new("ブラウザのコマンド"),
+               shell_command_field ]
+    oc.selectedProperty.addListener{|ev|
+      val = ev.getValue
+      if val
+        shell_command_field.setDisable(false)
+      else
+        shell_command_field.setDisable(true)
+      end
+    }
+    shell_command_field.textProperty.addListener{|ev|
+      App.i.pref[ "browser_command" ] = ev.getValue
+    }
+    #####################################
 
     items << make_header("サブレディット画面")
 
