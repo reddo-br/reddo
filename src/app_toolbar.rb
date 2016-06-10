@@ -54,7 +54,9 @@ class AppToolbar < Java::JavafxSceneLayout::BorderPane
     }
     menus << menuitem_quit_notab = MenuItem.new("タブを破棄して終了")
     menuitem_quit_notab.setOnAction{|ev|
-      App.i.session.set_page_infos( [] )
+      infos = App.i.session.get_page_infos
+      infos_pinned = infos.find_all{|i| i[:pinned] }
+      App.i.session.set_page_infos( infos_pinned )
       # todo:historyに入れる
       # Platform.exit()
       App.i.stage.close()

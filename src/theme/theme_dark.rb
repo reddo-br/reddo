@@ -10,6 +10,8 @@ module ThemeDark
   TAB_ICON_COMMENT2   = "/res/comment2-dark.png"
   TAB_ICON_COMMENT_NEW = "/res/comment-green.png"
   
+  TAB_ICON_PIN = "/res/pin.png"
+
   HTML_UPVOTED = "/res/upvoted-dark.png"
   HTML_DOWNVOTED = "/res/downvoted-dark.png"
   

@@ -215,17 +215,26 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     end
   end
 
-  def find_first_child( comment_node )
+  def find_first_child( comment_node , allow_sticky:false )
     children = comment_node.getChildNodes()
     ret = nil
     (0).upto( children.getLength() - 1 ){|n|
       node = children.item(n)
-      if node.getAttribute("id") !~ /^ct_/
-        ret = node
-        break
+      node_id = node.getAttribute("id")
+      if node_id !~ /^ct_/ # 自分以外
+        if allow_sticky or not is_sticky_node_id( node_id )
+          ret = node
+          break
+        end
       end
     }
     return ret
+  end
+
+  def is_sticky_node_id( node_id )
+    nn = @e.executeScript("$(\"##{node_id} .sticky_mark\").length")
+    $stderr.puts "is_sticky_node #{nn}"
+    nn > 0
   end
 
   def set_more_cb( &cb )

@@ -10,6 +10,8 @@ module Theme
   TAB_ICON_COMMENT2   = "/res/comment2.png"
   TAB_ICON_COMMENT_NEW = "/res/comment-green.png"
 
+  TAB_ICON_PIN = "/res/pin.png"
+
   HTML_UPVOTED = "/res/upvoted.png"
   HTML_DOWNVOTED = "/res/downvoted.png"
 

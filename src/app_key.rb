@@ -81,6 +81,9 @@ module AppKey
       when [ KeyCode::C, true , false , false]
         key_send( page,  :key_close_focus_next )
 
+      when [ KeyCode::C, false , false , true]
+        App.i.close_pages{|p| not p.pinned }
+
       when [ KeyCode::A , false , false , false]
         key_send( page, :key_add )
         

@@ -19,11 +19,12 @@ class Page < Java::JavafxSceneLayout::VBox
   
   attr_accessor :page_info
 
-  def prepare_tab(label , icon_res_url_or_im = nil , close_button = true , alt_icon_res_url:nil)
+  def prepare_tab(label , icon_res_url_or_im = nil , close_button = true , alt_icon_res_url:nil )
+    @pinned = @page_info[:pinned] if @page_info
     # tab
     @tab = Tab.new()
     #tabh = HBox.new()
-    tabh = BorderPane.new
+    @tabh = tabh = BorderPane.new
     if close_button
       close_iv = ImageView.new(Image.new("/res/close.png",16,16,true,true))
       close_iv.setFitWidth(16)
@@ -36,6 +37,12 @@ class Page < Java::JavafxSceneLayout::VBox
         # http://stackoverflow.com/questions/17047000/javafx-closing-a-tab-in-tabpane-dynamically
         close( true )
       }
+
+      @pin_iv = ImageView.new( Image.new( App.i.theme::TAB_ICON_PIN ))
+      @pin_iv.setFitWidth(16)
+      @pin_iv.setFitHeight(16)
+      @pin_iv.setPreserveRatio(true)
+      
     end
 
     ### label版
@@ -100,8 +107,7 @@ class Page < Java::JavafxSceneLayout::VBox
     tabh.setCenter( @tab_label )
     BorderPane.setAlignment( @tab_label , Pos::CENTER_LEFT )
     if close_button
-      tabh.setRight( @tab_close_button )
-      BorderPane.setAlignment( @tab_close_button , Pos::CENTER)
+      set_close_button_or_pin
     end
 
     tabh.setMinWidth( 190 ) # 必要
@@ -128,15 +134,31 @@ class Page < Java::JavafxSceneLayout::VBox
 
     item_close_other = MenuItem.new("このタブ以外を閉じる")
     item_close_other.setOnAction{|ev|
-      App.i.close_pages{|p| not (p == self) }
+      App.i.close_pages{|p| (not (p == self)) and not p.pinned }
     }
     menu.getItems().add( item_close_other )
     
-    item_close_comment = MenuItem.new("サブレディット以外を閉じる")
-    item_close_comment.setOnAction{|ev|
-      App.i.close_pages{|p| not (p.is_a?( SubPage ) and not p.is_user_submission_list) }
+    #item_close_comment = MenuItem.new("サブレディット以外を閉じる")
+    #item_close_comment.setOnAction{|ev|
+    #  App.i.close_pages{|p| not (p.is_a?( SubPage ) and not p.is_user_submission_list) }
+    #}
+    #menu.getItems().add( item_close_comment )
+    
+    item_close_all = MenuItem.new("全てのタブを閉じる")
+    item_close_all.setOnAction{|ev|
+      App.i.close_pages{|p| not p.pinned }
     }
-    menu.getItems().add( item_close_comment )
+    menu.getItems().add( item_close_all )
+
+    if @page_info and App::TYPE_FOR_SAVE.find{|t| @page_info[:type] == t}
+      item_pin = MenuItem.new("Pin/Unpin")
+      item_pin.setOnAction{|ev|
+        @pinned = (not @pinned)
+        @page_info[:pinned] = @pinned if @page_info
+        set_close_button_or_pin
+      }
+      menu.getItems.add( item_pin )
+    end
     
     @tab.setContextMenu( menu )
 
@@ -144,6 +166,23 @@ class Page < Java::JavafxSceneLayout::VBox
     @tab.setGraphic( tabh )
     @tab.setContent( self )
   end
+
+  def set_close_button_or_pin
+    if @pinned
+      @tabh.setRight( @pin_iv )
+      BorderPane.setAlignment( @pin_iv , Pos::CENTER)
+    else
+      @tabh.setRight( @tab_close_button )
+      BorderPane.setAlignment( @tab_close_button , Pos::CENTER)
+    end
+  end
+
+  def set_pinned( pinned )
+    @pinned = pinned
+    @page_info[:pinned] = @pinned if @page_info
+    set_close_button_or_pin
+  end
+  attr_reader :pinned
 
   def set_tab_label_style
     @tab_label.setStyle( @tab_style_base + @tab_style_color )
@@ -325,10 +364,10 @@ class Page < Java::JavafxSceneLayout::VBox
   #####
 
   def key_close
-    close(false)
+    close(false) if not @pinned
   end
 
   def key_close_focus_next
-    close(true)
+    close(true) if not @pinned
   end
 end
