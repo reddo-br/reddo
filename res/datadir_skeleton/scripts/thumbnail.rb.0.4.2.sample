@@ -21,7 +21,7 @@ class TwimgThumbnail < ThumbnailScript
 
   def get_thumb( url )
     if url.match( %r!https?://.+\.twimg\.com/.*! )
-      url + ":small"
+      url.gsub(/:[^:\/]+$/,'') + ":small"
     else
       nil
     end
