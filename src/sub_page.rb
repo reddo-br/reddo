@@ -1109,7 +1109,7 @@ class SubPage < Page
         @upvote_button.setUserData( data[:name] )
         @downvote_button.setUserData( data[:name] )
 
-        if sub_page.is_votable
+        if sub_page.is_votable and not data[:archived]
           @upvote_button.setDisable( false )
           @downvote_button.setDisable( false )
         else
