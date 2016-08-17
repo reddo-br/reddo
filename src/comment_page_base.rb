@@ -137,7 +137,11 @@ class CommentPageBase < Page
           obj[:selftext] = '[deleted]'
           obj[:selftext_html] = DELETED_HTML_JSONSTR
         end
-        @comment_view.set_submission( obj )
+        if @comment_view.comment_post_list_mode
+          @comment_view.remove_comment( obj[:name] )
+        else
+          @comment_view.set_submission( obj )
+        end
       else
 
         if show_delete_element

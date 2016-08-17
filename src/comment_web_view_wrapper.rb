@@ -1350,6 +1350,7 @@ EOF
       #end
     end
   end
+  attr_reader :comment_post_list_mode
 
   def clear_replying( name )
     
