@@ -818,6 +818,13 @@ class SubPage < Page
           obj[:title_decoded] = Html_entity.decode( obj[:title] )
           obj[:title_for_match] = obj[:title_decoded].to_s.unicode_normalize(:nfkc).downcase
           
+          if obj[:link_flair_text]
+            obj[:link_flair_text_decoded] = Html_entity.decode( obj[:link_flair_text] ) 
+          end
+          if obj[:author_flair_text]
+            obj[:author_flair_text_decoded] = Html_entity.decode( obj[:author_flair_text] )
+          end
+
           obj[:reddo_thumbnail_decoded] = Util.decoded_thumbnail_url( obj )
           
           set_num_comments_new( obj )
@@ -983,7 +990,7 @@ class SubPage < Page
       subms = subms.find_all{|subm|
         subm[:title_for_match].to_s.index( word ) or
         subm[:author].to_s.downcase.index( word ) or
-        subm[:link_flair_text].to_s.downcase.index(word)
+        subm[:link_flair_text_decoded].to_s.downcase.index(word)
       }
     end
 
@@ -1348,7 +1355,7 @@ class SubPage < Page
           @subreddit.setText( data[:subreddit] )
         end
 
-        fl = data[:link_flair_text].to_s.strip
+        fl = data[:link_flair_text_decoded].to_s.strip
         if fl.length > 0
           @link_flair.setVisible(true)
           @link_flair.setText( fl )
@@ -1396,7 +1403,7 @@ class SubPage < Page
         end
         @author.setText( author )
 
-        if afl = data[:author_flair_text] and afl.to_s.length > 0
+        if afl = data[:author_flair_text_decoded] and afl.to_s.length > 0
           @user_flair.setText( afl )
           @user_flair.setVisible(true)
         else

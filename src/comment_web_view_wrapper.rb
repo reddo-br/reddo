@@ -1200,7 +1200,7 @@ EOF
 
   def make_user_element( obj )
     author      = obj[:author]
-    flair_text  = obj[:author_flair_text]
+    flair_text  = html_decode(obj[:author_flair_text])
     flair_class = obj[:author_flair_css_class] # nilや""あり
     deleted = (author == '[deleted]')
     ex_style = case obj[:distinguished]
