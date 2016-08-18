@@ -192,6 +192,8 @@ class FXApp < JRubyFX::Application
         end
 
         App.i.finish_tabs
+
+        DRb.stop_service
       }
       
 
