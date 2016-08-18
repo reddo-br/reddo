@@ -303,9 +303,10 @@ class App
   def open_external_browser(url)
     if @pref['specify_browser_in_command']
       com = @pref['browser_command']
-      p com
+      # p com
+      # p url
       begin
-        process = java.lang.ProcessBuilder.new( com , url ).start()
+        process = java.lang.ProcessBuilder.new( com , url.to_s ).start()
       rescue
         $stderr.puts $!
         $stderr.puts $@
