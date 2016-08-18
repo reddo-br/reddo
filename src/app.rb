@@ -464,8 +464,8 @@ class App
 
   def finish_tabs
     tabs = []
-    tabs += root.lookupAll(".comment-page")
-    tabs += root.lookupAll(".sub-page")
+    tabs += root.lookupAll(".comment-page").to_a
+    tabs += root.lookupAll(".sub-page").to_a
 
     tabs.each{|cp| cp.finish }
     

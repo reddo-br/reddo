@@ -8,7 +8,7 @@ include Singleton
   def initialize
     @plugins = []
     ObjectSpace.each_object(Class){|c|
-      if c.superclass == ThumbnailScript
+      if c.respond_to?(:superclass) and c.superclass == ThumbnailScript # jruby-9.1.2.0 #<Class:Java::JavaAwt>が来ることがある
         o = c.new
         if o.enabled?
           @plugins << o
