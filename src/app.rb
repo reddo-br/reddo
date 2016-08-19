@@ -53,7 +53,7 @@ class FXApp < JRubyFX::Application
     with( stage , 
           width:  (App.i.pref['width'] || 1000),
           height: (App.i.pref['height'] || 600),
-          title: App::APP_NAME
+          title: (App::APP_NAME + " " + App::VERSION)
           ) do
       if App.i.pref["maximized"]
         stage.setMaximized(true)
