@@ -370,6 +370,7 @@ a#linked_title:hover, a.link-title:hover {
 
 table {
     border-collapse: collapse;
+    margin-bottom:8px;
 }
 
 table, th, td {
