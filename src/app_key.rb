@@ -81,8 +81,11 @@ module AppKey
       when [ KeyCode::C, true , false , false]
         key_send( page,  :key_close_focus_next )
 
-      when [ KeyCode::C, false , false , true]
-        App.i.close_pages{|p| not p.pinned }
+      when [ KeyCode::X, false , false , false]
+        key_send( page,  :key_close_focus_next )
+
+      #when [ KeyCode::C, false , false , true]
+      #  App.i.close_pages{|p| not p.pinned }
 
       when [ KeyCode::A , false , false , false]
         key_send( page, :key_add )
@@ -103,6 +106,9 @@ module AppKey
 
       when [ KeyCode::D , false , false , false]
         key_send( page , :key_downvote )
+        
+      when [ KeyCode::Q , false , false , false]
+        App.i.close_pages{|p| not p.pinned }
         
       when [ KeyCode::Q , false , true , false]
         App.i.stage.close()
