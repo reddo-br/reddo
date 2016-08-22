@@ -32,6 +32,17 @@ class ConfigPage < Page
 
     items << make_header( "全般" )
 
+    items << make_bool_config( "新規タブを現在のタブの直後に挿入する",
+                               "new_tab_after_current" )
+
+    items << make_bool_config( "ダークテーマ(試験的)" , 
+                               "use_dark_theme" )
+
+    items << make_bool_config( "透過ウインドウの使用を避ける(一部のウィンドウに白い枠が出る場合などに)" , 
+                               "dont_use_transparent_window" )
+    
+    items << make_header( "フォント")
+
     @font_selector = ChoiceBox.new
     font_list = ["未設定"] + Font.getFamilies()
     @font_selector.getItems().setAll( font_list )
@@ -40,7 +51,7 @@ class ConfigPage < Page
       set_font( ev.getValue )
       set_font_sample
     }
-    items << [ Label.new("フォント") , @font_selector ]
+    items << [ Label.new("フォント選択") , @font_selector ]
 
     # items << make_bool_config( "太字フォントをcss shadowで再現する(太字が表示できない場合に試してください)" ,
     # "artificial_bold" )
@@ -57,14 +68,8 @@ class ConfigPage < Page
 
     items << [ Label.new("") , make_font_sample ]
 
-    items << make_bool_config( "新規タブを現在のタブの直後に挿入する",
-                               "new_tab_after_current" )
-
-    items << make_bool_config( "ダークテーマ(試験的)" , 
-                               "use_dark_theme" )
-
-    items << make_bool_config( "透過ウインドウの使用を避ける(一部のウィンドウに白い枠が出る場合などに)" , 
-                               "dont_use_transparent_window" )
+    items << make_bool_config( "サブピクセルレンダリングではなく、グレースケール・アンチエイリアシングを使用する(環境によっては、変化ありません)",
+                               "grayscale_antialiasing" )
     
     ####################################
     items << make_header("外部ブラウザ")

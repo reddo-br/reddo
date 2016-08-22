@@ -7,8 +7,6 @@
 
 require 'java'
 
-require 'jrubyfx'
-
 require 'redd_patched'
 # require 'redd'
 require 'client_params'
@@ -16,6 +14,12 @@ require 'pref/preferences'
 require 'pref/session'
 require 'pref/account'
 require 'pref/history'
+
+# prism.lcdtextの設定はjrubyfxをロードする前に必要
+if Preferences.new['grayscale_antialiasing']
+  java.lang.System.setProperty("prism.lcdtext", "false")
+end
+require 'jrubyfx'
 
 require 'singleton'
 
@@ -449,7 +453,7 @@ class App
                               DrbWrapper.new( self ))
 
     ReadCommentDB.instance # ここで初期化しておく
-
+    
     if pref['use_dark_theme']
       require 'theme/theme_dark'
       @theme = ThemeDark
