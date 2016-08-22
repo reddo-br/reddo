@@ -48,7 +48,7 @@ class SubStyle
       parser.each_selector(){ |sel , decl , spec |
         decl2 = decl.gsub(/url\("\/\// , 'url("https://' )
         sel.split(/,/).each{|sel2|
-          if sel2 !~ /\.side/ and (sel2 =~ /a\[href/ or sel2 =~ /flair/)
+          if sel2 !~ /\.side/ and (sel2 =~ /\[href/ or sel2 =~ /flair/)
             sel2.gsub!(/:lang\(\w+\)/,'')
             if selector_is_anchor(sel2)
               sel3 = ".md " + remove_ancestor( sel2 )
