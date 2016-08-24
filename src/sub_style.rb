@@ -52,20 +52,32 @@ class SubStyle
             sel2.gsub!(/:lang\(\w+\)/,'')
             if selector_is_anchor(sel2)
               sel3 = ".md " + remove_ancestor( sel2 )
-              decl3 = decl2 + ";text-decoration:none;" # redditのデフォルトにあわせる
+              if decl2 !~ /text-decoration:/
+                decl3 = decl2 + ";text-decoration:none;" # redditのデフォルトにあわせる
+              else
+                decl3 = decl2
+              end
             else
               sel3 = sel2
               decl3 = decl2
             end
             # animation関連は消す どうせcss-parserは @keyframe を解析できない
             decl4 = decl3.split(/;/).delete_if{|d| d =~ /animation[^"]*?:/}.join(";")
-            
+            # webview jdk1.8 transformに対応していない
+            webkit_directive!( decl4 )
+
             stamp_css << "#{sel3.strip} {#{decl4}}\n"
           end
         }
       }
       @stamp_style = stamp_css
     end
+  end
+
+  def webkit_directive!( str )
+    ['transform' ].each{|w|
+      str.gsub!( /(?<!\-)#{w}/ , "-webkit-#{w}")
+    }
   end
 
   def get_css_url( subreddit_name )
