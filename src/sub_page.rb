@@ -346,14 +346,43 @@ class SubPage < Page
     @filter_read.setOnAction{
       display_subms
     }
-    
+
     @filter_area.getChildren().addAll( filters )
     
     BorderPane.setAlignment( @filter_area , Pos::CENTER_LEFT )
     @filter_and_search_bar.setLeft( @filter_area )
 
+
+    # google_search欄ににサムネ表示切り替えを追加することに
+    @google_search_area = HBox.new
+    @google_search_area.setAlignment(  Pos::CENTER_RIGHT )
+    thumb_switch_widgets = []
+    thumb_switch_widgets  << Label.new("サムネ:")
+    
+    thumb_switch_buttons = []
+    thumb_switch_buttons << @no_thumb_button = ToggleButton.new("無")
+    thumb_switch_buttons << @small_thumb_button = ToggleButton.new("小")
+    thumb_switch_buttons << @medium_thumb_button = ToggleButton.new("中")
+    @thumb_button_group = ToggleGroup.new()
+    thumb_switch_buttons.each{|b| b.setToggleGroup( @thumb_button_group )}
+    thumb_default_button = case pref['list_style']
+                           when 'medium_thumb'
+                             @medium_thumb_button
+                           when 'no_thumb'
+                             @no_thumb_button
+                           else
+                             @small_thumb_button
+                           end
+    Util.toggle_group_set_listener_force_selected( @thumb_button_group ,
+                                                   thumb_default_button){|btn| set_thumb_size }
+    App.i.make_pill_buttons( thumb_switch_buttons )
+    thumb_switch_widgets.concat( thumb_switch_buttons )
+    thumb_switch_widgets << Label.new(" ")
+    
+    @google_search_area.getChildren.addAll( thumb_switch_widgets )
+
     if not @is_multireddit
-      @google_search_area = HBox.new
+      # @google_search_area = HBox.new
 
       parts = []
 
@@ -380,12 +409,12 @@ class SubPage < Page
       
       App.i.adjust_height( parts )
       App.i.make_pill_buttons( parts )
-      @google_search_area.getChildren.setAll( parts )
+      @google_search_area.getChildren.addAll( parts )
       
-      BorderPane.setAlignment( @google_search_area , Pos::CENTER_RIGHT )
-      @filter_and_search_bar.setRight( @google_search_area )
     end # is not multireddit
-    
+    BorderPane.setAlignment( @google_search_area , Pos::CENTER_RIGHT )
+    @filter_and_search_bar.setRight( @google_search_area )
+
     getChildren.add( @filter_and_search_bar )
     
     #### table
@@ -405,18 +434,17 @@ class SubPage < Page
     rank_column.set_cell_value_factory( MapValueFactory.new( :reddo_rownum ))
     rank_column.set_cell_factory{|col| NumberCell.new }
 
-    vote_column = TableColumn.new
-    vote_column.set_cell_value_factory{|cdf|
+    @vote_column = TableColumn.new
+    @vote_column.set_cell_value_factory{|cdf|
       # p cdf.getValue() # Redd::Objects::Submission
       # SimpleObjectProperty.new( cdf.getValue() ) # 全データを渡す これでいいか
       SimpleObjectProperty.new( cdf.getValue() )
 
     }
-    vote_column.set_cell_factory{|col| VoteCell.new(self) }
-    vote_column.setMinWidth( 0 )
-    vote_column.setPrefWidth( 40 )
-    vote_column.setResizable( false)
-    vote_column.setSortable(false)
+    @vote_column.set_cell_factory{|col| VoteCell.new(self) }
+    # widthはadjust_column_widthで
+    @vote_column.setResizable( false)
+    @vote_column.setSortable(false)
 
     score_column = TableColumn.new
     score_column.setText("ｽｺｱ")
@@ -428,15 +456,14 @@ class SubPage < Page
     score_column.set_cell_value_factory{ |cdf| SimpleObjectProperty.new( cdf.getValue()) }
     score_column.set_cell_factory{|col| ScoreNumberCell.new }
 
-    thumb_column = TableColumn.new
-    thumb_column.setText("画像")
-    thumb_column.setMinWidth(80)
-    thumb_column.setMaxWidth(80)
-    thumb_column.set_cell_value_factory( MapValueFactory.new(:reddo_thumbnail_decoded))
+    @thumb_column = TableColumn.new
+    @thumb_column.setText("画像")
+    # widthはadjust_column_widthで
+    @thumb_column.set_cell_value_factory( MapValueFactory.new(:reddo_thumbnail_decoded))
     #thumb_column.set_cell_value_factory{ |cdf| SimpleObjectProperty.new( cdf.getValue()) }
-    thumb_column.set_cell_factory{|col| ThumbCell.new }
-    thumb_column.setResizable(false)
-    thumb_column.setSortable(false)
+    @thumb_column.set_cell_factory{|col| ThumbCell.new(self) }
+    @thumb_column.setResizable(false)
+    @thumb_column.setSortable(false)
 
     comm_column = TableColumn.new
     comm_column.setText("ｺﾒﾝﾄ数")
@@ -461,15 +488,19 @@ class SubPage < Page
     title_column.set_cell_value_factory{ |cdf| SimpleObjectProperty.new( cdf.getValue()) }
     title_column.set_cell_factory{|col| 
       multi = @url_handler.path_is_multireddit( @page_info[:name])
-      TitleCell.new(col, show_subreddit:multi , artificial_bold:@artificial_bold) 
+      TitleCell.new(self , col, show_subreddit:multi , artificial_bold:@artificial_bold) 
     }
-    title_column.prefWidthProperty().bind( @table.widthProperty.subtract(rank_column.widthProperty).subtract( vote_column.widthProperty).subtract( score_column.widthProperty ).subtract(thumb_column.widthProperty).subtract( comm_column.widthProperty ).subtract( comm_new_column.widthProperty ).subtract(20))
+
+    
+    title_column.prefWidthProperty().bind( @table.widthProperty.subtract(rank_column.widthProperty).subtract( @vote_column.widthProperty).subtract( score_column.widthProperty ).subtract(@thumb_column.widthProperty).subtract( comm_column.widthProperty ).subtract( comm_new_column.widthProperty ).subtract(20))
 
     title_column.setSortable(false)
 
     # @table.setColumnResizePolicy(TableView::CONSTRAINED_RESIZE_POLICY)
     @table.setPrefHeight( 10000 )
-    @table.getColumns.setAll( rank_column , vote_column , score_column , comm_column , comm_new_column , thumb_column , title_column)
+    @table.getColumns.setAll( rank_column , @vote_column , score_column , comm_column , comm_new_column , @thumb_column , title_column)
+    
+    adjust_column_width
 
     @subs_observable = FXCollections.synchronizedObservableList(FXCollections.observableArrayList)
     @table.setItems( @subs_observable )
@@ -544,6 +575,75 @@ class SubPage < Page
     start_reload
   end # initialize
   attr_reader :is_user_submission_list
+  attr_reader :pref
+
+  def thumb_width
+    if @pref['list_style'] == 'medium_thumb'
+      140
+    elsif @pref['list_style'] == 'no_thumb'
+      0
+    else
+      74
+    end
+  end
+  def thumb_height
+    if @pref['list_style'] == 'medium_thumb'
+      140
+    elsif @pref['list_style'] == 'no_thumb'
+      0
+    else
+      54
+    end
+  end
+  def adjust_column_width
+    if @pref['list_style'] == 'no_thumb'
+
+      #if @table.getColumns.contains( @thumb_column )
+      #  @table.getColumns.remove( @thumb_column )
+      #end
+      
+      @thumb_column.setMinWidth( 0 )
+      @thumb_column.setMaxWidth( 0 )
+      @thumb_column.setVisible(false)
+
+      @vote_column.setMinWidth( 0 )
+      @vote_column.setPrefWidth( 75 )
+
+    else
+
+      #if not @table.getColumns.contains( @thumb_column)
+      #  @table.getColumns.add( 5 , @thumb_column )
+      #end
+      @thumb_column.setVisible(true)
+      @thumb_column.setMinWidth( thumb_width + 6)
+      @thumb_column.setMaxWidth( thumb_width + 6)
+
+      @vote_column.setMinWidth( 0 )
+      @vote_column.setPrefWidth( 40 )
+
+    end
+  end
+  def set_thumb_size
+    case @thumb_button_group.getSelectedToggle
+    when @no_thumb_button
+      @pref['list_style'] = 'no_thumb'
+    when @small_thumb_button
+      @pref['list_style'] = nil
+    when @medium_thumb_button
+      @pref['list_style'] = 'medium_thumb'
+    end
+    
+    adjust_column_width
+    # 再描画
+    # display_subms
+
+    # やっぱり変更だけする
+
+    # これはやっぱり良くない？
+    @table.lookupAll(".thumb-cell").each{|c| c.adjust_image_size}
+    @table.lookupAll(".vote-cell").each{|c| c.adjust_direction }
+    @table.lookupAll(".title-cell").each{|c| c.adjust }
+  end
 
   def is_votable
     @account_name and not ( @user_state and  @user_state.user and  @user_state.user[:is_suspended] )
@@ -1051,6 +1151,8 @@ class SubPage < Page
     STYLE_BASE = "-fx-font-size:100%;"
     def initialize(page)
       super()
+      getStyleClass().add("vote-cell")
+      
       @page = page
       @upvote_button = ToggleButton.new("▲")
       @upvote_button.setStyle(STYLE_BASE)
@@ -1058,8 +1160,6 @@ class SubPage < Page
       @downvote_button = ToggleButton.new("▼")
       @downvote_button.setStyle(STYLE_BASE)
       @downvote_button.getStyleClass().add("downvote-button")
-
-      App.i.make_pill_buttons( [ @upvote_button , @downvote_button ] , true )
 
       tg = ToggleGroup.new()
       @upvote_button.setToggleGroup(tg)
@@ -1090,18 +1190,39 @@ class SubPage < Page
         end
       }
 
-      box = VBox.new()
-      box.getChildren().add( @upvote_button )
-      box.getChildren().add( @downvote_button )
+      @vbox = VBox.new
+      @hbox = HBox.new
+      @vbox.setAlignment( Pos::CENTER_LEFT )
+      @hbox.setAlignment( Pos::CENTER_LEFT )
 
-      box.setAlignment( Pos::CENTER_LEFT )
-
-      setGraphic( box )
-
+      adjust_direction
     end
     
+    def adjust_direction
+      if @page.pref['list_style'] == 'no_thumb'
+        if not @hbox.getChildren().contains( @upvote_button )
+          App.i.make_pill_buttons( [ @upvote_button , @downvote_button ] )
+          @hbox.getChildren().add( @upvote_button )
+          @hbox.getChildren().add( @downvote_button )
+        end
+        if getGraphic != @hbox
+          setGraphic( @hbox )
+        end
+      else
+        if not @vbox.getChildren().contains( @upvote_button )
+          App.i.make_pill_buttons( [ @upvote_button , @downvote_button ] , true )
+          @vbox.getChildren().add( @upvote_button )
+          @vbox.getChildren().add( @downvote_button )
+        end
+        if getGraphic != @vbox
+          setGraphic( @vbox )
+        end
+      end
+    end
+
     def updateItem( data , is_empty_col )
       sub_page = @page
+      adjust_direction
       if is_empty_col
         @upvote_button.setVisible( false )
         @downvote_button.setVisible( false )
@@ -1144,32 +1265,57 @@ class SubPage < Page
 
   class ThumbCell < Java::JavafxSceneControl::TableCell
     include JRubyFX::DSLControl
-    IMAGE_WIDTH = 74
-    IMAGE_HEIGHT = 54
-    # IMAGE_SIZE = 50
-    def initialize
+    
+    def initialize( sub_page )
       super()
+      getStyleClass().add("thumb-cell")
       setPadding( Insets.new( 2, 2, 2, 2 ))
+      @sub_page = sub_page
+
       @image_view = ImageView.new
       @image_view.setSmooth(true)
       # @image_view.setCache(true)
       @image_view.setPreserveRatio(true)
-      @image_view.setFitWidth( IMAGE_WIDTH )
-      @image_view.setFitHeight( IMAGE_HEIGHT )
+      adjust_image_size
+
       setAlignment( Pos::CENTER )
-      setMinHeight(IMAGE_HEIGHT + 6)
-      setMinWidth(IMAGE_WIDTH + 6)
+
+      # setMinWidth(IMAGE_WIDTH + 6)
       setGraphic( @image_view)
     end
 
     @@cache = {}
 
+    def adjust_image_size
+      list_style = @sub_page.pref['list_style']
+      
+      image_width = @sub_page.thumb_width
+      image_height = @sub_page.thumb_height
+
+      @image_view.setFitWidth( image_width )
+      if list_style == nil
+        @image_view.setFitHeight( image_height )
+      elsif list_style == 'no_thumb'
+        @image_view.setFitHeight( 1 )
+      else
+        # @image_view.setFitHeight( image_height * 1.5 )
+        @image_view.setFitHeight( nil )
+      end
+      if list_style == 'no_thumb'
+        setMinWidth( 1 )
+      else
+        setMinWidth( image_width + 6)
+      end
+      # @image_view.setImage( @image_view.getImage ) # 実際に入れないとサイズ調整されない？
+    end
+
     def updateItem( data , is_empty_col )
 
       if data and not is_empty_col
+        adjust_image_size
         url = data
         # p url
-        # i = @@cache[ url ] || Image.new( url, IMAGE_SIZE, IMAGE_SIZE, true,true,true) # ratio,smooth,background
+        # i = @@cache[ url ] || Image.new( url, @image_width, @image_height ,true,true,true) # ratio,smooth,background # なんでこれ止めたんだっけ？ リサイズ処理がしょぼいから？
         i = @@cache[ url ] || Image.new( url ,true) # background
         @@cache[ url ] = i
         @image_view.setImage( i )
@@ -1240,8 +1386,11 @@ class SubPage < Page
     @@dummy_label = nil
     @@dummy_scene = nil
 
-    def initialize(col = nil , artificial_bold:false, show_subreddit:false)
+    def initialize(page , col = nil , artificial_bold:false, show_subreddit:false)
       super()
+      getStyleClass().add("title-cell")
+
+      @page = page
       @show_subreddit = show_subreddit
 
       # @subm_title = Label.new
@@ -1252,17 +1401,17 @@ class SubPage < Page
                 'black'
               end
       
-      if artificial_bold
-        # drowshadow ( blur-type , color , radius , spread, offset_x , offset_y )
-        # @subm_title.setStyle( "-fx-font-size:14px; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
-        @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-word-wrap:break-word; -fx-effect: dropshadow( one-pass-box , #{color} , 0,0,1,0 );")
-      else
-        @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-font-weight: bold; -fx-word-wrap:break-word")
-      end
+      bold_style = if artificial_bold
+                     "-fx-effect: dropshadow( one-pass-box , #{color} , 0,0,1,0 );"
+                   else
+                     "-fx-font-weight: bold;"
+                   end
+
+      @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-word-wrap:break-word; #{bold_style}")
 
       if @show_subreddit
         @subreddit = Label.new
-        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};-fx-padding:0 6px 0 0;")
+        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{bold_style};-fx-padding:0 6px 0 0;")
         @subreddit.setWrapText(false)
       end
 
@@ -1326,9 +1475,12 @@ class SubPage < Page
 
       @box = VBox.new
       @box.setAlignment( Pos::TOP_LEFT )
+
       @box.getChildren().add( @subm_title )
-      @box.getChildren().add( @hbox2 )
-      @box.getChildren().add( @hbox )
+
+      adjust
+      # @box.getChildren().add( @hbox2 )
+      # @box.getChildren().add( @hbox )
 
       # box.prefHeightProperty().bind( self.heightProperty()) # wrapしなくなる
       # self.heightProperty().bind( box.heightProperty())
@@ -1337,16 +1489,43 @@ class SubPage < Page
       # @subm_title.heightProperty().addListener{
 
       widthProperty().addListener{|ev|
-        @subm_title.setWrappingWidth( getWidth() - 4)
+        if @page.pref['list_style'] == 'no_thumb'
+          @subm_title.setWrappingWidth( 0 )
+        else
+          @subm_title.setWrappingWidth( getWidth() - 4)
+        end
       }
 
       setGraphic( @box )
     end
 
+    def adjust
+      if @page.pref['list_style'] == 'no_thumb'
+        # @hbox2.setVisible(false)
+        # @hbox.setVisible(false)
+        @box.setAlignment(Pos::CENTER_LEFT )
+
+        @box.getChildren.remove( @hbox2 )
+        @box.getChildren.remove( @hbox )
+      else
+        @box.setAlignment(Pos::TOP_LEFT )
+        if not @box.getChildren.contains( @hbox2 )
+          @box.getChildren.add( @hbox2 )
+          @box.getChildren.add( @hbox )
+        end
+      end
+
+      if @page.pref['list_style'] == 'no_thumb'
+        @subm_title.setWrappingWidth( 0 )
+      else
+        @subm_title.setWrappingWidth( getWidth() - 4)
+      end
+    end
+
     def updateItem( data , is_empty_col )
 
       if( data and not is_empty_col )
-
+        adjust
 
         time = Time.at( data[:created_utc] )
         @datetime.setText( time.strftime("%Y-%m-%d %H:%M:%S") )

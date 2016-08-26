@@ -437,11 +437,19 @@ class App
                                  [ "left-pill" , "right-pill"] 
                                end
     
+    buttons.each{|btn| 
+      btn.getStyleClass().setAll( remove_pill_class( btn.getStyleClass().to_a ))
+    }
+
     buttons.first.getStyleClass().add( first_class)
     buttons.last.getStyleClass().add( last_class)
     
     buttons[1..-2].each{|center| center.getStyleClass().add("center-pill") }
 
+  end
+
+  def remove_pill_class( ary )
+    ary.reject{|c| c =~ /(top|bottom|left|right|center)-pill/}
   end
 
   ID_TAB_PANE = "tab_pane"
