@@ -253,7 +253,7 @@ class SubPage < Page
     @subm_count_label = Label.new("0件")
     @subm_add_button = Button.new("追加")
     @subm_add_button.setOnAction{|ev|
-      start_reload( add:true , count:100 )
+      start_reload( add:true )
     }
     @sort_button_area_left.getChildren().addAll(@subm_count_label,
                                                 @subm_add_button ,
@@ -765,7 +765,9 @@ class SubPage < Page
     end
   end
 
-  def start_reload(add:false , count:100)
+  def start_reload(add:false , count:nil)
+    count ||= App.i.pref['sub_number_of_posts_to_get']
+    $stderr.puts "取得数 #{count}"
     loading( Proc.new{ reload(add:add , count:count) } , 
              Proc.new{ 
                set_load_button_enable( true ) 

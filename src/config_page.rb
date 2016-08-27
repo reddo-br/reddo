@@ -104,17 +104,26 @@ class ConfigPage < Page
     items << make_header("サブレディット画面")
 
     # スクロール量
-    sub_scroll_amount = App.i.pref["sub_scroll_amount"]
-    @sub_scroll_amount_selector = ChoiceBox.new
-    @sub_scroll_amount_selector.getItems().setAll( SUB_SCROLL_AMOUNT_CHOICES.map{|e| e[1] })
-    @sub_scroll_amount_selector.getSelectionModel.select( SUB_SCROLL_AMOUNT_CHOICES.assoc(sub_scroll_amount)[1] )
-    @sub_scroll_amount_selector.valueProperty.addListener{|ev|
-      am = SUB_SCROLL_AMOUNT_CHOICES.rassoc( ev.getValue )[0]
-      App.i.pref['sub_scroll_amount'] = am
-    }
+    # sub_scroll_amount = App.i.pref["sub_scroll_amount"]
+    # @sub_scroll_amount_selector = ChoiceBox.new
+    # @sub_scroll_amount_selector.getItems().setAll( SUB_SCROLL_AMOUNT_CHOICES.map{|e| e[1] })
+    # @sub_scroll_amount_selector.getSelectionModel.select( SUB_SCROLL_AMOUNT_CHOICES.assoc(sub_scroll_amount)[1] )
+    # @sub_scroll_amount_selector.valueProperty.addListener{|ev|
+    #   am = SUB_SCROLL_AMOUNT_CHOICES.rassoc( ev.getValue )[0]
+    #   App.i.pref['sub_scroll_amount'] = am
+    # }
 
-    items << [ Label.new("サブレディット画面でのホイールスクロール量") , @sub_scroll_amount_selector ]
+    # items << [ Label.new("サブレディット画面でのホイールスクロール量") , @sub_scroll_amount_selector ]
 
+    items << make_choices_config( "サブレディット画面でのホイールスクロール量" ,
+                                    "sub_scroll_amount",
+                                    SUB_SCROLL_AMOUNT_CHOICES )
+
+    items << make_spinner_config( "一度に取得する投稿数(20〜100)",
+                                  "sub_number_of_posts_to_get",
+                                  20 , 100 , 100 , 10 )
+
+    ######################################
     items << make_header( "コメント画面" )
 
     items << make_bool_config( "サブレディットのリンク(スタンプ)とフレアーのスタイルを適用する(試験的)",
@@ -126,25 +135,32 @@ class ConfigPage < Page
     items << make_bool_config( "コメントページでスムーズスクロールを使用する" ,
                                "enable_smooth_scroll")
 
-    accel = App.i.pref['wheel_accel_max'] || 2.5
-    @accel_spinner = Spinner.new( 1.0 , 5.0 , accel , 0.5 )
-    @accel_spinner.getValueFactory.valueProperty.addListener{|ev|
-      App.i.pref['wheel_accel_max'] = ev.getValue
-    }
-    items << [ Label.new("コメントページでのマウスホイールスクロールの最大加速"),
-               @accel_spinner ]
+    # accel = App.i.pref['wheel_accel_max'] || 2.5
+    # @accel_spinner = Spinner.new( 1.0 , 5.0 , accel , 0.5 )
+    # @accel_spinner.getValueFactory.valueProperty.addListener{|ev|
+    #   App.i.pref['wheel_accel_max'] = ev.getValue
+    # }
+    # items << [ Label.new("コメントページでのマウスホイールスクロールの最大加速"),
+    #            @accel_spinner ]
+    items << make_spinner_config( "コメントページでのマウスホイールスクロールの最大加速",
+                                  "wheel_accel_max",
+                                  1.0 , 5.0 , 2.5 , 0.5 )
     
     items << make_bool_config( "連続するunicode結合文字を省略する(コメントにより描画に非常に時間がかかる問題を回避する)" ,
                                "suppress_combining_mark")
 
     # line height
-    line_height = App.i.pref['line_height'] || 100
-    @line_height_spinner = Spinner.new( 100 , 200 , line_height , 5 )
-    @line_height_spinner.getValueFactory.valueProperty.addListener{|ev|
-      App.i.pref['line_height'] = ev.getValue
-    }
-    items << [ Label.new("行間(%)") , @line_height_spinner ]
+    # line_height = App.i.pref['line_height'] || 100
+    # @line_height_spinner = Spinner.new( 100 , 200 , line_height , 5 )
+    # @line_height_spinner.getValueFactory.valueProperty.addListener{|ev|
+    #   App.i.pref['line_height'] = ev.getValue
+    # }
+    # items << [ Label.new("行間(%)") , @line_height_spinner ]
     
+    items << make_spinner_config( "行間(%)" ,
+                                  "line_height",
+                                  100, 200 , 100 , 5 )
+
     ########## itemをgridpaneに入れる
 
     items.each_with_index{|row , rownum|
@@ -196,6 +212,29 @@ class ConfigPage < Page
     label = Label.new( label_string )
     check = checkbox_with_pref( pref_name )
     [ label , check ]
+  end
+  
+  def make_choices_config( label_string , pref_name , val_name_array )
+    current_val = App.i.pref[ pref_name ]
+    selector = ChoiceBox.new
+    selector.getItems.setAll( val_name_array.map{|e| e[1] } )
+    selector.getSelectionModel.select( val_name_array.assoc( current_val )[1] )
+    selector.valueProperty.addListener{|ev|
+      val = val_name_array.rassoc( ev.getValue )[0]
+      App.i.pref[ pref_name ] = val
+    }
+    
+    [ Label.new( label_string ) ,  selector ]
+  end
+
+  def make_spinner_config( label_string , pref_name , min , max , default , step )
+    current_val = App.i.pref[ pref_name ] || default
+    spinner = Spinner.new( min , max , current_val , step )
+    spinner.getValueFactory.valueProperty.addListener{|ev|
+      App.i.pref[ pref_name ] = ev.getValue
+    }
+
+    [ Label.new( label_string ) , spinner ]
   end
 
   def make_header( label_string )
@@ -256,4 +295,6 @@ class ConfigPage < Page
     @font_sample_2.setStyle("#{family_css} #{bold_css}")
 
   end
+
+
 end
