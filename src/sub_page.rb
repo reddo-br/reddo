@@ -326,7 +326,9 @@ class SubPage < Page
     @filter_text.setPromptText("単語でフィルタ")
     @filter_text.setPrefWidth( 160 )
     @filter_text.textProperty().addListener{
-      display_subms
+      if not @on_clearing
+        display_subms
+      end
     }
     f1 << @filter_clear = Button.new("" , GlyphAwesome.make("TIMES_CIRCLE"))
     @filter_clear.setOnAction{
@@ -340,11 +342,15 @@ class SubPage < Page
     # todo : 一度見たもの db作成後
     filters << @filter_upvoted = ToggleButton.new("UPVOTED")
     @filter_upvoted.setOnAction{
-      display_subms
+      if not @on_clearing
+        display_subms
+      end
     }
     filters << @filter_read = ToggleButton.new("新着")
     @filter_read.setOnAction{
-      display_subms
+      if not @on_clearing
+        display_subms
+      end
     }
 
     @filter_area.getChildren().addAll( filters )
@@ -1972,6 +1978,54 @@ class SubPage < Page
   def key_find
     @filter_text.requestFocus()
     @filter_text.selectRange( 0 , @filter_text.getText().length  )
+  end
+
+  def key_no_thumb
+    @no_thumb_button.fire
+  end
+  
+  def key_small_thumb
+    @small_thumb_button.fire
+  end
+
+  def key_medium_thumb
+    @medium_thumb_button.fire
+  end
+
+  def key_thumb
+    kw = App.i.key_stroke_command_window
+    kw.add_choice("n","なし") do
+      @no_thumb_button.fire
+    end
+    kw.add_choice("s","小") do
+      @small_thumb_button.fire
+    end
+    kw.add_choice("m","中") do
+      @medium_thumb_button.fire
+    end
+    kw.start( "サムネイル設定" )
+  end
+
+  def key_filter
+    kw = App.i.key_stroke_command_window
+    kw.add_choice("u","upvoteしたもの") do
+      @filter_upvoted.fire if not @filter_upvoted.isDisable
+    end
+    kw.add_choice("n","既読スレで新着があるもの") do
+      @filter_read.fire if not @filter_read.isDisable
+    end
+    kw.add_choice("c","全フィルタ解除") do
+      @on_clearing = true
+      @filter_upvoted.setSelected(false)
+      @filter_read.setSelected(false)
+      @filter_text.setText("")
+      display_subms
+      @on_clearing = false
+    end
+    kw.add_choice("/","検索語欄に移動" ) do
+      key_find
+    end
+    kw.start("フィルタ選択")
   end
 
 end

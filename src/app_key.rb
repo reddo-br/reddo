@@ -5,6 +5,8 @@ require 'app'
 
 import 'javafx.scene.input.KeyCode'
 
+require 'key_stroke_command_window'
+
 module AppKey
   module_function
   def set_key( node )
@@ -115,6 +117,12 @@ module AppKey
         
       # when [ KeyCode::I , false , false ]
       #   key_send( page , :key_input )
+        
+      when [ KeyCode::T , false , false , false ]
+        key_send( page , :key_thumb )
+        
+      when [ KeyCode::F , false , false , false ]
+        key_send( page , :key_filter )
         
       when [ KeyCode::DIGIT1 , false , false ,false] # alt-1
         select_tab(0)

@@ -42,6 +42,8 @@ require 'app_key'
 require 'datadir_skeleton'
 require 'user_script_loader'
 
+require 'key_stroke_command_window'
+
 import 'javafx.scene.layout.Region'
 import 'javafx.application.Platform'
 import 'javafx.scene.input.Clipboard'
@@ -200,7 +202,9 @@ class FXApp < JRubyFX::Application
         DRb.stop_service
       }
       
-
+      App.i.key_stroke_command_window = KeyStrokeCommandWindow.new
+      $stderr.puts "■コマンドウインドウ#{App.i.key_stroke_command_window}"
+      
       if splash = java.awt.SplashScreen.getSplashScreen()
         splash.close()
       end
@@ -243,7 +247,7 @@ class App
   end
   attr_reader :pref , :session , :close_history , :theme
   # widget
-  attr_accessor :fxapp , :stage , :scene , :user_subs_hash , :subs_data_hash
+  attr_accessor :fxapp , :stage , :scene , :user_subs_hash , :subs_data_hash , :key_stroke_command_window
 
   def root
     @scene.getRoot()
@@ -469,7 +473,7 @@ class App
       require 'theme/theme'
       @theme = Theme
     end
-    
+
     DatadirSkeleton.setup
     UserScriptLoader.load
 
