@@ -50,7 +50,7 @@ class SubStyle
         sel.split(/,/).each{|sel2|
           if sel2 !~ /\.side/ and (sel2 =~ /\[href/ or sel2 =~ /flair/)
             sel2.gsub!(/:lang\(\w+\)/,'')
-            if selector_is_anchor(sel2)
+            if selector_maybe_anchor(sel2)
               sel3 = ".md " + remove_ancestor( sel2 )
               if decl2 !~ /text-decoration:/
                 decl3 = decl2 + ";text-decoration:none;" # redditのデフォルトにあわせる
@@ -101,9 +101,9 @@ class SubStyle
     end
   end
 
-  def selector_is_anchor( sel )
+  def selector_maybe_anchor( sel )
     targets = sel.split(/[ >]/)
-    targets.find{|t| t == 'a' or t =~ /^a[:\[]/}
+    targets.find{|t| t == 'a' or t =~ /^a[:\[]/ or t =~ /href/ }
   end
 
   def remove_ancestor( sel )
