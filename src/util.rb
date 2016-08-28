@@ -152,7 +152,7 @@ module Util
     if obj[:thumbnail] =~ /^http/o
       Html_entity.decode( obj[:thumbnail] )
     else
-      url , w , h = Util.find_submission_preview(obj)
+      url , w , h = Util.find_submission_preview(obj , max_width:216 , prefer_large:true)
       if url
         Html_entity.decode( url )
       else
