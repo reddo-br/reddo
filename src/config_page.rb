@@ -6,6 +6,7 @@ require 'jrubyfx'
 
 require 'pref/preferences'
 require 'page'
+require 'comment_page'
 
 import 'javafx.scene.control.Spinner'
 
@@ -116,7 +117,7 @@ class ConfigPage < Page
     # items << [ Label.new("サブレディット画面でのホイールスクロール量") , @sub_scroll_amount_selector ]
 
     items << make_choices_config( "サブレディット画面でのホイールスクロール量" ,
-                                    "sub_scroll_amount",
+                                    "sub_scroll_amount", nil,
                                     SUB_SCROLL_AMOUNT_CHOICES )
 
     items << make_spinner_config( "一度に取得する投稿数(20〜100)",
@@ -160,6 +161,11 @@ class ConfigPage < Page
     items << make_spinner_config( "行間(%)" ,
                                   "line_height",
                                   100, 200 , 100 , 5 )
+
+    sort_choices = CommentPage::SORT_TYPES.map{|name,value| [value,name] } # 逆になってる
+    items << make_choices_config( "コメントのデフォルトソート(サブレディットからの提案がない場合)",
+                                  "default_comment_sort","new",
+                                  sort_choices )
 
     ########## itemをgridpaneに入れる
 
@@ -214,8 +220,8 @@ class ConfigPage < Page
     [ label , check ]
   end
   
-  def make_choices_config( label_string , pref_name , val_name_array )
-    current_val = App.i.pref[ pref_name ]
+  def make_choices_config( label_string , pref_name , default_value , val_name_array )
+    current_val = App.i.pref[ pref_name ] || default_value
     selector = ChoiceBox.new
     selector.getItems.setAll( val_name_array.map{|e| e[1] } )
     selector.getSelectionModel.select( val_name_array.assoc( current_val )[1] )

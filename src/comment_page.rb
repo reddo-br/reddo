@@ -78,7 +78,10 @@ class CommentPage < CommentPageBase
             else
               nil
             end
-    @default_sort = queried_sort || @page_info[:suggested_sort] || 'new'
+    
+    # subredditのリスト以外から来た場合、@page_info[:suggested_sort]は機能しない。
+    # 本来ならlistを１回取ってからやるべきだが…
+    @default_sort = queried_sort || @page_info[:suggested_sort] || App.i.pref['default_comment_sort'] || 'new'
 
     @split_comment_area = VBox.new
 
@@ -128,10 +131,15 @@ class CommentPage < CommentPageBase
     set_current_sort( @default_sort )
 
     @sort_selector.valueProperty().addListener{|ov|
-      start_reload( asread:false )
+      if not @setting_default_sort
+        start_reload( asread:false )
+      end
       @page_info[:sort] = get_current_sort
       App.i.save_tabs
     }
+
+    @suggested_sort_label = Label.new("")
+    set_suggested_sort_label( @page_info[:suggested_sort] )
 
     @title = @page_info[:title] # 暫定タイトル / これはデコードされてる
     
@@ -241,6 +249,7 @@ class CommentPage < CommentPageBase
                                  @autoreload_status,
                                  Label.new(" ソート:"),
                                  @sort_selector,
+                                 @suggested_sort_label,
                                  Label.new(" "))
     @button_area2.setLeft( b_left )
     @button_area2.setCenter( @load_status )
@@ -605,6 +614,14 @@ class CommentPage < CommentPageBase
     end
   end
 
+  def set_suggested_sort_label(suggested)
+    if label = SORT_TYPES.rassoc(suggested)
+      @suggested_sort_label.setText("(提案:#{label[0]})")
+    else
+      @suggested_sort_label.setText("")
+    end
+  end
+
   def focus_editarea_if_opened
     if @split_pane.getItems().length > 1
       @split_edit_area.focus_input
@@ -612,11 +629,11 @@ class CommentPage < CommentPageBase
   end
 
   def get_current_sort
-    SORT_TYPES.assoc(@sort_selector.getSelectionModel.getSelectedItem)[1]
+    SORT_TYPES.assoc(@sort_selector.getSelectionModel.getSelectedItem).to_a[1]
   end
 
   def set_current_sort(sort)
-    @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc(sort)[0] )
+    @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc(sort).to_a[0] )
   end
 
   def highlight_replying( move:true )
@@ -976,6 +993,7 @@ class CommentPage < CommentPageBase
 
     Platform.runLater{
       @user_ban_state_label.set_data( @user_state.user , @user_state.is_shadowbanned) if @user_state
+      set_suggested_sort_label( @links[0][:suggested_sort] )
       @comment_view.clear_comment
       # @comment_view.set_title( title ) # if @comment_view.dom_prepared
       @comment_view.set_submission( @links[0] )
