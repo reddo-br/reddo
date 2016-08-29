@@ -14,7 +14,7 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     # Submission#add_comment
     # Commnet#reply (inboxable)
     super()
-    @account_name = account_name
+    @account_name = account_name # リンクの判定のみに使っている
     @subname = subname
     @url_handler = UrlHandler.new( account_name:account_name )
     @text_mode_button = ToggleButton.new("Text")
@@ -116,6 +116,9 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     @mode = nil
 
   end # initialize
+  def set_account_name(an)
+    @account_name = an
+  end
 
   def set_text( text , mode:"reply" )
     @text_area.setText( text )

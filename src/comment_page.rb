@@ -150,6 +150,7 @@ class CommentPage < CommentPageBase
       if @account_name != @account_selector.get_account
         @account_name = @account_selector.get_account # 未ログイン = nil
         @comment_view.set_account_name( @account_name )
+        @split_edit_area.set_account_name( @account_name )
         if @account_name
           ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
           @page_info[:account_name] = @account_name
