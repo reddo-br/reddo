@@ -57,6 +57,10 @@ class SubStyle
               else
                 decl3 = decl2
               end
+            elsif sel2 =~ /flair/
+              # 画像flairではvertical alignを上書きするべきだろう
+              sel3 = sel2
+              decl3 = decl2 + ";vertical-align:middle !important;"
             else
               sel3 = sel2
               decl3 = decl2
