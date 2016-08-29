@@ -249,12 +249,8 @@ class UnreadPopOver < PopOver
       @h1.getChildren().addAll( h1_items )
       h1_items.each{|i| FlowPane.setMargin( i , Insets.new( 0 , 3  , 0 , 3 )) }
 
-      if App.i.pref["artificial_bold"]
-        @type_label.setStyle("-fx-effect: dropshadow( one-pass-box , black , 0,0,1,0 );")
-      else
-        @type_label.setStyle("-fx-font-weight: bold;")
-      end
-      
+      @type_label.setStyle( App.i.fx_bold_style( "-fx-text-base-color") )
+
       [@from_label , @to_label].each{|l| l.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE}" )}
 
       @summary  = Hyperlink.new

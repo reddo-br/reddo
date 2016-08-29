@@ -1409,17 +1409,11 @@ class SubPage < Page
                 'black'
               end
       
-      bold_style = if artificial_bold
-                     "-fx-effect: dropshadow( one-pass-box , #{color} , 0,0,1,0 );"
-                   else
-                     "-fx-font-weight: bold;"
-                   end
-
-      @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-word-wrap:break-word; #{bold_style}")
+      @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-word-wrap:break-word; #{App.i.fx_bold_style(color)}")
 
       if @show_subreddit
         @subreddit = Label.new
-        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{bold_style};-fx-padding:0 6px 0 0;")
+        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::STRONG_GREEN)};-fx-padding:0 6px 0 0;")
         @subreddit.setWrapText(false)
       end
 

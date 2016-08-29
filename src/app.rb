@@ -639,4 +639,12 @@ class App
     end
   end
 
+  def fx_bold_style(base_color)
+    if @pref['artificial_bold']
+      "-fx-effect: dropshadow( one-pass-box , #{base_color} , 0,0,1,0 );"
+    else
+      "-fx-font-weight: bold;"
+    end
+  end
+
 end

@@ -245,12 +245,8 @@ class ConfigPage < Page
 
   def make_header( label_string )
     label = Label.new( label_string )
-    style = "-fx-padding:1em 0 0 0;-fx-underline:true;"
-    style += if App.i.pref["artificial_bold"]
-      "-fx-effect: dropshadow( one-pass-box , -fx-text-base-color , 0,0,1,0 );"
-    else
-      "-fx-font-weight:bold;"
-    end
+    style = "-fx-padding:1em 0 0 0;-fx-underline:true;#{App.i.fx_bold_style("-fx-text-base-color")}"
+    
     label.setStyle( style )
     [ label , nil ]
   end
@@ -291,11 +287,8 @@ class ConfigPage < Page
                  else
                    ""
                  end
-    bold_css = if App.i.pref["artificial_bold"]
-                 "-fx-effect: dropshadow( one-pass-box , -fx-text-base-color , 0,0,1,0 );"
-               else
-                 "-fx-font-weight:bold;"
-               end
+
+    bold_css = App.i.fx_bold_style( '-fx-text-base-color' )
     p "#{family_css} #{bold_css}"
     @font_sample_1.setStyle("#{family_css}")
     @font_sample_2.setStyle("#{family_css} #{bold_css}")
