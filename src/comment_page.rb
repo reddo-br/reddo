@@ -822,7 +822,7 @@ class CommentPage < CommentPageBase
   end
 
   def set_load_button_enable( enable )
-    start_buttons = [ @reload_button , @split_edit_area.post_button , 
+    start_buttons = [ @reload_button , # @split_edit_area.post_button , 
                       @clear_partial_thread_button , @sort_selector , 
                       @account_selector]
     stop_buttons  = [ @load_stop_button ]
@@ -834,9 +834,17 @@ class CommentPage < CommentPageBase
   # http://stackoverflow.com/questions/20225264/understanding-the-javafx-webview-threading-model
   
   def start_reload( asread:false , user_present:true)
-    loading( Proc.new{ reload(asread:asread, user_present:user_present) } , 
+    loading( Proc.new{ 
+               reload(asread:asread, user_present:user_present)
+               Platform.runLater{
+                 @split_edit_area.set_comment_error(false)
+               }
+             },
              Proc.new{ 
                set_load_button_enable( true ) 
+               Platform.runLater{
+                 @split_edit_area.set_now_loading(false)
+               }
                @shown_to_user = false
                if user_present
                  on_user_present
@@ -847,11 +855,13 @@ class CommentPage < CommentPageBase
              Proc.new{ |e|
                # App.i.mes("#{@title} 更新失敗")
                set_status("#{App.i.now} エラー #{e}" , true) 
+               Platform.runLater{
+                 @split_edit_area.set_comment_error(true)
+               }
                $stderr.puts e.inspect
                $stderr.puts e.backtrace
              }
              )
-    
     
   end
 
@@ -907,6 +917,8 @@ class CommentPage < CommentPageBase
 
   def reload( asread:false , user_present:true)
     set_load_button_enable( false )
+    Platform.runLater{@split_edit_area.set_now_loading(true)}
+    
     set_status( "更新中…" , false , true)
     # submission#get では、コメントが深いレベルまでオブジェクト化されない問題
     ut = Thread.new{

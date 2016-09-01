@@ -187,7 +187,8 @@ class EditWidget < Java::JavafxSceneLayout::VBox
   end
   
   def set_error_message(mes)
-    @error_label.setText(mes.to_s)
+    @error_message = mes
+    adjust_error_message
   end
 
   def code_indent
@@ -223,7 +224,32 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     
   end
 
-  attr_reader :post_button
+  # attr_reader :post_button
+
+  def set_now_loading( loading )
+    @now_loading = loading
+    adjust_post_button_disablity
+  end
+  def set_comment_error( error )
+    @comment_error = error
+    adjust_post_button_disablity
+    adjust_error_message
+  end
+  def adjust_post_button_disablity
+    if @comment_error or @now_loading
+      @post_button.setDisable( true )
+    else
+      @post_button.setDisable( false )
+    end
+  end
+  def adjust_error_message
+    if @comment_error
+      @error_label.setText("コメント取得エラー時には書き込みできません。リロードしてください")
+      @error_message = "" # やっぱり前のメッセージは消そう
+    else
+      @error_label.setText(@error_message)
+    end
+  end
 
 end
 

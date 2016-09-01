@@ -371,10 +371,11 @@ class SubPage < Page
     thumb_switch_buttons << @medium_thumb_button = ToggleButton.new("中")
     @thumb_button_group = ToggleGroup.new()
     thumb_switch_buttons.each{|b| b.setToggleGroup( @thumb_button_group )}
-    thumb_default_button = case pref['list_style']
-                           when 'medium_thumb'
+    @list_style = pref['list_style'].to_s.to_sym # tablecellが描画時に読みこむのにファイルアクセスは時間がかかる
+    thumb_default_button = case @list_style
+                           when :medium_thumb
                              @medium_thumb_button
-                           when 'no_thumb'
+                           when :no_thumb
                              @no_thumb_button
                            else
                              @small_thumb_button
@@ -581,28 +582,28 @@ class SubPage < Page
     start_reload
   end # initialize
   attr_reader :is_user_submission_list
-  attr_reader :pref
+  attr_reader :pref , :list_style
 
   def thumb_width
-    if @pref['list_style'] == 'medium_thumb'
+    if @list_style == :medium_thumb
       140
-    elsif @pref['list_style'] == 'no_thumb'
+    elsif @list_style == :no_thumb
       0
     else
       74
     end
   end
   def thumb_height
-    if @pref['list_style'] == 'medium_thumb'
+    if @list_style == :medium_thumb
       140
-    elsif @pref['list_style'] == 'no_thumb'
+    elsif @list_style == :no_thumb
       0
     else
       54
     end
   end
   def adjust_column_width
-    if @pref['list_style'] == 'no_thumb'
+    if @list_style == :no_thumb
 
       #if @table.getColumns.contains( @thumb_column )
       #  @table.getColumns.remove( @thumb_column )
@@ -638,7 +639,7 @@ class SubPage < Page
     when @medium_thumb_button
       @pref['list_style'] = 'medium_thumb'
     end
-    
+    @list_style = @pref['list_style'].to_s.to_sym
     adjust_column_width
     # 再描画
     # display_subms
@@ -1207,24 +1208,28 @@ class SubPage < Page
     end
     
     def adjust_direction
-      if @page.pref['list_style'] == 'no_thumb'
-        if not @hbox.getChildren().contains( @upvote_button )
-          App.i.make_pill_buttons( [ @upvote_button , @downvote_button ] )
-          @hbox.getChildren().add( @upvote_button )
-          @hbox.getChildren().add( @downvote_button )
-        end
-        if getGraphic != @hbox
+      list_style = @page.list_style
+      if @current_list_style != list_style
+        if list_style == :no_thumb
+          if not @hbox.getChildren().contains( @upvote_button )
+            App.i.make_pill_buttons( [ @upvote_button , @downvote_button ] )
+            @hbox.getChildren().add( @upvote_button )
+            @hbox.getChildren().add( @downvote_button )
+          end
+          if getGraphic != @hbox
           setGraphic( @hbox )
+          end
+        else
+          if not @vbox.getChildren().contains( @upvote_button )
+            App.i.make_pill_buttons( [ @upvote_button , @downvote_button ] , true )
+            @vbox.getChildren().add( @upvote_button )
+            @vbox.getChildren().add( @downvote_button )
+          end
+          if getGraphic != @vbox
+            setGraphic( @vbox )
+          end
         end
-      else
-        if not @vbox.getChildren().contains( @upvote_button )
-          App.i.make_pill_buttons( [ @upvote_button , @downvote_button ] , true )
-          @vbox.getChildren().add( @upvote_button )
-          @vbox.getChildren().add( @downvote_button )
-        end
-        if getGraphic != @vbox
-          setGraphic( @vbox )
-        end
+        @current_list_style = list_style
       end
     end
 
@@ -1295,26 +1300,28 @@ class SubPage < Page
     @@cache = {}
 
     def adjust_image_size
-      list_style = @sub_page.pref['list_style']
-      
-      image_width = @sub_page.thumb_width
-      image_height = @sub_page.thumb_height
+      list_style = @sub_page.list_style
 
-      @image_view.setFitWidth( image_width )
-      if list_style == nil
-        @image_view.setFitHeight( image_height )
-      elsif list_style == 'no_thumb'
-        @image_view.setFitHeight( 1 )
-      else
-        # @image_view.setFitHeight( image_height * 1.5 )
-        @image_view.setFitHeight( nil )
+      if @current_list_style != list_style
+        image_width = @sub_page.thumb_width
+        image_height = @sub_page.thumb_height
+
+        @image_view.setFitWidth( image_width )
+        if list_style == :""
+          @image_view.setFitHeight( image_height )
+        elsif list_style == :no_thumb
+          @image_view.setFitHeight( 1 )
+        else
+          # @image_view.setFitHeight( image_height * 1.5 )
+          @image_view.setFitHeight( nil )
+        end
+        if list_style == :no_thumb
+          setMinWidth( 1 )
+        else
+          setMinWidth( image_width + 6)
+        end
+        @current_list_style = list_style
       end
-      if list_style == 'no_thumb'
-        setMinWidth( 1 )
-      else
-        setMinWidth( image_width + 6)
-      end
-      # @image_view.setImage( @image_view.getImage ) # 実際に入れないとサイズ調整されない？
     end
 
     def updateItem( data , is_empty_col )
@@ -1491,7 +1498,7 @@ class SubPage < Page
       # @subm_title.heightProperty().addListener{
 
       widthProperty().addListener{|ev|
-        if @page.pref['list_style'] == 'no_thumb'
+        if @page.list_style == :no_thumb
           @subm_title.setWrappingWidth( 0 )
         else
           @subm_title.setWrappingWidth( getWidth() - 4)
@@ -1502,25 +1509,29 @@ class SubPage < Page
     end
 
     def adjust
-      if @page.pref['list_style'] == 'no_thumb'
-        # @hbox2.setVisible(false)
-        # @hbox.setVisible(false)
-        @box.setAlignment(Pos::CENTER_LEFT )
-
-        @box.getChildren.remove( @hbox2 )
-        @box.getChildren.remove( @hbox )
-      else
-        @box.setAlignment(Pos::TOP_LEFT )
-        if not @box.getChildren.contains( @hbox2 )
-          @box.getChildren.add( @hbox2 )
-          @box.getChildren.add( @hbox )
+      list_style = @page.list_style
+      if @current_list_style != list_style
+        if @page.list_style == :no_thumb
+          # @hbox2.setVisible(false)
+          # @hbox.setVisible(false)
+          @box.setAlignment(Pos::CENTER_LEFT )
+          
+          @box.getChildren.remove( @hbox2 )
+          @box.getChildren.remove( @hbox )
+        else
+          @box.setAlignment(Pos::TOP_LEFT )
+          if not @box.getChildren.contains( @hbox2 )
+            @box.getChildren.add( @hbox2 )
+            @box.getChildren.add( @hbox )
+          end
         end
-      end
 
-      if @page.pref['list_style'] == 'no_thumb'
-        @subm_title.setWrappingWidth( 0 )
-      else
-        @subm_title.setWrappingWidth( getWidth() - 4)
+        if list_style == :no_thumb
+          @subm_title.setWrappingWidth( 0 )
+        else
+          @subm_title.setWrappingWidth( getWidth() - 4)
+        end
+        @current_list_style = list_style
       end
     end
 

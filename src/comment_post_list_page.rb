@@ -427,7 +427,7 @@ class CommentPostListPage < CommentPageBase
   end
 
   def set_load_button_enable( enable )
-    start_buttons = [ @reload_button , @split_edit_area.post_button , 
+    start_buttons = [ @reload_button , # @split_edit_area.post_button , 
                       @account_selector]
     if @target_user
       start_buttons << @sort_selector
@@ -450,9 +450,11 @@ class CommentPostListPage < CommentPageBase
                if more_button_id
                  Platform.runLater{ @comment_view.more_result( more_button_id , true ) }
                end
+               Platform.runLater{ @split_edit_area.set_comment_error(false) }
              } , 
              Proc.new{ 
                set_load_button_enable( true )
+               Platform.runLater{ @split_edit_area.set_now_loading(false) }
              } ,
              Proc.new{ |e|
                # App.i.mes("#{@title} 更新失敗")
@@ -460,6 +462,7 @@ class CommentPostListPage < CommentPageBase
                if more_button_id
                  Platform.runLater{@comment_view.more_result(more_button_id , false)}
                end
+               Platform.runLater{ @split_edit_area.set_comment_error(true) }
                $stderr.puts e.inspect
                $stderr.puts e.backtrace
              }
@@ -518,9 +521,9 @@ class CommentPostListPage < CommentPageBase
   COMMENT_FETCH_LIMIT = 50
   def reload( asread:false , add:false )
     set_load_button_enable( false )
+    Platform.runLater{@split_edit_area.set_now_loading( true )}
     set_status( "更新中…" , false , true)
 
-    
     if @account_name and @target_user and not (Account.byname( @account_name ).scopes.index("history"))
       Platform.runLater{@comment_view.set_message("注意：ユーザーの履歴表示には、新規の権限が必要です。旧バージョンで認可を与えたアカウントは、再度「アカウント追加」で認可を与える必要があります。")}
     else
