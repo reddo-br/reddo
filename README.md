@@ -4,11 +4,17 @@ jrubyによるredditブラウザ
 
 ### 実行に必要なもの
 
-jre 8u51 以上
+jre 8u101 以上を奨励
 
 ### ビルド方法
 
-rawrが必要です。
+jdkが必要です。
+
+jrubyが必要です。9.1.3.0 , 9.1.4.0では現在ビルドがうまくできません。9.1.2.0以前の適当なバージョンを用意してください。
+
+以下はlinuxでのコマンド例です。
+
+パッケージ作成用のライブラリとしてrawrが必要です。
 
     jruby -S gem install rawr --source http://gems.neurogami.com
 
@@ -16,9 +22,9 @@ rawrが必要です。
 
     jruby -S rake rawr:get:current-jruby
     
-    # jrubyのサイトからjruby-complete-9.0.1.0.jar を取ってきてコピーします
-    # 9.0.3.0では現在動作しません
-    cp jruby-complete-9.0.1.0.jar lib/java/jruby-complete.jar
+    # jrubyのサイトからjruby-complete-9.1.3.0.jar を取ってきてコピーします
+    # パッケージに含めるjrubyは現在9.1.3.0を使っています
+    cp jruby-complete-9.1.3.0.jar lib/java/jruby-complete.jar
 
     jruby -S gem install -i ./gem jrubyfx --version "= 1.1.1" --no-rdoc --no-ri
     jruby -S gem install -i ./gem redd --version "= 0.7.7" --no-rdoc --no-ri
@@ -47,5 +53,4 @@ windowsのjrubyでは、jarファイル内でのrequire_relativeが正常に動�
 windows用パッケージには、gemディレクトリ以下をそのままコピーしておいて下さい。とりあえず動きます;
 
     cp -r gem package/windows
-
 
