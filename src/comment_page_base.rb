@@ -86,6 +86,7 @@ class CommentPageBase < Page
   
   def post( obj_reply_to , md_text )
     set_load_button_enable( false )
+    Platform.runLater{@split_edit_area.set_now_loading( true )}
     App.i.client( @account_name ) # refresh
     if obj_reply_to[:kind] == 't3'
       comm = obj_reply_to.add_comment(md_text)
@@ -107,6 +108,7 @@ class CommentPageBase < Page
   
   def edit( obj_edit , md_text )
     set_load_button_enable( false )
+    Platform.runLater{@split_edit_area.set_now_loading( true )}
     cl = App.i.client( @account_name ) # refresh
     comm = obj_edit.edit( md_text ) # commのbody_htmlは変更されない、注意
     comm = obj_edit.client.from_fullname( obj_edit[:name] ).to_a[0] # 再取得

@@ -306,8 +306,9 @@ class CommentPostListPage < CommentPageBase
     }
     @split_edit_area.set_post_cb{ |md_text|
       end_proc = Proc.new{
+        set_load_button_enable( true )
         Platform.runLater{
-          set_load_button_enable( true )
+          @split_edit_area.set_now_loading(false)
         }
       }
       
