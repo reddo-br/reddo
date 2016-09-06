@@ -1234,7 +1234,7 @@ EOF
     user_flair.setTextContent( flair_text )
     flair_class2 = flair_class.to_s.split.map{|c| "flair-" + c }.join(" ").strip
     flair_class3 = if flair_class2.length > 0
-                     "user_flair_styled flair " + flair_class2
+                     "flair user_flair_styled " + flair_class2
                    else
                      "user_flair"
                    end
@@ -1246,8 +1246,19 @@ EOF
     user
   end
   
+  # うまくいかない とりあえず cssでoverflow:hiddenにしておく
+  def adjust_overflowing_user_flair()
+#     @e.executeScript(<<EOF)
+# $(".flair").each(function(i,e){
+#   if( e.clientHeight < e.scrollHeight ){
+#     e.setAttribute("style","vertical-align:baseline !important;");
+#   }
+# });
+# EOF
+  end
+
   def set_single_comment_highlight( name )
-    selector = "#t1_#{name} > .comment_this > .comment_text"
+    selector = "#t1_#{name} > .comment-shown > .comment_this > .comment_text"
     # 旧:ffffc0
     @e.executeScript( <<EOF )
     var comm = $("#{selector}");

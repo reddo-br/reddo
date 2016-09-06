@@ -1646,7 +1646,7 @@ class SubPage < Page
     open_external = MenuItem.new("リンクを開く")
     open_external.setOnAction{|e|
       if item = @table.getSelectionModel().getSelectedItem()
-        url = item[:url]
+        url = Html_entity.decode(item[:url])
         
         page_info = @url_handler.url_to_page_info( url )
         if page_info[:type] == 'other'
@@ -1660,7 +1660,7 @@ class SubPage < Page
     open_external_r = MenuItem.new("リンクを開く(readability)")
     open_external_r.setOnAction{|e|
       if item = @table.getSelectionModel().getSelectedItem()
-        url = item[:url]
+        url = Html_entity.decode(item[:url])
         
         page_info = @url_handler.url_to_page_info( url )
         if page_info[:type] == 'other'
@@ -1713,7 +1713,7 @@ class SubPage < Page
     # 対象によるメニュー内容の切り変え
     menu.setOnShowing{|e|
       item = @table.getSelectionModel().getSelectedItem()
-      url = item[:url]
+      url = Html_entity.decode(item[:url])
       comm_url = item_to_comment_link( item )
 
       if url =~ /^http/ and not url == comm_url
@@ -1912,14 +1912,14 @@ class SubPage < Page
 
   def key_open_link
     if item = @table.getSelectionModel().getSelectedItem()
-      url = item[:url]
+      url = Html_entity.decode(item[:url])
       App.i.open_external_browser(url)
     end
   end
   
   def key_open_link_alt
     if item = @table.getSelectionModel().getSelectedItem()
-      url = item[:url]
+      url = Html_entity.decode(item[:url])
       App.i.open_external_browser(Util.mobile_url(url))
     end
   end

@@ -231,10 +231,11 @@ div.comment p {
 
 .user_flair_styled {
   display:inline-block;
-  // vertical-align: baseline !important; // webの値はだいたいうまくいかない
-  margin-left: 4px;
+  margin-left: 4px !important;
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN} !important;
   background-color:rgba(0,0,0,0) !important;
+  vertical-align:middle !important;
+  overflow:hidden !important; // adjust_overflowing_user_flair()がうまくいかないので
 }
 
 .user_flair:empty {

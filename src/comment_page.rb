@@ -498,9 +498,11 @@ class CommentPage < CommentPageBase
               @comment_view.more_result( elem_id , true ) # moreボタンを消す
               list.each{|c| 
                 @comment_view.add_comment(c , more.parent_id ) 
-                @comment_view.set_link_hook
-                highlight_word()
               }
+              @comment_view.set_link_hook
+              # @comment_view.adjust_overflowing_user_flair
+              highlight_word()
+
               show_num_new_comments
               check_read2
             } # runLater
@@ -733,8 +735,8 @@ class CommentPage < CommentPageBase
     # p @comment_context
     changed = ( (@top_comment != info[:top_comment]) or (@comment_context != info[:context] ) )
     if changed
-      @top_comment = info[:top_comment]
-      @comment_context = info[:context]
+      @page_info[:top_comment] = @top_comment = info[:top_comment]
+      @page_info[:context] = @comment_context = info[:context]
       @scroll_to = @top_comment
       if @top_comment
         show_single_thread_bar( true )
@@ -746,11 +748,15 @@ class CommentPage < CommentPageBase
     if info[:sort] and is_valid_sort_type( info[:sort] )
       current_sort = get_current_sort
       if current_sort != info[:sort]
+        @page_info[:sort] = info[:sort]
+        App.i.save_tabs
         set_current_sort( info[:sort] ) # listenerでリロードさせる
       else
+        App.i.save_tabs
         start_reload( asread:false ) if changed
       end
     else
+      App.i.save_tabs
       start_reload( asread:false ) if changed
     end
   end
@@ -959,7 +965,7 @@ class CommentPage < CommentPageBase
         Platform.runLater{
           @comment_view.set_additional_style( st )
           @split_edit_area.set_sub_link_style( st )
-          
+          # @comment_view.adjust_overflowing_user_flair
           #puts "スタイル取得終了"
         }
       }
@@ -1088,13 +1094,13 @@ class CommentPage < CommentPageBase
 
   def key_open_link
     if url = @links && @links[0] && @links[0][:url]
-      App.i.open_external_browser(url)
+      App.i.open_external_browser(Html_entity.decode(url))
     end
   end
 
   def key_open_link_alt
     if url = @links && @links[0] && @links[0][:url]
-      App.i.open_external_browser(Util.mobile_url(url))
+      App.i.open_external_browser(Util.mobile_url(Html_entity.decode(url)))
     end
   end
 
