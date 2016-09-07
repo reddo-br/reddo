@@ -545,7 +545,7 @@ class SubPage < Page
         open_selected_submission(( not ev.isShiftDown()) )
       end
     }
-    
+
     getChildren().add( @table )
 
     # 本体
@@ -997,7 +997,8 @@ class SubPage < Page
         @table.getSelectionModel().select( old_top )
       end
       am = App.i.pref['sub_scroll_amount']
-      set_scroll_amount( am )
+      set_scroll_amount( am ) # 追加ロード発動もここで設定している
+      set_wheel_event_to_more_post
     }
   end
 
@@ -1050,6 +1051,14 @@ class SubPage < Page
     end
   end
 
+  def is_table_bottoming_out
+    if bot = get_scroll_bottom
+      bot == @table.getItems().size - 1
+    else
+      false
+    end
+  end
+
   def screen_scroll( forward , ratio = 1.0 )
     first = get_scroll_top
     last  = get_scroll_bottom
@@ -1076,12 +1085,24 @@ class SubPage < Page
     if vf = get_virtual_flow
       if amount
         vf.setOnScroll{|ev|
-          screen_scroll( ev.getDeltaY() < 0 , amount) # -1なら↓
+          if ev.eventType == ScrollEvent::SCROLL
+            screen_scroll( ev.getDeltaY() < 0 , amount) # -1なら↓
+          end
           ev.consume
         }
-      #else
-      #  vf.setOnScroll(nil)
+      else
+          
       end
+    end
+  end
+
+  def set_wheel_event_to_more_post
+    if vf = get_virtual_flow
+      vf.addEventHandler( ScrollEvent::SCROLL ){|ev|
+        if is_table_bottoming_out and ev.getDeltaY < 0
+          key_add
+        end
+      }
     end
   end
 
@@ -1833,8 +1854,12 @@ class SubPage < Page
     select_row( 0 )
   end
   def key_buttom
-    @table.scrollTo( @table.getItems().size - 1 )
-    select_row( @table.getItems().size - 1 )
+    if is_table_bottoming_out
+      key_add
+    else
+      @table.scrollTo( @table.getItems().size - 1 )
+      select_row( @table.getItems().size - 1 )
+    end
   end
   
   def key_up
@@ -1867,6 +1892,9 @@ class SubPage < Page
           if not selection_is_in_view
             @table.scrollTo( index + 1 - (get_scroll_bottom - get_scroll_top) )
           end
+        else
+          # ロード動作
+          key_add
         end
         
       else
@@ -1887,8 +1915,12 @@ class SubPage < Page
     select_row( new_top )
   end
   def key_next
-    new_top = screen_scroll( true )
-    select_row( new_top )
+    if is_table_bottoming_out
+      key_add
+    else
+      new_top = screen_scroll( true )
+      select_row( new_top )
+    end
   end
   
   def select_row( index )
