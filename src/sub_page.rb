@@ -546,13 +546,23 @@ class SubPage < Page
       end
     }
 
-    getChildren().add( @table )
+    @table_stack = StackPane.new
+    @table_stack.getChildren().add( @table )
+    getChildren().add( @table_stack )
 
+    @table_bottom_mark = Label.new
+    @table_bottom_mark.setText("↓追加ロード")
+    @table_bottom_mark.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}; -fx-opacity:0.8;-fx-background-radius: 6 6 6 6;-fx-padding:6 6 6 6;")
+    StackPane.setAlignment( @table_bottom_mark , Pos::BOTTOM_RIGHT )
+    StackPane.setMargin( @table_bottom_mark , Insets.new(8,30,8,8) )
+    @table_stack.add( @table_bottom_mark )
+    set_bottom_mark_state(false)
+    
     # 本体
     self.class.setMargin( @button_area , Insets.new(3.0 , 3.0 , 0 , 3.0) ) # trbl
     self.class.setMargin( @sort_button_area , Insets.new(3.0 , 3.0 , 0 , 3.0) ) # trbl
     self.class.setMargin( @filter_and_search_bar , Insets.new(3.0 , 3.0 , 0 , 3.0) ) # trbl
-    self.class.setMargin( @table , Insets.new(3.0, 3.0 , 0 , 3.0) )
+    self.class.setMargin( @table_stack , Insets.new(3.0, 3.0 , 0 , 3.0) )
     
     # tab
     tab_icon = if @is_user_submission_list
@@ -583,6 +593,13 @@ class SubPage < Page
   end # initialize
   attr_reader :is_user_submission_list
   attr_reader :pref , :list_style
+
+  def set_bottom_mark_state( visible = nil )
+    if visible == nil
+      visible = is_table_bottoming_out
+    end
+    @table_bottom_mark.setVisible(visible)
+  end
 
   def thumb_width
     if @list_style == :medium_thumb
@@ -977,7 +994,7 @@ class SubPage < Page
       if au.path == '/'
         au.path = ""
       end
-      $stderr.puts "■get_sub_url: #{au.to_s}"
+      # $stderr.puts "■get_sub_url: #{au.to_s}"
       au
     end
   end
@@ -997,8 +1014,13 @@ class SubPage < Page
         @table.getSelectionModel().select( old_top )
       end
       am = App.i.pref['sub_scroll_amount']
+      # virtualflow関係のhookはここで入れる、最初はvfが出きてないっぽいので
       set_scroll_amount( am ) # 追加ロード発動もここで設定している
       set_wheel_event_to_more_post
+
+      set_bottom_mark_state # とりあえず更新前状態で判定する
+      set_virtualflow_listeners_to_set_bottom_mark
+      set_scrollbar_listeners_to_set_bottom_mark # javafx8 tableのscrollbarは実際にitemがあふれるまで取れない
     }
   end
 
@@ -1052,10 +1074,17 @@ class SubPage < Page
   end
 
   def is_table_bottoming_out
-    if bot = get_scroll_bottom
-      bot == @table.getItems().size - 1
+    bot = get_scroll_bottom
+    # $stderr.puts "is_table_bottoming_out: bot:#{bot}"
+    if bot
+      size = @table.getItems().size
+
+      # $stderr.puts "is_table_bottoming_out size:#{size}"
+
+      bot == (size - 1)
     else
-      false
+      # false
+      true # アイテムが無いのをonにしてみる、起動直後対策
     end
   end
 
@@ -1103,6 +1132,61 @@ class SubPage < Page
           key_add
         end
       }
+
+    end
+  end
+
+  def set_virtualflow_listeners_to_set_bottom_mark
+    if not @vf_listener_to_bm
+      if vf = get_virtual_flow
+        # cellCountPropertyはjavafx9から？これが一番本質的なんだが
+
+
+        # heightPropertyはタイミング的に早い。is_bottoming_outでチェックするとまだitemが表示されない
+        #vf.heightProperty().addListener{|ev| 
+        #  $stderr.puts "●vf.heightProperty listener called"
+        #  set_bottom_mark_state
+        #}
+
+        # java8にない
+        #vf.positionProperty().addListener{|ev| 
+        #  puts "positionProperty"
+        #  set_bottom_mark_state
+        #}
+        
+        @vf_listener_to_bm = true
+      end
+    end
+  end
+
+  # うまくいかない
+  def set_scrollbar_listeners_to_set_bottom_mark
+    if not @scrollbar_listener_to_bm
+      scrs = @table.lookupAll(".scroll-bar") # そもそもscroll-barが出てなかったらつかえないのでは？
+      if scrs.length > 0
+        @scrollbar_listener_to_bm = true
+        
+        scrs.to_a[0].valueProperty.addListener{|ev|
+          # $stderr.puts "valueProperty listener called"
+          set_bottom_mark_state
+        }
+        scrs.to_a[0].visibleAmountProperty.addListener{|ev|
+          # $stderr.puts "■visibleAmountProperty listener called"
+          set_bottom_mark_state
+        }
+        scrs.to_a[0].maxProperty.addListener{|ev|
+          # $stderr.puts "■maxAmountProperty listener called"
+          set_bottom_mark_state
+        }
+        # scrs.to_a[0].visibleProperty.addListener{|ev|
+        #   $stderr.puts "■visibleProperty listener called"
+        #   set_bottom_mark_state
+        # }
+      else
+        $stderr.puts "スクロールバーがない"
+        # とりあえずbottom markをonにしておく
+        set_bottom_mark_state(true)
+      end
     end
   end
 
