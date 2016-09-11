@@ -42,6 +42,9 @@ class ConfigPage < Page
     items << make_bool_config( "透過ウインドウの使用を避ける(一部のウィンドウに白い枠が出る場合などに)" , 
                                "dont_use_transparent_window" )
     
+    items << make_bool_config( "新規タブを開いたときにフォーカスしない" ,
+                               "dont_focus_on_new_tab" )
+
     items << make_header( "フォント")
 
     @font_selector = ChoiceBox.new

@@ -341,7 +341,7 @@ class App
         open_external_browser( page_info[:url] )
       end
     else
-
+      tab_already_exists = false
       tabpane = @scene.lookup("#" + ID_TAB_PANE)
       target_tab = tabpane.getTabs().find{|tab| 
         page_info_is_same_tab(tab.getContent().page_info , page_info)
@@ -370,6 +370,7 @@ class App
         end
         save_tabs
       else # 既に存在
+        tab_already_exists = true
         if page_info[:type] == 'comment' or page_info[:type] == 'google_search'
           target_tab.getContent().set_new_page_info( page_info )
         end
@@ -377,11 +378,22 @@ class App
     
       close_history.remove( page_info )
 
-      if target_tab and selection
-        tabpane.getSelectionModel().select( target_tab ) if selection
+      if @pref['dont_focus_on_new_tab']
+        selection = (not selection)
       end
 
-    end
+      if target_tab 
+        if selection
+          tabpane.getSelectionModel().select( target_tab )
+        else
+          if tab_already_exists
+            target_tab.getContent.tab_notify # タブを選択しない設定のとき既存タブを知らせる
+          end
+        end
+      end
+      
+    end # outerbrowser or tab
+    
   end
 
   def open_url( url , pass_to_external:false , account_name:nil)

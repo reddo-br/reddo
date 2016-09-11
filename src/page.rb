@@ -370,4 +370,16 @@ class Page < Java::JavafxSceneLayout::VBox
   def key_close_focus_next
     close(true) if not @pinned
   end
+
+  def tab_notify
+    Thread.new{
+      Platform.runLater{ 
+        @tab_label.setStyle( @tab_style_base + @tab_style_color + 
+                             ";-fx-background-color:#{App.i.theme::COLOR::FAINT_YELLOW}")
+      }
+      sleep 0.6
+      Platform.runLater{ set_tab_label_style }
+    }
+  end
+
 end
