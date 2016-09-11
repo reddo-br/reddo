@@ -466,8 +466,8 @@ class SubPage < Page
     @thumb_column = TableColumn.new
     @thumb_column.setText("画像")
     # widthはadjust_column_widthで
-    @thumb_column.set_cell_value_factory( MapValueFactory.new(:reddo_thumbnail_decoded))
-    #thumb_column.set_cell_value_factory{ |cdf| SimpleObjectProperty.new( cdf.getValue()) }
+    # @thumb_column.set_cell_value_factory( MapValueFactory.new(:reddo_thumbnail_decoded))
+    @thumb_column.set_cell_value_factory{ |cdf| SimpleObjectProperty.new( cdf.getValue()) }
     @thumb_column.set_cell_factory{|col| ThumbCell.new(self) }
     @thumb_column.setResizable(false)
     @thumb_column.setSortable(false)
@@ -661,9 +661,6 @@ class SubPage < Page
     # 再描画
     # display_subms
 
-    # やっぱり変更だけする
-
-    # これはやっぱり良くない？
     @table.lookupAll(".thumb-cell").each{|c| c.adjust_image_size}
     @table.lookupAll(".vote-cell").each{|c| c.adjust_direction }
     @table.lookupAll(".title-cell").each{|c| c.adjust }
@@ -950,9 +947,15 @@ class SubPage < Page
           if obj[:author_flair_text]
             obj[:author_flair_text_decoded] = Html_entity.decode( obj[:author_flair_text] )
           end
-
-          obj[:reddo_thumbnail_decoded] = Util.decoded_thumbnail_url( obj )
           
+          tu , tw , th = Util.decoded_thumbnail_url(obj)
+          #tu , tw , th = Util.find_submission_preview( obj,
+          #                                             min_width:216,
+          #                                             prefer_large:true)
+          obj[:reddo_thumbnail_decoded] = tu
+          if tw and th
+            obj[:reddo_thumbnail_ratio] = th / tw.to_f
+          end
           set_num_comments_new( obj )
           
         }
@@ -1015,7 +1018,7 @@ class SubPage < Page
       end
       am = App.i.pref['sub_scroll_amount']
       # virtualflow関係のhookはここで入れる、最初はvfが出きてないっぽいので
-      set_scroll_amount( am ) # 追加ロード発動もここで設定している
+      set_scroll_amount( am )
       set_wheel_event_to_more_post
 
       set_bottom_mark_state # とりあえず更新前状態で判定する
@@ -1031,6 +1034,15 @@ class SubPage < Page
                         nil
                       end
     @virtual_flow
+  end
+
+  def get_scrollbar
+    scrs = @table.lookupAll(".scroll-bar").to_a
+    if scrs.length > 0
+      scrs[0]
+    else
+      nil
+    end
   end
 
   def get_scroll_top( within_view_port = true )
@@ -1089,6 +1101,10 @@ class SubPage < Page
   end
 
   def screen_scroll( forward , ratio = 1.0 )
+    if @list_style == :medium_thumb and ratio > 0.7
+      ratio = 0.7
+    end
+
     first = get_scroll_top
     last  = get_scroll_bottom
     if first and last
@@ -1101,10 +1117,7 @@ class SubPage < Page
                  amount * -1
                end
 
-      # $stderr.puts "screen_scroll #{first} + #{amount}"
-
       target = first + amount
-
       @table.scrollTo( target )
       target
     end
@@ -1141,7 +1154,6 @@ class SubPage < Page
       if vf = get_virtual_flow
         # cellCountPropertyはjavafx9から？これが一番本質的なんだが
 
-
         # heightPropertyはタイミング的に早い。is_bottoming_outでチェックするとまだitemが表示されない
         #vf.heightProperty().addListener{|ev| 
         #  $stderr.puts "●vf.heightProperty listener called"
@@ -1162,23 +1174,23 @@ class SubPage < Page
   # うまくいかない
   def set_scrollbar_listeners_to_set_bottom_mark
     if not @scrollbar_listener_to_bm
-      scrs = @table.lookupAll(".scroll-bar") # そもそもscroll-barが出てなかったらつかえないのでは？
-      if scrs.length > 0
+      
+      if scr = get_scrollbar
         @scrollbar_listener_to_bm = true
         
-        scrs.to_a[0].valueProperty.addListener{|ev|
+        scr.valueProperty.addListener{|ev|
           # $stderr.puts "valueProperty listener called"
           set_bottom_mark_state
         }
-        scrs.to_a[0].visibleAmountProperty.addListener{|ev|
+        scr.visibleAmountProperty.addListener{|ev|
           # $stderr.puts "■visibleAmountProperty listener called"
           set_bottom_mark_state
         }
-        scrs.to_a[0].maxProperty.addListener{|ev|
+        scr.maxProperty.addListener{|ev|
           # $stderr.puts "■maxAmountProperty listener called"
           set_bottom_mark_state
         }
-        # scrs.to_a[0].visibleProperty.addListener{|ev|
+        # scr.visibleProperty.addListener{|ev|
         #   $stderr.puts "■visibleProperty listener called"
         #   set_bottom_mark_state
         # }
@@ -1398,7 +1410,6 @@ class SubPage < Page
 
       setAlignment( Pos::CENTER )
 
-      # setMinWidth(IMAGE_WIDTH + 6)
       setGraphic( @image_view)
     end
 
@@ -1417,23 +1428,23 @@ class SubPage < Page
         elsif list_style == :no_thumb
           @image_view.setFitHeight( 1 )
         else
-          # @image_view.setFitHeight( image_height * 1.5 )
           @image_view.setFitHeight( nil )
         end
         if list_style == :no_thumb
           setMinWidth( 1 )
         else
           setMinWidth( image_width + 6)
+          # setMinHeight( image_height + 6 ) # middleでも固定してみる → スクロールのズレには効果なし なにがまずい？
         end
         @current_list_style = list_style
       end
     end
 
     def updateItem( data , is_empty_col )
-
-      if data and not is_empty_col
+      @obj = data
+      if data and data[:reddo_thumbnail_decoded] and not is_empty_col
         adjust_image_size
-        url = data
+        url = data[:reddo_thumbnail_decoded]
         # p url
         # i = @@cache[ url ] || Image.new( url, @image_width, @image_height ,true,true,true) # ratio,smooth,background # なんでこれ止めたんだっけ？ リサイズ処理がしょぼいから？
         i = @@cache[ url ] || Image.new( url ,true) # background
@@ -1959,7 +1970,8 @@ class SubPage < Page
           end
         end
       else
-        select_row( get_scroll_bottom ) # 下から出てくる
+        # select_row( get_scroll_bottom ) # 下から出てくる
+        select_row( get_scroll_top ) # 下から出てくる
       end
     else
       select_row( get_scroll_top ) # 最初はトップ
@@ -1982,7 +1994,8 @@ class SubPage < Page
         end
         
       else
-        select_row( get_scroll_top ) # 上から出てくる
+        # select_row( get_scroll_top ) # 上から出てくる
+        select_row( get_scroll_bottom ) # 上から出てくる
       end
     else
       select_row( get_scroll_top ) # 最初はトップ

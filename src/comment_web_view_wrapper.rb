@@ -632,8 +632,9 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     # thumb
 
     post_title = @doc.createElement("div")
-
-    if thumb_url = Util.decoded_thumbnail_url( obj )
+    
+    thumb_url , w , h = Util.decoded_thumbnail_url( obj )
+    if thumb_url
       thumb = @doc.createElement("img")
       thumb.setAttribute("class","post-thumb-in-list")
       thumb.setAttribute("src" , thumb_url )
