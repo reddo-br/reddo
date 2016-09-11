@@ -661,9 +661,13 @@ class SubPage < Page
     # 再描画
     # display_subms
 
-    @table.lookupAll(".thumb-cell").each{|c| c.adjust_image_size}
-    @table.lookupAll(".vote-cell").each{|c| c.adjust_direction }
-    @table.lookupAll(".title-cell").each{|c| c.adjust }
+    if vf = get_virtual_flow
+      vf.recreateCells() # javafx9ではない？
+    end
+
+    # @table.lookupAll(".thumb-cell").each{|c| c.adjust_image_size}
+    # @table.lookupAll(".vote-cell").each{|c| c.adjust_direction }
+    # @table.lookupAll(".title-cell").each{|c| c.adjust}
   end
 
   def is_votable
