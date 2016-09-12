@@ -553,6 +553,9 @@ class SubPage < Page
     @table_bottom_mark = Label.new
     @table_bottom_mark.setText("↓追加ロード")
     @table_bottom_mark.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}; -fx-opacity:0.8;-fx-background-radius: 6 6 6 6;-fx-padding:6 6 6 6;")
+    @table_bottom_mark.setOnMouseClicked{|ev|
+      key_add
+    }
     StackPane.setAlignment( @table_bottom_mark , Pos::BOTTOM_RIGHT )
     StackPane.setMargin( @table_bottom_mark , Insets.new(8,30,8,8) )
     @table_stack.add( @table_bottom_mark )
@@ -1023,7 +1026,7 @@ class SubPage < Page
       am = App.i.pref['sub_scroll_amount']
       # virtualflow関係のhookはここで入れる、最初はvfが出きてないっぽいので
       set_scroll_amount( am )
-      set_wheel_event_to_more_post
+      set_wheel_event_handler_to_more_post
 
       set_bottom_mark_state # とりあえず更新前状態で判定する
       set_virtualflow_listeners_to_set_bottom_mark
@@ -1142,21 +1145,26 @@ class SubPage < Page
     end
   end
 
-  def set_wheel_event_to_more_post
-    if vf = get_virtual_flow
-      vf.addEventHandler( ScrollEvent::SCROLL ){|ev|
-        if is_table_bottoming_out and ev.getDeltaY < 0
-          key_add
+  def set_wheel_event_handler_to_more_post
+    if not @wheel_event_handler_to_more_post_is_prepared
+      @wheel_event_handler_to_more_post_is_prepared = true
+      target = [ get_virtual_flow , @table ] # アイテムが無い場合はtableviewでイベントを受ける
+      target.each{|vf|
+        if vf
+          vf.addEventHandler( ScrollEvent::SCROLL ){|ev|
+            if is_table_bottoming_out and ev.getDeltaY < 0
+              key_add
+            end
+          }
         end
       }
-
     end
   end
 
   def set_virtualflow_listeners_to_set_bottom_mark
     if not @vf_listener_to_bm
       if vf = get_virtual_flow
-        # cellCountPropertyはjavafx9から？これが一番本質的なんだが
+
 
         # heightPropertyはタイミング的に早い。is_bottoming_outでチェックするとまだitemが表示されない
         #vf.heightProperty().addListener{|ev| 
@@ -2002,7 +2010,11 @@ class SubPage < Page
         select_row( get_scroll_bottom ) # 上から出てくる
       end
     else
-      select_row( get_scroll_top ) # 最初はトップ
+      if pos = get_scroll_top # 最初はトップ
+        select_row( pos  ) 
+      else
+        key_add # 何もないとき追加ロード
+      end
     end
   end
 
