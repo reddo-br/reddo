@@ -97,12 +97,23 @@ div.post-in-list {
   background-color: #{App.i.theme::COLOR::HTML_BG};
 }
 
+/* lv2 */
 div.comment div.comment {
   border-width: 0px 0px 0px 5px ;
   border-style: solid none none solid;
   margin: 0px 0px 0px 10px;
   padding: 0px 0px 0px 0px;
 }
+
+/* 縞々 */
+/*
+#comments > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment ,
+#comments > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment ,
+#comments > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment > .comment-shown > .comment ,
+#comments > .comment > .comment-shown > .comment > .comment-shown > .comment {
+    border-color: #{App.i.theme::COLOR::HTML_TEXT_THIN }
+}
+*/
 
 /*
 .comment-even-level {

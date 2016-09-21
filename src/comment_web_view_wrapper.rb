@@ -573,7 +573,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     comment_this = @doc.createElement( "div")
     comment_this.setAttribute("class" , "comment_this")
     comment_this.setAttribute("id" , "ct_" + obj[:name].to_s )
-    
+
     if @comment_post_list_mode
       link_area = @doc.createElement("div")
       link_area.setAttribute("class","user_history_comment_header")
