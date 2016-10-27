@@ -295,6 +295,7 @@ h1,h2,h3,h4,h5 { #{bold_style} }
 #submission pre,
 #submission code {
 #{code_style}
+line-height:100%;
 }
 
 .md { line-height:#{line_height}%; }
