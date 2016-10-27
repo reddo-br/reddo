@@ -70,6 +70,16 @@ class ConfigPage < Page
     items << [ Label.new("太字フォントをcss shadowで再現する(太字が表示できないフォントで試してください)" ),
                @artificial_bold_check ]
 
+    @artificial_oblique_check = CheckBox.new
+    @artificial_oblique_check.setSelected( App.i.pref[ 'artificial_oblique' ] )
+    @artificial_oblique_check.selectedProperty.addListener{|ov|
+      App.i.pref[ 'artificial_oblique' ] = ov.getValue
+      set_font_sample
+    }
+
+    items << [ Label.new("斜体フォントを人工的に表示する(同じく)" ),
+               @artificial_oblique_check ]
+
     items << [ Label.new("") , make_font_sample ]
 
     items << make_bool_config( "サブピクセルレンダリングではなく、グレースケール・アンチエイリアシングを使用する(環境によっては、変化ありません)",
@@ -272,13 +282,18 @@ class ConfigPage < Page
   end
 
   def make_font_sample
-    h = HBox.new
+    h = VBox.new
     @font_sample_1 = Label.new("フォントサンプル abc 012")
     @font_sample_2 = Label.new("太字サンプル abc 012")
+    @font_sample_3 = Label.new("斜体サンプル abc 012")
+
+    @trans_oblique = Shear.new( Math.sin( Math::PI * (-15 / 180.0)) , 0 , 0 , 8) # 右20度傾け
+
     set_font_sample
     h.getChildren.addAll( @font_sample_1 , 
-                       Label.new(" "),
-                       @font_sample_2 )
+                          @font_sample_2,
+                          @font_sample_3
+                          )
     h
   end
 
@@ -292,10 +307,18 @@ class ConfigPage < Page
                  end
 
     bold_css = App.i.fx_bold_style( '-fx-text-base-color' )
-    p "#{family_css} #{bold_css}"
     @font_sample_1.setStyle("#{family_css}")
     @font_sample_2.setStyle("#{family_css} #{bold_css}")
 
+    if App.i.pref["artificial_oblique"]
+      @font_sample_3.setStyle("#{family_css}")
+      if not @font_sample_3.getTransforms.contains( @trans_oblique )
+        @font_sample_3.getTransforms.add( @trans_oblique )
+      end
+    else
+      @font_sample_3.setStyle("#{family_css}; -fx-font-style:oblique;")
+      @font_sample_3.getTransforms.clear
+    end
   end
 
 

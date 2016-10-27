@@ -67,6 +67,18 @@ EOF
 
     line_height = App.i.pref["line_height"] || 100
 
+    inline_oblique_style = if App.i.pref["artificial_oblique"]
+                             "font-style:normal; display:inline-block; -webkit-transform:skew(-15deg);"
+                           else
+                             "font-style:oblique;"
+                           end
+    
+    inline_oblique_style_inner = if App.i.pref["artificial_oblique"]
+                                   "font-style:normal; display:inline;-webkit-transform:none;"
+                                 else
+                                   "font-style:oblique;"
+                                 end
+
     style = <<EOF
 html {
   font-family:#{base_font};
@@ -259,6 +271,14 @@ div.comment p {
 
 strong,b {
 #{bold_style}
+}
+
+em em, em i, i em, i i {
+#{inline_oblique_style_inner}
+}
+
+em,i {
+#{inline_oblique_style}
 }
 
 h1,h2,h3,h4,h5 { #{bold_style} }
