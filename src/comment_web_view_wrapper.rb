@@ -1138,7 +1138,12 @@ EOF
     if obj[:stickied]
       sticky_mark = @doc.createElement("span")
       sticky_mark.setAttribute("class","sticky_mark")
-      sticky_mark.setMember("innerHTML","sticky")
+      sticky_label_string = if obj[:kind] == 't3'
+                              'Announcement'
+                            else
+                              'Sticky'
+                            end
+      sticky_mark.setMember("innerHTML",sticky_label_string)
       comm_head.appendChild( sticky_mark )
       comm_head.appendChild( @doc.createTextNode(" ") )
     end

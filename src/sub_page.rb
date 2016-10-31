@@ -1454,7 +1454,7 @@ class SubPage < Page
 
     def updateItem( data , is_empty_col )
       @obj = data
-      if data and data[:reddo_thumbnail_decoded] and not is_empty_col
+      if data and data[:reddo_thumbnail_decoded] and not is_empty_col and not data[:spoiler]
         adjust_image_size
         url = data[:reddo_thumbnail_decoded]
         # p url
@@ -1556,6 +1556,10 @@ class SubPage < Page
       @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
       @nsfw.setWrapText(false)
 
+      @spoiler = Label.new("Spoiler")
+      @spoiler.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
+      @spoiler.setWrapText(false)
+
       @link_flair = Label.new
       @link_flair.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
       @link_flair.setWrapText(false)
@@ -1564,7 +1568,7 @@ class SubPage < Page
       @datetime.setStyle( "-fx-padding:0 6px 0 0;")
       @datetime.setWrapText(false)
 
-      @sticky = Label.new("Sticky")
+      @sticky = Label.new("Announcement")
       @sticky.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_GREEN}")
       @sticky.setWrapText(false)
 
@@ -1605,6 +1609,7 @@ class SubPage < Page
       @hbox2.setAlignment( Pos::CENTER_LEFT )
       @hbox2.getChildren().add( @subreddit ) if @show_subreddit
       @hbox2.getChildren().add( @nsfw )
+      @hbox2.getChildren().add( @spoiler )
       @hbox2.getChildren().add( @locked )
       @hbox2.getChildren().add( @sticky )
       @hbox2.getChildren().add( @link_flair )
@@ -1685,15 +1690,23 @@ class SubPage < Page
         end
 
         if data[:over_18]
-          @nsfw.setText("NSFW")
+          @nsfw.setText(" NSFW ")
           @nsfw.setVisible(true)
         else
           @nsfw.setText("")
           @nsfw.setVisible(false)
         end
 
+        if data[:spoiler]
+          @spoiler.setText(" Spoiler ")
+          @spoiler.setVisible(true)
+        else
+          @spoiler.setText("")
+          @spoiler.setVisible(false)
+        end
+
         if data[:stickied]
-          @sticky.setText(" Sticky ")
+          @sticky.setText(" Announcement ")
           @sticky.setVisible(true)
         else
           @sticky.setText("")
