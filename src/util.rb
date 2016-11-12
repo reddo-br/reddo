@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+require './lib/java/commons-lang3-3.4.jar'
 require 'java'
 require 'pathname'
 require 'rbconfig'
