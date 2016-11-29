@@ -156,6 +156,7 @@ class Page < Java::JavafxSceneLayout::VBox
         @pinned = (not @pinned)
         @page_info[:pinned] = @pinned if @page_info
         set_close_button_or_pin
+        App.i.save_tabs
       }
       menu.getItems.add( item_pin )
     end
