@@ -14,6 +14,7 @@ require 'page'
 require 'account_selector'
 require 'user_ban_state_label'
 require 'ignore_checker'
+require 'sub_pref_menu_items'
 
 require 'url_handler'
 require 'html/html_entity'
@@ -32,7 +33,8 @@ import 'javafx.scene.text.TextFlow'
 import 'javafx.application.Platform'
 import 'javafx.util.StringConverter'
 class SubPage < Page
-  
+  include SubPrefMenuItems
+
   SORT_TYPES = [ # [ "注目" , "hot" , nil ],
                  # [ "新着" , "new" , nil ],
                 
@@ -197,6 +199,10 @@ class SubPage < Page
       @sub_menu_button.getItems.add( SeparatorMenuItem.new )
       @sub_menu_button.getItems.add( @subscribed_check_item )
 
+      @sub_menu_button.getItems.add( SeparatorMenuItem.new )
+      sub_css_menu = Menu.new("subredditのcss再現")
+      create_sub_pref_menu_items( sub_css_menu , @page_info[:name] )
+      @sub_menu_button.getItems.add( sub_css_menu )
     end
     
     @sub_menu_button.showingProperty.addListener{|ov|

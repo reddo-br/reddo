@@ -51,7 +51,7 @@ class SubStyle
           if sel2 !~ /\.side/ and (sel2 =~ /\[href/ or sel2 =~ /flair/)
             sel2.gsub!(/:lang\(\w+\)/,'')
             if selector_maybe_anchor(sel2)
-              sel3 = ".md " + remove_ancestor( sel2 )
+              sel3 = ".use_link_style .md " + remove_ancestor( sel2 )
               if decl2 !~ /text-decoration:/
                 decl3 = decl2 + ";text-decoration:none;" # redditのデフォルトにあわせる
               else

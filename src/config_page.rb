@@ -140,9 +140,6 @@ class ConfigPage < Page
     ######################################
     items << make_header( "コメント画面" )
 
-    items << make_bool_config( "サブレディットのリンク(スタンプ)とフレアーのスタイルを適用する(試験的)",
-                               'use_sub_link_style')
-
     items << make_bool_config( "コメントページを開いた時に自動更新を有効にする",
                                'enable_autoreload' )
     

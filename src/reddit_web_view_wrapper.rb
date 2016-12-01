@@ -12,7 +12,7 @@ require 'web_view_wrapper'
 class RedditWebViewWrapper < WebViewWrapper
 
   def initialize(sjis_art:true , &cb)
-    super( sjis_art:true , &cb)
+    super( sjis_art:sjis_art , &cb)
     @e.loadContent( base_html() )
   end
 
@@ -58,11 +58,8 @@ EOF
                    "font-weight:bold;"
                  end
 
-    code_style = if @sjis_art
-                   "font-size:16px; font-family:#{SJIS_ART_FONT};"
-                 else
-                   ""
-                 end
+    code_style = "font-size:16px; font-family:#{SJIS_ART_FONT};"
+
     base_font = "\"#{App.i.pref["fonts"]}\",sans-serif" || '"DejaVu Sans",Tahoma,Arial,"Helvetica Neue","Lucida Grande",sans-serif'
 
     line_height = App.i.pref["line_height"] || 100
@@ -290,10 +287,10 @@ h1,h2,h3,h4,h5 { #{bold_style} }
 .md h3, .md h4{ font-size:1.1428571428571428em;line-height:1.25em;margin-top:0.625em;margin-bottom:0.625em}
 .md h5, .md h6{ font-size:1em;line-height:1.4285714285714286em;margin-top:0.7142857142857143em;margin-bottom:0.35714285714285715em}
 
-.md pre,
-.md code,
-#submission pre,
-#submission code {
+.use-sjis-art .md pre,
+.use-sjis-art .md code,
+.use-sjis-art #submission pre,
+.use-sjis-art #submission code {
 #{code_style}
 line-height:100%;
 }

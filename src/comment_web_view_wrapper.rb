@@ -27,7 +27,15 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   end
   attr_reader :webview
+  attr_accessor :use_link_style , :use_user_flair_style
+  
+  def enable_sjis_art( sjis )
 
+    @sjis_art = sjis
+
+    # ここで動的にclassを変えようとしても、うまくいかなかった
+  end
+  
   def dom_prepared(ov)
     super(ov)
     @div_submission = @doc.getElementById("submission")
@@ -126,7 +134,15 @@ class CommentWebViewWrapper < RedditWebViewWrapper
                       end
 
       subm_text = @doc.getElementById("submission_text")
-      subm_text.setMember( "innerHTML" , html_decode( selftext_html.to_s ))
+      empty("#submission_text")
+      text_wrapper = @doc.createElement("div")
+      if @sjis_art
+        text_wrapper.setAttribute("class","use-sjis-art")
+      else
+        text_wrapper.setAttribute("class"," ")
+      end
+      text_wrapper.setMember( "innerHTML" , html_decode( selftext_html.to_s ))
+      subm_text.appendChild(text_wrapper)
 
       if thumb = make_thumbnail_element( subm_text )
         subm_text.appendChild( thumb )
@@ -600,7 +616,11 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     comment_this.appendChild( comm_head )
 
     comment_text = @doc.createElement("div")
-    comment_text.setAttribute("class" , "comment_text")
+    style_class = ""
+    style_class += " use_link_style" if @use_link_style
+    style_class += " use-sjis-art" if @sjis_art
+    
+    comment_text.setAttribute("class" , "comment_text#{style_class}")
     body_html = if App.i.pref["suppress_combining_mark"]
                   obj[:body_html].gsub(/(\p{M})+/ , '\1')
                 else
@@ -1239,7 +1259,7 @@ EOF
     user_flair = @doc.createElement("span")
     user_flair.setTextContent( flair_text )
     flair_class2 = flair_class.to_s.split.map{|c| "flair-" + c }.join(" ").strip
-    flair_class3 = if flair_class2.length > 0
+    flair_class3 = if @use_user_flair_style and flair_class2.length > 0
                      "flair user_flair_styled " + flair_class2
                    else
                      "user_flair"

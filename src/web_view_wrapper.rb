@@ -64,7 +64,7 @@ class WebViewWrapper
     @event_listeners = []
   end 
   attr_reader :webview
-
+  
   def set_worker_running_cb( &cb )
     @worker_running_cb = cb
   end

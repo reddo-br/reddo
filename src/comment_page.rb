@@ -14,6 +14,8 @@ require  'read_comment_db'
 require 'pref/account'
 require 'sub_style'
 require 'user_state'
+require 'pref/subs'
+require 'sub_pref_menu_items'
 
 require 'user_script_base'
 
@@ -25,7 +27,8 @@ import 'javafx.scene.control.Alert' # jrubyfxにまだない
 import 'javafx.scene.control.ButtonType'
 
 class CommentPage < CommentPageBase
-
+  include SubPrefMenuItems
+  
   SORT_TYPES = [[ "新着" , "new"],
                 [ "古い順" , "old" ],
                 # [ "注目" , "hot" ],
@@ -196,6 +199,10 @@ class CommentPage < CommentPageBase
       end
     }
     @comments_menu.getItems.add( copy_url_md )
+
+    @sub_css_pref_item = Menu.new("subredditのcss再現")
+    @comments_menu.getItems.add( SeparatorMenuItem.new )
+    @comments_menu.getItems.add( @sub_css_pref_item )
 
     ####
 
@@ -953,22 +960,33 @@ class CommentPage < CommentPageBase
     if @subname
       Platform.runLater{
         @subname_label.setText( @subname.to_s )
+        if @sub_css_pref_item.getItems.length == 0
+          create_sub_pref_menu_items( @sub_css_pref_item , 
+                                      @subname )
+        end
       }
     end
     
-    if @subname and App.i.pref['use_sub_link_style']
-      $stderr.puts "SubStyleを作成 \"#{@subname}\""
-      @sub_style ||= SubStyle.from_subname( @subname )
-      Thread.new{
-        #puts "スタイル取得"
-        st = @sub_style.get_stamp_style
-        Platform.runLater{
-          @comment_view.set_additional_style( st )
-          @split_edit_area.set_sub_link_style( st )
-          # @comment_view.adjust_overflowing_user_flair
-          #puts "スタイル取得終了"
+    if @subname # and App.i.pref['use_sub_link_style']
+      sub_pref = Subs.new( @subname , site:@site )
+      @comment_view.use_link_style = (not sub_pref['dont_use_link_style'])
+      @comment_view.use_user_flair_style = (not sub_pref['dont_use_user_flair_style'])
+      @comment_view.enable_sjis_art( (not sub_pref['dont_use_sjis_art']) )
+      
+      if not (sub_pref['dont_use_link_style'] and sub_pref['dont_use_user_flair_style'] )
+        $stderr.puts "SubStyleを作成 \"#{@subname}\""
+        @sub_style ||= SubStyle.from_subname( @subname )
+        Thread.new{
+          #puts "スタイル取得"
+          st = @sub_style.get_stamp_style
+          Platform.runLater{
+            @comment_view.set_additional_style( st )
+            @split_edit_area.set_sub_link_style( st ) unless sub_pref['dont_use_link_style']
+            # @comment_view.adjust_overflowing_user_flair
+            #puts "スタイル取得終了"
+          }
         }
-      }
+      end
     end
     
     title = Html_entity.decode( @links[0].title )

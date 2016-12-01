@@ -4,7 +4,7 @@ require 'util'
 require 'url_handler'
 class Subs < Prefbase
   def initialize( subname , site:"reddit")
-    @site = site
+    @site = site || 'reddit'
     @url_handler = UrlHandler.new( site:site )
     subs_dir = Util.get_appdata_pathname + "subs"
     FileUtils.mkdir_p( subs_dir )
