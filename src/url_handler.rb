@@ -62,6 +62,8 @@ class UrlHandler
       true
     elsif path == "all"
       true
+    elsif path =~ /^all\-/ # filterd all
+      true
     elsif path == "friends"
       true
     else
@@ -168,6 +170,9 @@ class UrlHandler
             title = "#{m[1]} (#{@account_name})"
             {:site => site , :type => 'sub' , :name => "../user/" + @account_name + "/m/" + m[1] ,
             :title => title}
+          elsif m = url_o.path.match( %r!^#{sub_top}/(all\-[\w\-]+)/?$!uoi ) # filterd all     
+            title = m[1].gsub(/\-/,' -')
+            {:site => site , :type => "sub" , :name => m[1] , :title => title}
             
             ###### マルチレディットのコメント一覧
           elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/m/(\w+)/(#{REGEX_SUBMISSION_COMMENT_LIST})/?$!uo )
