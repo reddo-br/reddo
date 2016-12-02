@@ -5,7 +5,7 @@ require 'jrubyfx'
 module SubPrefMenuItems
   def create_sub_pref_menu_items( parent_menu , subname  , site:"reddit")
     subpref = Subs.new( subname , site:site )
-    use_link_style_item = CheckMenuItem.new("リンクのスタイルを再現する")
+    use_link_style_item = CheckMenuItem.new("リンクを使ったスタイル付けを再現する")
     use_link_style_item.setOnAction{|ev|
       subpref[ 'dont_use_link_style' ] = (not use_link_style_item.isSelected )
     }
