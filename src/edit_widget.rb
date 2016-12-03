@@ -116,6 +116,8 @@ class EditWidget < Java::JavafxSceneLayout::VBox
     @mode = nil
 
   end # initialize
+  attr_reader :preview
+
   def set_account_name(an)
     @account_name = an
   end

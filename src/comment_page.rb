@@ -973,6 +973,9 @@ class CommentPage < CommentPageBase
       @comment_view.use_user_flair_style = (not sub_pref['dont_use_user_flair_style'])
       @comment_view.enable_sjis_art( (not sub_pref['dont_use_sjis_art']) )
       
+      @split_edit_area.preview.use_link_style = (not sub_pref['dont_use_link_style'])
+      @split_edit_area.preview.enable_sjis_art( (not sub_pref['dont_use_sjis_art']) )
+
       if not (sub_pref['dont_use_link_style'] and sub_pref['dont_use_user_flair_style'] )
         $stderr.puts "SubStyleを作成 \"#{@subname}\""
         @sub_style ||= SubStyle.from_subname( @subname )
@@ -981,7 +984,7 @@ class CommentPage < CommentPageBase
           st = @sub_style.get_stamp_style
           Platform.runLater{
             @comment_view.set_additional_style( st )
-            @split_edit_area.set_sub_link_style( st ) unless sub_pref['dont_use_link_style']
+            @split_edit_area.set_sub_link_style( st )
             # @comment_view.adjust_overflowing_user_flair
             #puts "スタイル取得終了"
           }

@@ -15,6 +15,12 @@ class RedditWebViewWrapper < WebViewWrapper
     super( sjis_art:sjis_art , &cb)
     @e.loadContent( base_html() )
   end
+  attr_accessor :use_link_style
+
+  def enable_sjis_art( sjis )
+    @sjis_art = sjis
+    # ここで動的にclassを変えようとしても、うまくいかなかった
+  end
 
   def reload_content
     @e.loadContent( base_html() )

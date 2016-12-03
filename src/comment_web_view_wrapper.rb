@@ -27,14 +27,8 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   end
   attr_reader :webview
-  attr_accessor :use_link_style , :use_user_flair_style
+  attr_accessor :use_user_flair_style
   
-  def enable_sjis_art( sjis )
-
-    @sjis_art = sjis
-
-    # ここで動的にclassを変えようとしても、うまくいかなかった
-  end
   
   def dom_prepared(ov)
     super(ov)

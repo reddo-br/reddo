@@ -47,8 +47,22 @@ EOF
   def set_md( md )
     #sample_area = @doc.getElementById("sample")
     #sample_area.setMember("innerHTML" , html)
+    empty("#sample")
+    text_wrapper = @doc.createElement("div")
+    style_class = ""
+    style_class += " use_link_style" if @use_link_style
+    style_class += " use-sjis-art" if @sjis_art
+    text_wrapper.setAttribute("class",style_class)
+    
+    text_wrapper2 = @doc.createElement("div")
+    text_wrapper2.setAttribute("class","md")
+    
+    sample = @doc.getElementById("sample")
+    sample.appendChild( text_wrapper )
+    text_wrapper.appendChild( text_wrapper2 )
+
     @e.executeScript("mdParser").setMember("reddo_md" , md )
-    @e.executeScript('$("#sample").html(mdParser.render(mdParser.reddo_md));')
+    @e.executeScript('$("#sample > div > div").html(mdParser.render(mdParser.reddo_md));')
   end
 
 end
