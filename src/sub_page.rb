@@ -431,13 +431,15 @@ class SubPage < Page
     getChildren.add( @filter_and_search_bar )
     
     #### table
+    calc_digit_width
 
     @table = TableView.new
     
     rank_column = TableColumn.new
     rank_column.setText("ﾗﾝｸ")
-    rank_column.setMaxWidth(60)
-    rank_column.setMinWidth(60)
+    rank_column.setMaxWidth(@@digit_width_4)
+    rank_column.setMinWidth(@@digit_width_4)
+    rank_column.setPrefWidth(@@digit_width_4)
     rank_column.setResizable(false)
     rank_column.setSortable(false)
     #rank_column.set_cell_value_factory{|cdf|
@@ -461,9 +463,9 @@ class SubPage < Page
 
     score_column = TableColumn.new
     score_column.setText("ｽｺｱ")
-    score_column.setMinWidth( 60 )
-    score_column.setMaxWidth( 60 )
-    score_column.setPrefWidth( 60 )
+    score_column.setMinWidth( @@digit_width_6 )
+    score_column.setMaxWidth( @@digit_width_6 )
+    score_column.setPrefWidth( @@digit_width_6 )
     #score_column.set_cell_value_factory( MapValueFactory.new( :reddo_score ))
     #score_column.set_cell_factory{|col| NumberCell.new }
     score_column.set_cell_value_factory{ |cdf| SimpleObjectProperty.new( cdf.getValue()) }
@@ -480,18 +482,18 @@ class SubPage < Page
 
     comm_column = TableColumn.new
     comm_column.setText("ｺﾒﾝﾄ数")
-    comm_column.setMinWidth( 60 )
-    comm_column.setMaxWidth( 60 )
-    comm_column.setPrefWidth( 60 )
+    comm_column.setMinWidth( @@digit_width_5 )
+    comm_column.setMaxWidth( @@digit_width_5 )
+    comm_column.setPrefWidth( @@digit_width_5 )
     comm_column.set_cell_value_factory( MapValueFactory.new( :num_comments ))
     comm_column.setSortable(false)
     comm_column.set_cell_factory{|col| NumberCell.new }
 
     comm_new_column = TableColumn.new
     comm_new_column.setText("新着")
-    comm_new_column.setMinWidth( 60 )
-    comm_new_column.setMaxWidth( 60 )
-    comm_new_column.setPrefWidth( 60 )
+    comm_new_column.setMinWidth( @@digit_width_5 )
+    comm_new_column.setMaxWidth( @@digit_width_5 )
+    comm_new_column.setPrefWidth( @@digit_width_5)
     comm_new_column.set_cell_value_factory( MapValueFactory.new( :reddo_num_comments_new ))
     comm_new_column.setSortable(false)
     comm_new_column.set_cell_factory{|col| NumberCell.new }
@@ -602,6 +604,15 @@ class SubPage < Page
   end # initialize
   attr_reader :is_user_submission_list
   attr_reader :pref , :list_style
+
+  def calc_digit_width
+    @@digit_width_4 ||= 
+      [App.i.calc_string_width( "0000" , "-fx-font-size:150%;") , 40 ].max + 8
+    @@digit_width_5 ||= 
+      [App.i.calc_string_width( "00000" ,"-fx-font-size:150%;") , 40 ].max + 8
+    @@digit_width_6 ||= 
+      [App.i.calc_string_width( "000000" ,"-fx-font-size:150%;"), 40 ].max + 8
+  end
 
   def set_bottom_mark_state( visible = nil )
     if visible == nil
