@@ -25,14 +25,15 @@ module Util
         Pathname.new(ENV['APPDATA'].dup.force_encoding("utf-8")) + USER_DIR_NAME
       end
 
-    FileUtils.mkdir_p( path )
-    #if get_os != 'windows'
-    set_user_dir_permission( path.to_s )
-    #end
     path
   end
 
-  # 
+  def prepare_appdata_path
+    path = get_appdata_pathname
+    FileUtils.mkdir_p( path )
+    set_user_dir_permission( path.to_s )
+  end
+  
   def get_os
     osstring = RbConfig::CONFIG['host_os']
     case osstring

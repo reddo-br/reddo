@@ -485,7 +485,7 @@ class App
 
     $drb = DRb.start_service( DrbWrapper::DRB_URI ,
                               DrbWrapper.new( self ))
-
+    Util.prepare_appdata_path
     ReadCommentDB.instance # ここで初期化しておく
     
     if pref['use_dark_theme']
