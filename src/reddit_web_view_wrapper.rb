@@ -95,6 +95,8 @@ button {
 
 .highlight { background-color: #{App.i.theme::COLOR::HTML_TEXT_HIGHLIGHT_BG};}
 
+.comment_highlight { background-color: #{App.i.theme::COLOR::HTML_COMMENT_HIGHLIGHT};}
+
 a:link { color: #{App.i.theme::COLOR::HTML_LINK}; }
 
 div.comment, div.post-in-list { 
@@ -155,6 +157,18 @@ div.comment p {
 .comment_this, .post-in-list-inner , .comment-hidden {
   padding:6px 6px 6px 6px;
 
+}
+
+.popup_comment {
+  // background-color: #{App.i.theme::COLOR::HTML_BG};
+  background-color: #{App.i.theme::COLOR::HTML_COMMENT_HIGHLIGHT};
+  // border-color: #{App.i.theme::COLOR::HTML_COMMENT_BORDER};
+  border-color:#{App.i.theme::COLOR::HTML_TEXT_THIN};
+  border-style: solid;
+  border-width: 1px 1px 1px 1px;
+  padding: 4px 4px 4px 4px;
+  margin: 4px 8px 4px 4px;
+  z-index:2;
 }
 
 .comment_header , .user_history_comment_header , .comment-hidden {

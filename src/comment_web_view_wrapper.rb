@@ -799,6 +799,45 @@ class CommentWebViewWrapper < RedditWebViewWrapper
       comment_foot_open_thread.setAttribute("href" , parmalink_this + "?context=8")
       comment_foot.appendChild( comment_foot_open_thread )
       comment_foot.appendChild( @doc.createTextNode(" "))
+
+      ### ポップアップイベント
+      parent_ct = "ct_" + obj[:parent_id]
+      
+      set_event( comment_foot_open_thread , 'mouseover' , true ){
+        # 親コメントがページ内にあり、かつ画面外のときにポップアップ化
+        $stderr.puts "親コメント用マウスオーバー"
+        if parent = @doc.getElementById(parent_ct)
+          if not is_element_in_view( parent_ct )
+            parent_pop = @doc.createElement("div")
+            t_top , t_left , t_width , t_height = element_offset( "ct_#{obj[:name]}" )
+            # p t_top
+            if t_top
+              parent_pop.setAttribute("style" , 
+                                      "position:absolute; top:#{t_top+t_height+5}px; left:#{t_left};overflow:visible")
+              parent_pop.setAttribute("class" , "popup_comment")
+              parent_pop.setAttribute("id" , "pp_#{obj[:name]}")
+              # parent_pop.setTextContent("ポップアップテスト")
+              parent_pop.appendChild( parent.getChildNodes().item(0).cloneNode(true) );
+              parent_pop.appendChild( parent.getChildNodes().item(1).cloneNode(true) );
+              mouseover_element.appendChild( parent_pop )
+            end
+          else
+            # ハイライト化
+            $stderr.puts "親コメントは画面内にある"
+            new_classes = parent.getAttribute("class").to_s + " comment_highlight"
+            parent.setAttribute("class",new_classes)
+          end
+        end
+      }
+      set_event( comment_foot_open_thread , 'mouseout' , true ){
+        $stderr.puts "親コメント用マウスアウト"
+        remove( "#pp_#{obj[:name]}")
+        if parent = @doc.getElementById(parent_ct)
+          new_classes = parent.getAttribute("class").split(/ /).reject{|c| c == 'comment_highlight' }.join(" ")
+          parent.setAttribute("class",new_classes)
+        end
+      }
+
     end
     
     if obj[:kind] == 't1' and @comment_post_list_mode
@@ -1417,7 +1456,7 @@ function scrollElementInView( elem ){
     var wheight = $(window).height();
 
     var wtop = $(window).scrollTop();
-    var wbot = wtop + wheight
+    var wbot = wtop + wheight;
     var etop = elem.offset().top;
     var ebot = etop + elem.height();
     var is_large = wheight < elem.height();

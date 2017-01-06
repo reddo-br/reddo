@@ -414,17 +414,43 @@ EOF
 
   end
   
-  def is_id_hidden?( element_id )
-script = <<EOF
-var el = $('##{element_id}');
-if(el.length){
-  el.get(0).offsetParent == null;
-}else{
-  false;
-}
+  def is_element_in_view( element_id )
+    script = <<EOF
+(function(){
+  var elem = $('##{element_id}');
+  var wheight = $(window).height();
+
+  var wtop = $(window).scrollTop();
+  var wbot = wtop + wheight;
+  var etop = elem.offset().top;
+  var ebot = etop + elem.height();
+  return (wtop < etop) && (ebot < wbot);
+})();
 EOF
-    @e.executeScript( script )
+    @e.executeScript(script)
   end
+
+  def element_offset( element_id )
+    script = <<EOF
+(function(){
+  var elem = $('##{element_id}');
+  return( elem.offset().top.toString() + ":" + elem.offset().left.toString() + ":" + elem.width().toString() + ":" + elem.height().toString() );
+})();
+EOF
+    @e.executeScript(script).split(/:/).map{|c| c.to_i }
+  end
+
+#   def is_id_hidden?( element_id )
+#     script = <<EOF
+# var el = $('##{element_id}');
+# if(el.length){
+#   el.get(0).offsetParent == null;
+# }else{
+#   false;
+# }
+# EOF
+#     @e.executeScript( script )
+#   end
 
   def is_inputting
     @e.executeScript('$(document.activeElement).is(":input")')
