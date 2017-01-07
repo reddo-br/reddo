@@ -699,7 +699,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
 
   def make_thumbnail_element( elem )
     anchors = nl2a(elem.getElementsByTagName("a"))
-    anchors.uniq!{|a| a.getAttribute("href").to_s } # 同じ画像は見ない
+    # anchors.uniq!{|a| a.getAttribute("href").to_s } # 同じ画像は見ない
     anchors_with_thumb = anchors.inject([]){|ret,anchor| 
       href = anchor.getAttribute("href").to_s
       if href.length > 0
@@ -722,30 +722,68 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     else
       thumb_area = @doc.createElement("div")
       thumb_area.setAttribute("class" , "thumb_area")
-      
+      thumb_box_pool = {}
+
       anchors_with_thumb.each{|anc , thumb_html|
-        thumb_box = @doc.createElement("span")
-        thumb_box.setAttribute("class","thumb_box")
-        thumb_box.setMember("innerHTML" , thumb_html )
+        anc.setAttribute("class" , "has_thumb")
+        uuid = java.util.UUID.randomUUID().toString()
+        thumb_id = "thumb_"+uuid
+        float_thumb_id = "float_thumb_"+uuid
+        anc_id = "anc_"+uuid
+        anc.setAttribute("id",anc_id) # ポジション検索のため
+        
+        thumb_box_is_created = false
+        if thumb_box = thumb_box_pool[ thumb_html ]
+          thumb_id = thumb_box.getAttribute("id")
+        else
+          thumb_box = @doc.createElement("span")
+          thumb_box.setAttribute("class","thumb_box")
+          thumb_box.setMember("innerHTML" , thumb_html )
+          thumb_box.setAttribute("id" , thumb_id)
+          thumb_box_is_created = true
+          thumb_box_pool[ thumb_html ] = thumb_box
+        end
+        # もともとはanchorとimageで使い回すためにprocオブジェクトにしていた
         mouseover_proc = Proc.new{|ev|
+          if not is_element_in_view( thumb_id )
+            float_thumb_box = @doc.createElement("span")
+            float_thumb_box.setAttribute("class","thumb_box thumb_over")
+            float_thumb_box.setMember("innerHTML" , thumb_html )
+            float_thumb_box.setAttribute("id" , float_thumb_id )
+
+            a_top , a_left , a_width , a_height = element_offset( anc_id )
+            float_thumb_box.setAttribute("style","position:absolute; top:#{a_top+a_height+4}px; left:#{a_left}px; z-index:2")
+            thumb_area.appendChild( float_thumb_box )
+          end
           thumb_box.setAttribute("class", "thumb_box thumb_over")
-          anc.setAttribute("class", "thumb_over")
+          anc.setAttribute("class", "has_thumb thumb_over")
         }
         mouseout_proc = Proc.new{|ev|
           thumb_box.setAttribute("class", "thumb_box")
-          anc.setAttribute("class", "")
+          anc.setAttribute("class", "has_thumb")
+          remove( "##{float_thumb_id}")
         }
-        #thumb_box.addEventListener( "mouseover" , mouseover_proc , false )
-        #anc.addEventListener( "mouseover" , mouseover_proc , false )
-        #thumb_box.addEventListener( "mouseout" , mouseout_proc , false )
-        #anc.addEventListener( "mouseout" , mouseout_proc , false )
-
-        set_event( thumb_box , "mouseover" , false , &mouseover_proc )
         set_event( anc ,       "mouseover" , false , &mouseover_proc )
-        set_event( thumb_box , "mouseout"  , false , &mouseout_proc )
         set_event( anc ,       "mouseout"  , false , &mouseout_proc )
 
-        thumb_area.appendChild( thumb_box )
+        if thumb_box_is_created
+          href = anc.getAttribute("href").to_s
+          target_anchors = anchors.find_all{|a| a.getAttribute("href").to_s == href}
+
+          mouseover_proc_thumb = Proc.new{|ev|
+            # hrefで検索する
+            target_anchors.each{|a| a.setAttribute("class", "has_thumb thumb_over") }
+            thumb_box.setAttribute("class", "thumb_box thumb_over")
+          }
+          mouseout_proc_thumb = Proc.new{|ev|
+            target_anchors.each{|a| a.setAttribute("class", "has_thumb") }
+            thumb_box.setAttribute("class", "thumb_box")
+          }
+          set_event( thumb_box , "mouseover" , false , &mouseover_proc_thumb )
+          set_event( thumb_box , "mouseout"  , false , &mouseout_proc_thumb )
+
+          thumb_area.appendChild( thumb_box )
+        end
       }
       thumb_area
     end

@@ -414,9 +414,14 @@ a#linked_title:hover, a.link-title:hover {
   max-height:98px;
 }
 
+.has_thumb {
+  // background-color: #{App.i.theme::COLOR::FAINT_RED} // やはりちょっとうるさい
+}
+
 .thumb_over {
   background-color: #{App.i.theme::COLOR::RED}
 }
+
 
 table {
     border-collapse: collapse;
