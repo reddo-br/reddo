@@ -47,6 +47,7 @@ class CommentPostListPage < CommentPageBase
     @target_path = @page_info[:name]
     @url_handler = UrlHandler.new( @page_info[:site] )
     @base_url = @url_handler.linkpath_to_url( @target_path )
+    @font_zoom = @page_info[:font_zoom] || App.i.pref['comment_page_font_zoom']
     
     @target_user =  @url_handler.path_is_user_comment_list( @target_path ) # ユーザー履歴でなければnil
     owned_target_user = if Account.exist?( @target_user )
@@ -222,6 +223,7 @@ class CommentPostListPage < CommentPageBase
     @comment_view = CommentWebViewWrapper.new{
       # @comment_view.set_title(@title)
       @comment_view.set_comment_post_list_mode( true )
+      @comment_view.set_font_zoom( @font_zoom )
       start_reload( asread:false ) # todo: postデータが無いときのみ trueにする
     }
     # @Comment_view.set_title("test")
@@ -577,6 +579,7 @@ class CommentPostListPage < CommentPageBase
       end
 
       comment_fetched.each{|c| @comment_view.add_comment( c ) }
+      @comment_view.line_image_resize( @font_zoom )
       # puts @comment_view.dump
       if comment_fetched.length >= COMMENT_FETCH_LIMIT
         @comment_view.add_list_more_button
@@ -592,45 +595,5 @@ class CommentPostListPage < CommentPageBase
 
   #####
 
-  def key_reload
-    @reload_button.fire() if not @reload_button.isDisable()
-  end
-  def key_top
-    @comment_view.scroll_top
-  end
-  def key_buttom
-    @comment_view.scroll_bottom
-  end
-  def key_up
-    @comment_view.screen_up(0.6)
-  end
-  def key_down
-    @comment_view.screen_down(0.6)
-  end
-  def key_previous
-    @comment_view.screen_up(1.0)
-  end
-  def key_next
-    @comment_view.screen_down(1.0)
-  end
-  def key_space
-    @comment_view.screen_down()
-  end
-  def key_find
-    @find_word_box.requestFocus()
-    @find_word_box.selectRange( 0 , @find_word_box.getText().length  )
-  end
-
-  # def key_open_link
-  #   if url = @links && @links[0] && @links[0][:url]
-  #     App.i.open_external_browser(url)
-  #   end
-  # end
-
-  # def key_open_link_alt
-  #   if url = @links && @links[0] && @links[0][:url]
-  #     App.i.open_external_browser(Util.mobile_url(url))
-  #   end
-  # end
 
 end

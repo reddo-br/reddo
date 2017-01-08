@@ -171,7 +171,11 @@ class ConfigPage < Page
     items << make_spinner_config( "行間(%)" ,
                                   "line_height",
                                   100, 200 , 100 , 5 )
-
+    
+    items << make_spinner_config( "開始時の文字の大きさ(%)",
+                                  "comment_page_font_zoom",
+                                  50 , 300 , 100 , 10)
+    
     sort_choices = CommentPage::SORT_TYPES.map{|name,value| [value,name] } # 逆になってる
     items << make_choices_config( "コメントのデフォルトソート(サブレディットからの提案がない場合)",
                                   "default_comment_sort","new",

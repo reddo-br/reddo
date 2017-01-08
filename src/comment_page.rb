@@ -26,6 +26,8 @@ import 'javafx.application.Platform'
 import 'javafx.scene.control.Alert' # jrubyfxにまだない
 import 'javafx.scene.control.ButtonType'
 
+import 'javafx.scene.control.CustomMenuItem'
+
 class CommentPage < CommentPageBase
   include SubPrefMenuItems
   
@@ -59,7 +61,8 @@ class CommentPage < CommentPageBase
     @scroll_to = @top_comment
     @comment_context = @page_info[:context]
     @url_handler = UrlHandler.new( @page_info[:site] )
-
+    @font_zoom = @page_info[:font_zoom] || App.i.pref['comment_page_font_zoom']
+    
     # すでに存在しないアカウントの棄却
     if not Account.exist?( @page_info[:account_name] )
       @page_info[:account_name] = nil
@@ -168,42 +171,9 @@ class CommentPage < CommentPageBase
     @user_ban_state_label = UserBanStateLabel.new
     ###
     @comments_menu = MenuButton.new("その他")
-
-    external_browser_item = MenuItem.new("webで開く")
-    external_browser_item.setOnAction{|e|
-      if url = make_page_url
-        App.i.open_external_browser( url )
-      end
-    }
-    @comments_menu.getItems.add( external_browser_item )
-    
-    copy_url_item = MenuItem.new("URLをコピー")
-    copy_url_item.setOnAction{|e|
-      if url = make_page_url
-        App.i.copy( url )
-      end
-    }
-    @comments_menu.getItems.add( copy_url_item )
-
-    copy_url_item_short = MenuItem.new("URLをコピー(短縮)")
-    copy_url_item_short.setOnAction{|e|
-      App.i.copy( "https://redd.it/#{@page_info[:name]}" )
-    }
-    @comments_menu.getItems.add( copy_url_item_short )
-    
-    copy_url_md = MenuItem.new("URLをコピー(Markdown形式)")
-    copy_url_md.setOnAction{|e|
-      if url = make_page_url
-        title_escaped = Util.escape_md( @title )
-        App.i.copy( "[#{title_escaped}](#{url})" )
-      end
-    }
-    @comments_menu.getItems.add( copy_url_md )
-
-    @sub_css_pref_item = Menu.new("subredditのcss再現")
-    @comments_menu.getItems.add( SeparatorMenuItem.new )
-    @comments_menu.getItems.add( @sub_css_pref_item )
-
+    create_others_menu( @comments_menu )
+    @context_menu = ContextMenu.new
+    create_others_menu( @context_menu )
     ####
 
     @load_status = Label.new("")
@@ -365,6 +335,7 @@ class CommentPage < CommentPageBase
       if @top_comment
         @comment_view.set_self_text_visible(false)
       end
+      @comment_view.set_font_zoom( @font_zoom )
       start_reload( asread:check_read , user_present:start_user_present) # todo: postデータが無いときのみ trueにする
     }
     # @Comment_view.set_title("test")
@@ -436,7 +407,8 @@ class CommentPage < CommentPageBase
     @comment_view.set_save_cb{|obj, save |
       set_object_saved( obj , save )
     }
-    
+    @comment_view.custom_menu = @context_menu
+
     @split_comment_area.getChildren().add( @comment_view.webview )
     
     @split_edit_area = EditWidget.new( account_name:@account_name ,
@@ -572,6 +544,61 @@ class CommentPage < CommentPageBase
 
   end # initialize
   
+  def create_others_menu( menu )
+        external_browser_item = MenuItem.new("webで開く")
+    external_browser_item.setOnAction{|e|
+      if url = make_page_url
+        App.i.open_external_browser( url )
+      end
+    }
+    menu.getItems.add( external_browser_item )
+    
+    copy_url_item = MenuItem.new("URLをコピー")
+    copy_url_item.setOnAction{|e|
+      if url = make_page_url
+        App.i.copy( url )
+      end
+    }
+    menu.getItems.add( copy_url_item )
+
+    copy_url_item_short = MenuItem.new("URLをコピー(短縮)")
+    copy_url_item_short.setOnAction{|e|
+      App.i.copy( "https://redd.it/#{@page_info[:name]}" )
+    }
+    menu.getItems.add( copy_url_item_short )
+    
+    copy_url_md = MenuItem.new("URLをコピー(Markdown形式)")
+    copy_url_md.setOnAction{|e|
+      if url = make_page_url
+        title_escaped = Util.escape_md( @title )
+        App.i.copy( "[#{title_escaped}](#{url})" )
+      end
+    }
+    menu.getItems.add( copy_url_md )
+
+    menu.getItems.add( SeparatorMenuItem.new )
+    zoom_menu , zoom_menu_refresh_cb = make_zoom_button_menu
+    menu.getItems.add( zoom_menu )
+    
+
+    @sub_css_pref_item = Menu.new("subredditのcss再現")
+    menu.getItems.add( SeparatorMenuItem.new )
+    menu.getItems.add( @sub_css_pref_item )
+
+    if menu.respond_to?(:setOnShowing)
+      menu.setOnShowing{|ev|
+        zoom_menu_refresh_cb.call
+      }
+    else
+      menu.setOnMouseClicked{|ev|
+        zoom_menu_refresh_cb.call
+      }
+    end
+
+    menu
+  end
+
+
   def mark_if_new(o)
     if o[:name]
       if o[:reddo_ignored] != IgnoreScript::SHOW
@@ -1050,6 +1077,7 @@ class CommentPage < CommentPageBase
       end
       @title_label.setText( title )
       @comments.each{|c| @comment_view.add_comment( c ) }
+      @comment_view.line_image_resize( @font_zoom )
       # puts @comment_view.dump
       @comment_view.set_link_hook
       @comment_view.set_single_comment_highlight( @top_comment ) if @top_comment
@@ -1078,39 +1106,11 @@ class CommentPage < CommentPageBase
 
   #####
 
-  def key_reload
-    @reload_button.fire() if not @reload_button.isDisable()
-  end
-  def key_top
-    @comment_view.scroll_top
-  end
-  def key_buttom
-    @comment_view.scroll_bottom
-  end
-  def key_up
-    @comment_view.screen_up(0.6)
-  end
-  def key_down
-    @comment_view.screen_down(0.6)
-  end
-  def key_previous
-    @comment_view.screen_up(1.0)
-  end
-  def key_next
-    @comment_view.screen_down(1.0)
-  end
   def key_previous_paragrah
     @find_new_r_button.fire() if not @find_new_r_button.isDisable()
   end
   def key_next_paragraph
     @find_new_button.fire() if not @find_new_button.isDisable()
-  end
-  def key_space
-    @comment_view.screen_down()
-  end
-  def key_find
-    @find_word_box.requestFocus()
-    @find_word_box.selectRange( 0 , @find_word_box.getText().length  )
   end
 
   def key_open_link
@@ -1132,5 +1132,6 @@ class CommentPage < CommentPageBase
   def key_open_sub_without_focus
     open_sub(false)
   end
+
 
 end

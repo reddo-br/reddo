@@ -159,6 +159,13 @@ module AppKey
         if tb = App.i.root.lookup(".app-toolbar")
           key_send( tb , :key_command )
         end
+        
+      when "+"
+        key_send( page , :key_text_zoom_in )
+      when "-"
+        key_send( page , :key_text_zoom_out )
+      when "="
+        key_send( page , :key_text_zoom_reset )
       end
     }
 

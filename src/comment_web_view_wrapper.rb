@@ -35,7 +35,38 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     @div_submission = @doc.getElementById("submission")
     @div_comments   = @doc.getElementById("comments")
     
+    @doc.getElementById("top").setAttribute("style" , "font-size:#{@base_font_zoom}%") if @base_font_zoom
     # @e.executeScript( JS_SCROLL_ELEMENT_IN_VIEW )
+  end
+
+  def set_font_zoom( percent )
+    if( @base_font_zoom != percent )
+      @base_font_zoom = percent
+      if @doc
+        top_comment_id = get_current_screen_top_comment_id
+        if percent
+          @doc.getElementById("top").setAttribute("style" , "font-size:#{@base_font_zoom}%")
+          line_image_resize( percent )
+        else
+          @doc.getElementById("top").setAttribute("style" , "")
+          line_image_resize( nil )
+        end
+        scroll_to_id( top_comment_id , animation:false) if top_comment_id
+      end
+    end
+  end
+  
+  def line_image_resize( percent )
+    # transformだとレイアウトに反映されない
+    css = if percent
+            ratio = percent / 100.0
+            "width:#{16*ratio}px; height:#{16*ratio}px;"
+          else
+            ""
+          end
+    @e.executeScript( <<EOF )
+$('.image_for_resize').attr('style','#{css}');
+EOF
   end
 
   def set_vote_cb
@@ -489,7 +520,7 @@ class CommentWebViewWrapper < RedditWebViewWrapper
     # 高さを合わせる
     dummy_arrow_image = @doc.createElement("img")
     # dummy_arrow_image.setAttribute("src",@upvoted_img_url)
-    dummy_arrow_image.setAttribute("class","dummy_arrow")
+    dummy_arrow_image.setAttribute("class","dummy_arrow image_for_resize")
     comment_hidden.appendChild( dummy_arrow_image )
     
     comment_hidden
@@ -1162,7 +1193,7 @@ EOF
       else
         upvote.setAttribute("src" , @upvote_img_url)
       end
-      upvote.setAttribute("class" , "upvote")
+      upvote.setAttribute("class" , "upvote image_for_resize")
       
       downvote = @doc.createElement("img")
       if obj[:likes] == false
@@ -1170,7 +1201,7 @@ EOF
       else
         downvote.setAttribute("src" , @downvote_img_url)
       end
-      downvote.setAttribute("class" , "downvote")
+      downvote.setAttribute("class" , "downvote image_for_resize")
       
       set_event(upvote , "click" , false){
         if upvote.getAttribute("src").to_s == @upvoted_img_url
@@ -1477,6 +1508,21 @@ EOF
     }
 EOF
     @replying = nil
+  end
+
+  def get_current_screen_top_comment_id
+    @e.executeScript(<<EOF)
+(function(){
+  var wtop = $(window).scrollTop();
+  var comm_id = $("#post_area, .comment_this, .post-in-list").filter(function(i,e){
+    return($(this).offset().top + $(this).height() > wtop );
+  }).prop("id");
+  if( typeof comm_id == 'undefined' )
+    return null;
+  else
+    return comm_id;
+})();
+EOF
   end
 
   def set_message( html )

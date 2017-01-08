@@ -210,4 +210,103 @@ class CommentPageBase < Page
     end
   end
   
+  def set_font_zoom( percent )
+    @font_zoom = percent
+    @page_info[:font_zoom] = percent
+    @comment_view.set_font_zoom( @font_zoom )
+    # サイズ表示
+    App.i.mes( "テキスト拡大:#{@font_zoom || 100}%" )
+  end
+  def set_font_zoom_in
+    font_zoom = @font_zoom || 100
+    new_font_zoom = [ font_zoom + 10 , 300 ].min
+    set_font_zoom( new_font_zoom )
+  end
+  def set_font_zoom_out
+    font_zoom = @font_zoom || 100
+    new_font_zoom = [ font_zoom - 10 , 50 ].max
+    set_font_zoom( new_font_zoom )
+  end
+  def make_zoom_button_menu
+    zoom_label = Label.new( "テキストサイズ:#{@font_zoom || 100}%")
+
+    refresh_proc = Proc.new{
+      zoom_label.setText( "テキストサイズ:#{@font_zoom || 100}%")
+    }
+    in_button = Button.new("+")
+    in_button.setOnAction{|ev|
+      set_font_zoom_in
+      refresh_proc.call
+    }
+    out_button = Button.new("-")
+    out_button.setOnAction{|ev|
+      set_font_zoom_out
+      refresh_proc.call
+    }
+    
+    # zoom_widget = BorderPane.new
+    # zoom_widget.setLeft( in_button )
+    # zoom_widget.setRight( out_button )
+    # zoom_widget.setCenter( zoom_label )
+    # BorderPane.setAlignment( zoom_label , Pos::CENTER )
+    # BorderPane.setAlignment( out_button , Pos::CENTER_RIGHT )
+    
+    # zoom_widget
+
+    zoom_widget = HBox.new
+    zoom_widget.setAlignment( Pos::CENTER_LEFT )
+    zoom_widget.getChildren.setAll( out_button , in_button , Label.new(" ") ,
+                                    zoom_label )
+    # zoom_widget
+
+    zoom_menu = CustomMenuItem.new( zoom_widget )
+    # うごかない…
+    #zoom_menu.setOnMenuValidation{|ev|
+    #  puts "setOnMenuValidation"
+    #  zoom_label.setText( "テキストサイズ:#{@font_zoom || 100}%")
+    #}
+    zoom_menu.setHideOnClick(false)
+    [ zoom_menu , refresh_proc ] # onShowingから呼ばせること
+  end
+
+  # key
+  def key_reload
+    @reload_button.fire() if not @reload_button.isDisable()
+  end
+  def key_top
+    @comment_view.scroll_top
+  end
+  def key_buttom
+    @comment_view.scroll_bottom
+  end
+  def key_up
+    @comment_view.screen_up(0.6)
+  end
+  def key_down
+    @comment_view.screen_down(0.6)
+  end
+  def key_previous
+    @comment_view.screen_up(1.0)
+  end
+  def key_next
+    @comment_view.screen_down(1.0)
+  end
+  def key_space
+    @comment_view.screen_down()
+  end
+  def key_find
+    @find_word_box.requestFocus()
+    @find_word_box.selectRange( 0 , @find_word_box.getText().length  )
+  end
+  
+  def key_text_zoom_in
+    set_font_zoom_in
+  end
+  def key_text_zoom_out
+    set_font_zoom_out
+  end
+  def key_text_zoom_reset
+    set_font_zoom( App.i.pref['comment_page_font_zoom'] )
+  end
+
 end # class

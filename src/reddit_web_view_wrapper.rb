@@ -91,6 +91,7 @@ html {
 
 button {
   color:#{App.i.theme::COLOR::HTML_TEXT};
+  // font-size:95%; // 全体サイズに随うように
 }
 
 .highlight { background-color: #{App.i.theme::COLOR::HTML_TEXT_HIGHLIGHT_BG};}

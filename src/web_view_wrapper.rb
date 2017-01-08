@@ -137,9 +137,16 @@ class WebViewWrapper
 
       true
     else
-      false
+      if @custom_menu
+        @menu = @custom_menu # 後で消すために
+        @menu.show( @webview , x , y )
+        true
+      else
+        false
+      end
     end
   end
+  attr_accessor :custom_menu
 
   def make_absolute_url( url )
     if @base_url
@@ -315,13 +322,18 @@ class WebViewWrapper
     @e.executeScript('$("html").html()')
   end
 
-  def scroll_to_id( element_id )
-    @e.executeScript( <<EOF )
+  def scroll_to_id( element_id , animation:true)
+    if animation
+      @e.executeScript( <<EOF )
 $('html,body').stop().animate({
   scrollTop:$('##{element_id}').offset().top
 });
 EOF
-    
+    else
+      @e.executeScript( <<EOF )
+$('html,body').stop().scrollTop( $('##{element_id}').offset().top );
+EOF
+    end    
   end
 
   def scroll_to_pos( pos )
@@ -489,6 +501,18 @@ EOF
     else
       @e.executeScript("$(\"html, body\").scrollTop( document.body.scrollTop + $(window).height()*#{ratio} )")
     end
+  end
+
+  def get_scroll_pos_ratio
+    @e.executeScript(<<EOF)
+document.body.scrollTop / document.body.clientHeight
+EOF
+  end
+
+  def set_scroll_pos_ratio(pos_ratio)
+    @e.executeScript(<<EOF)
+$("body").scrollTop( document.body.clientHeight * #{pos_ratio} )
+EOF
   end
 
 ############# 加速度スクロール用スクリプト
