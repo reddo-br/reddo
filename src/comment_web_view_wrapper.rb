@@ -783,7 +783,11 @@ EOF
             float_thumb_box.setAttribute("id" , float_thumb_id )
 
             a_top , a_left , a_width , a_height = element_offset( anc_id )
-            float_thumb_box.setAttribute("style","position:absolute; top:#{a_top+a_height+4}px; left:#{a_left}px; z-index:2")
+            b_top , b_left , b_width  ,b_height = element_offset( "top" )
+            t_top , t_left , t_width , t_height = element_offset( thumb_id )
+            p_top = a_top+a_height+4
+            p_left = [ a_left , b_width - t_width ].min
+            float_thumb_box.setAttribute("style","position:absolute; top:#{p_top}px; left:#{p_left}px; z-index:2")
             thumb_area.appendChild( float_thumb_box )
           end
           thumb_box.setAttribute("class", "thumb_box thumb_over")

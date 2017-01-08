@@ -416,7 +416,8 @@ a#linked_title:hover, a.link-title:hover {
 }
 
 .has_thumb {
-  // background-color: #{App.i.theme::COLOR::FAINT_RED} // やはりちょっとうるさい
+  // やっぱりちょっとうるさい
+  // background-color: #{App.i.theme::COLOR::HTML_THUMB_AREA_BG};
 }
 
 .thumb_over {
