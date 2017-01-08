@@ -423,11 +423,11 @@ class CommentPostListPage < CommentPageBase
   end
 
   def get_current_sort
-    SORT_TYPES.assoc(@sort_selector.getSelectionModel.getSelectedItem)[1]
+    SORT_TYPES.assoc(@sort_selector.getSelectionModel.getSelectedItem).to_a[1]
   end
 
   def set_current_sort(sort)
-    @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc(sort)[0] )
+    @sort_selector.getSelectionModel.select( SORT_TYPES.rassoc(sort).to_a[0] )
   end
 
   def highlight_replying( move:true )
@@ -622,5 +622,12 @@ class CommentPostListPage < CommentPageBase
 
   #####
 
+  def key_hot
+    set_current_sort( "top" )
+  end
+
+  def key_new
+    set_current_sort( "new" )
+  end
 
 end

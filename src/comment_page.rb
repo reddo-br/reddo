@@ -1133,5 +1133,12 @@ class CommentPage < CommentPageBase
     open_sub(false)
   end
 
+  def key_hot
+    set_current_sort( "confidence" )
+  end
+
+  def key_new
+    set_current_sort( "new" )
+  end
 
 end
