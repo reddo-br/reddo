@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # コメント内のあるurlに対して、コメント下部のサムネイル表示欄に表示されるサムネイルのurlを定義する例です。
-# youtubeとimgurについてはアプリ内であらかじめ定義されていますが、ここで上書きすることもできます。
 
 # 設定方法
 # ThumbnailScriptを継承したクラスを定義し、必要なメソッドを追加してください。
@@ -12,8 +11,8 @@
 
 
 # twimg.comのイメージのサムネイルを表示します。
-
-class TwimgThumbnail < ThumbnailScript
+# *** このクラスは同等のものがアプリ内に組み込まれているので、有効化しても動作に変化はありません
+class TwimgThumbnailSample < ThumbnailScript
 
   def enabled?
     false

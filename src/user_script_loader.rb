@@ -6,6 +6,8 @@ require 'user_script_base'
 # buildin
 require 'builtin_scripts/thumb/imgur'
 require 'builtin_scripts/thumb/youtube'
+require 'builtin_scripts/thumb/archive_is'
+require 'builtin_scripts/thumb/twimg'
 
 module UserScriptLoader
   module_function

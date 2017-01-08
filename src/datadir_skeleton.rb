@@ -6,9 +6,7 @@ require 'fileutils'
 
 module DatadirSkeleton
 FILES=%w(
-scripts/ignore.rb.0.4.0.sample
-scripts/thumbnail.rb.0.4.2.sample
-scripts/README.0.4.0.txt
+scripts/README.txt
 )
 
   module_function
