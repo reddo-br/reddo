@@ -545,7 +545,7 @@ class CommentPage < CommentPageBase
   end # initialize
   
   def create_others_menu( menu )
-        external_browser_item = MenuItem.new("webで開く")
+    external_browser_item = MenuItem.new("webで開く")
     external_browser_item.setOnAction{|e|
       if url = make_page_url
         App.i.open_external_browser( url )

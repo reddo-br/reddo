@@ -117,25 +117,9 @@ class CommentPostListPage < CommentPageBase
     @user_ban_state_label = UserBanStateLabel.new
     ###
     @comments_menu = MenuButton.new("その他")
-
-    external_browser_item = MenuItem.new("webで開く")
-    external_browser_item.setOnAction{|e|
-      if url = make_page_url
-        App.i.open_external_browser( url )
-      end
-    }
-    @comments_menu.getItems.add( external_browser_item )
-    
-    copy_url_item = MenuItem.new("URLをコピー")
-    copy_url_item.setOnAction{|e|
-      if url = make_page_url
-        App.i.copy( url )
-      end
-    }
-    @comments_menu.getItems.add( copy_url_item )
-    if @target_user
-      set_user_history_menuitems
-    end
+    create_others_menu( @comments_menu )
+    @context_menu = ContextMenu.new
+    create_others_menu( @context_menu )
     ####
 
     @load_status = Label.new("")
@@ -296,6 +280,7 @@ class CommentPostListPage < CommentPageBase
     @comment_view.set_save_cb{|obj, save |
       set_object_saved( obj , save )
     }
+    @comment_view.custom_menu = @context_menu
 
     @split_comment_area.getChildren().add( @comment_view.webview )
     
@@ -370,6 +355,44 @@ class CommentPostListPage < CommentPageBase
 
   end # initialize
   
+  def create_others_menu(menu)
+    external_browser_item = MenuItem.new("webで開く")
+    external_browser_item.setOnAction{|e|
+      if url = make_page_url
+        App.i.open_external_browser( url )
+      end
+    }
+    menu.getItems.add( external_browser_item )
+    
+    copy_url_item = MenuItem.new("URLをコピー")
+    copy_url_item.setOnAction{|e|
+      if url = make_page_url
+        App.i.copy( url )
+      end
+    }
+    menu.getItems.add( copy_url_item )
+
+    menu.getItems.add( SeparatorMenuItem.new )
+    zoom_menu , zoom_menu_refresh_cb = make_zoom_button_menu
+    menu.getItems.add( zoom_menu )
+
+    if @target_user
+      set_user_history_menuitems(menu)
+    end
+
+    if menu.respond_to?(:setOnShowing)
+      menu.setOnShowing{|ev|
+        zoom_menu_refresh_cb.call
+      }
+    else
+      menu.setOnMouseClicked{|ev|
+        zoom_menu_refresh_cb.call
+      }
+    end
+
+    menu
+  end
+
   def create_title
     username , type = App.i.path_to_user_history( @target_path )
     if username and type
@@ -474,17 +497,21 @@ class CommentPostListPage < CommentPageBase
     
   end
 
-  def set_user_history_menuitems
-    @user_history_separator ||= SeparatorMenuItem.new
-    items = @comments_menu.getItems
-    if (i = items.indexOf(@user_history_separator)) >= 0
-      subs = items.subList( i + 1 , items.size() )
-      subs.clear
-      subs.addAll( App.i.make_user_history_menuitems( @target_user ))
-    else
-      @comments_menu.getItems.add( @user_history_separator )
-      @comments_menu.getItems.addAll( App.i.make_user_history_menuitems( @target_user ))
-    end
+  def set_user_history_menuitems(menu)
+    # @user_history_separator ||= SeparatorMenuItem.new
+    # items = menu.getItems
+    # if (i = items.indexOf(@user_history_separator)) >= 0
+    #   subs = items.subList( i + 1 , items.size() )
+    #   subs.clear
+    #   subs.addAll( App.i.make_user_history_menuitems( @target_user ))
+    # else
+    #   menu.getItems.add( @user_history_separator )
+    #   menu.getItems.addAll( App.i.make_user_history_menuitems( @target_user ))
+    # end
+
+    menu.getItems.add( SeparatorMenuItem.new )
+    menu.getItems.addAll( App.i.make_user_history_menuitems( @target_user ))
+
   end
 
   # def check_read
