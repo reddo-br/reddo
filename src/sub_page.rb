@@ -1290,7 +1290,14 @@ class SubPage < Page
     subm_id = item[:id]
     title   = item[:title_decoded]
     # App.i.open_comment( link_id:subm_id , title:title , account_name:@account_name )
-    comm_account = @account_name || false # falseではcomment側で自動でアカウントを設定しない
+    # サブレディットのアカウントを優先する
+    subm_account = if @is_multireddit and item[:subreddit]
+                     Subs.new( item[:subreddit] , site:@page_info[:site] )['account_name']
+                   else
+                     nil
+                   end
+
+    comm_account = subm_account || @account_name || false # falseではcomment側で自動でアカウントを設定しない
     App.i.open_by_page_info( { :site  => @page_info[:site] ,
                                :type  => 'comment',
                                :name  => subm_id , 

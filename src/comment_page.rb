@@ -70,8 +70,10 @@ class CommentPage < CommentPageBase
     rec_account = ReadCommentDB.instance.get_subm_account(@link_id)
     if not Account.exist?( rec_account )
       ReadCommentDB.instance.get_subm_account(nil)
+      rec_account = nil
     end
 
+    # subsの設定を使いたいが、ここではまだsubredditはわからない
     if rec_account == false
       @account_name = nil
     else
