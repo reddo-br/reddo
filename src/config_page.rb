@@ -170,7 +170,7 @@ class ConfigPage < Page
     
     items << make_spinner_config( "行間(%)" ,
                                   "line_height",
-                                  100, 200 , 100 , 5 )
+                                  100, 250 , 140 , 5 )
     
     items << make_spinner_config( "開始時の文字の大きさ(%)",
                                   "comment_page_font_zoom",

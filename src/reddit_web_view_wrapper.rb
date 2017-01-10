@@ -68,7 +68,7 @@ EOF
 
     base_font = "\"#{App.i.pref["fonts"]}\",sans-serif" || '"DejaVu Sans",Tahoma,Arial,"Helvetica Neue","Lucida Grande",sans-serif'
 
-    line_height = App.i.pref["line_height"] || 100
+    line_height = App.i.pref["line_height"] || 140
 
     inline_oblique_style = if App.i.pref["artificial_oblique"]
                              "font-style:normal; display:inline-block; -webkit-transform:skew(-15deg);"
