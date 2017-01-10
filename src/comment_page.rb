@@ -583,9 +583,11 @@ class CommentPage < CommentPageBase
     menu.getItems.add( zoom_menu )
     
 
-    @sub_css_pref_item = Menu.new("subredditのcss再現")
+    sub_css_pref_menu = Menu.new("subredditのcss再現")
     menu.getItems.add( SeparatorMenuItem.new )
-    menu.getItems.add( @sub_css_pref_item )
+    menu.getItems.add( sub_css_pref_menu )
+    @sub_css_pref_menus ||= []
+    @sub_css_pref_menus << sub_css_pref_menu # sub取得後にアイテムを追加するため
 
     if menu.respond_to?(:setOnShowing)
       menu.setOnShowing{|ev|
@@ -989,10 +991,12 @@ class CommentPage < CommentPageBase
     if @subname
       Platform.runLater{
         @subname_label.setText( @subname.to_s )
-        if @sub_css_pref_item.getItems.length == 0
-          create_sub_pref_menu_items( @sub_css_pref_item , 
-                                      @subname )
-        end
+        @sub_css_pref_menus.to_a.each{|mi|
+          if mi.getItems.length == 0
+            create_sub_pref_menu_items( mi , 
+                                        @subname )
+          end
+        }
       }
     end
     
