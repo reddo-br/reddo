@@ -161,11 +161,12 @@ EOF
       subm_text = @doc.getElementById("submission_text")
       empty("#submission_text")
       text_wrapper = @doc.createElement("div")
-      if @sjis_art
-        text_wrapper.setAttribute("class","use-sjis-art")
-      else
-        text_wrapper.setAttribute("class"," ")
-      end
+
+      style_class = ""
+      style_class += " use_link_style" if @use_link_style
+      style_class += " use-sjis-art" if @sjis_art
+      text_wrapper.setAttribute("class",style_class)
+
       text_wrapper.setMember( "innerHTML" , html_decode( selftext_html.to_s ))
       subm_text.appendChild(text_wrapper)
 
