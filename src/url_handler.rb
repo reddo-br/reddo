@@ -205,9 +205,9 @@ class UrlHandler
 
             ##### comment画面
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
-            {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
+            {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] , :subreddit => m[1] } # part comment
           elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/comments/(\w+)!uo )
-            {:site => site ,:type=> "comment" , :name => m[2] }
+            {:site => site ,:type=> "comment" , :name => m[2] , :subreddit => m[1] }
           #elsif m = url_o.path.match( %r!^#{sub_top}/(\w+)/(\w+)!uo ) 
           # この形式がコメントかどうかをクライアント側で判定することはできない。redirect先を見るしかない
           #  {:site => site ,:type=> "comment" , :name => m[2] }

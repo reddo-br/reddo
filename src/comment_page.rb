@@ -73,11 +73,16 @@ class CommentPage < CommentPageBase
       rec_account = nil
     end
 
-    # subsの設定を使いたいが、ここではまだsubredditはわからない
+    sub_account = if @page_info[:subreddit] # urlからsubredditが反映できた場合など
+                    Subs.new( @page_info[:subreddit] , site:@page_info[:site] )["account_name"]
+                  else
+                    nil
+                  end
+
     if rec_account == false
-      @account_name = nil
+      @account_name = false
     else
-      @account_name = rec_account || @page_info[:account_name]
+      @account_name = rec_account || sub_account || @page_info[:account_name]
       ReadCommentDB.instance.set_subm_account( @link_id , @account_name )
     end
     # @site = site
