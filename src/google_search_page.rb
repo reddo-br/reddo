@@ -80,6 +80,7 @@ class GoogleSearchPage < Page
              url_o.path + "/comments"
            end
     query = "site:#{url_o.host}#{path} #{@word}"
+    # query = "allintitle:#{@word} site:#{url_o.host}#{path}" # 拒絶される
     query_encoded = URI.encode_www_form_component( query )
     search_url = "https://www.google.com/search?hl=ja&q=#{query_encoded}"
     $stderr.puts "検索ページロード #{search_url}"
