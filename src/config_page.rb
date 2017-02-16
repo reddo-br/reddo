@@ -8,6 +8,8 @@ require 'pref/preferences'
 require 'page'
 require 'comment_page'
 
+require 'util'
+
 import 'javafx.scene.control.Spinner'
 
 class ConfigPage < Page
@@ -180,6 +182,11 @@ class ConfigPage < Page
     items << make_choices_config( "コメントのデフォルトソート(サブレディットからの提案がない場合)",
                                   "default_comment_sort","new",
                                   sort_choices )
+
+    items << make_header("情報")
+    
+    items << [ Label.new("ユーザーディレクトリ" ) , 
+               Label.new( Util.get_appdata_pathname.to_s ) ]
 
     ########## itemをgridpaneに入れる
 
