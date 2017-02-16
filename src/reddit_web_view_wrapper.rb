@@ -363,6 +363,16 @@ a#linked_title:hover, a.link-title:hover {
   text-decoration:underline;
 }
 
+/* 通常リンクも下線なしに */
+.md a {
+  text-decoration:none;
+}
+.md a:hover{
+  text-decoration:underline;
+}
+/* リンクをもうすこし明るくしないと見えない */
+
+
 #title_area {
   margin: 8px;
 }
