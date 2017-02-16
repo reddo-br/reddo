@@ -66,6 +66,8 @@ class UrlHandler
       true
     elsif path == "friends"
       true
+    elsif path == "popular"
+      true
     else
       false
     end
