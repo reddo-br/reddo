@@ -96,7 +96,7 @@ button {
 
 .highlight { background-color: #{App.i.theme::COLOR::HTML_TEXT_HIGHLIGHT_BG};}
 
-.comment_highlight { background-color: #{App.i.theme::COLOR::HTML_COMMENT_HIGHLIGHT};}
+.comment-highlight { background-color: #{App.i.theme::COLOR::HTML_COMMENT_HIGHLIGHT};}
 
 a:link { color: #{App.i.theme::COLOR::HTML_LINK}; }
 
@@ -155,12 +155,12 @@ div.comment p {
 
 }
 
-.comment_this, .post-in-list-inner , .comment-hidden {
+.comment-this, .post-in-list-inner , .comment-hidden {
   padding:6px 6px 6px 6px;
 
 }
 
-.popup_comment {
+.popup-comment {
   // background-color: #{App.i.theme::COLOR::HTML_BG};
   background-color: #{App.i.theme::COLOR::HTML_COMMENT_HIGHLIGHT};
   // border-color: #{App.i.theme::COLOR::HTML_COMMENT_BORDER};
@@ -172,12 +172,12 @@ div.comment p {
   z-index:2;
 }
 
-.comment_header , .user_history_comment_header , .comment-hidden {
+.comment-header , .user-history-comment-header , .comment-hidden {
   font-size:90%;
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
-.subm_header {
+.subm-header {
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
@@ -187,29 +187,29 @@ div.comment p {
   #{bold_style}
 }
 
-.gilded_mark {
+.gilded-mark {
   color: #{App.i.theme::COLOR::STRONG_YELLOW};
   #{bold_style};
 }
 
-.comment_footer {
+.comment-footer {
   padding:0px 3px 0px 3px;
   color:#{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
-#comments > .comment .comment_this > .comment_footer {
+#comments > .comment .comment-this > .comment-footer {
   font-size:90%;
 }
 
-.comment .comment .comment_footer {
+.comment .comment .comment-footer {
   font-size:90%;
 }
 
-.post-in-list-inner .comment_footer {
+.post-in-list-inner .comment-footer {
   font-size:90%;
 }
 
-.comment_footer a {
+.comment-footer a {
   text-decoration:none;
   padding:1px 3px 1px 3px;
   border-radius: 3px;
@@ -217,52 +217,52 @@ div.comment p {
   color:#{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
-.comment_footer a:hover {
+.comment-footer a:hover {
   background-color:#{App.i.theme::COLOR::HTML_COMMENT_FOOTER_LINK_HOVER_BG};
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
 }
 
-.user_name, a.user_name {
+.user-name, a.user-name {
   color: #{App.i.theme::COLOR::STRONG_BLUE};
   border-radius: 3px;
   text-decoration:none;
 }
 
-.user_name_admin, a.user_name_admin {
+.user-name-admin, a.user-name-admin {
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
   background-color: #{App.i.theme::COLOR::STRONG_RED}
 }
 
-.user_name_mod, a.user_name_mod {
+.user-name-mod, a.user-name-mod {
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
   background-color: #{App.i.theme::COLOR::STRONG_GREEN}
 }
 
-.user_name_op, a.user_name_op {
+.user-name-op, a.user-name-op {
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
   background-color: #{App.i.theme::COLOR::STRONG_BLUE}
 }
 
-.sticky_mark {
+.sticky-mark {
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
   background-color: #{App.i.theme::COLOR::STRONG_GREEN}
 }
 
-.upvote , .downvote , .dummy_arrow {
+.upvote , .downvote , .dummy-arrow {
   height:16px;
   vertical-align: -2px;
 }
 
-.dummy_arrow {
+.dummy-arrow {
   visibility:hidden;
 }
 
-.upvote:hover , .downvote:hover , .close-switch , #submission_switch {
+.upvote:hover , .downvote:hover , .close-switch , #submission-switch {
   cursor: pointer;
   // font-family:monospace;
 }
 
-.user_flair {
+.user-flair {
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   border-width: 1px;
   border-style: solid;
@@ -270,7 +270,7 @@ div.comment p {
   margin-left: 2px;
 }
 
-.user_flair_styled {
+.user-flair-styled {
   display:inline-block;
   margin-left: 4px !important;
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN} !important;
@@ -279,7 +279,7 @@ div.comment p {
   overflow:hidden !important; // adjust_overflowing_user_flair()がうまくいかないので
 }
 
-.user_flair:empty {
+.user-flair:empty {
   display:none;
 }
 
@@ -318,7 +318,7 @@ line-height:100%;
 
 .md { line-height:#{line_height}%; }
 
-#preview_box {
+#preview-box {
   // display:inline-block;
   float:left;
   margin:5px;
@@ -339,7 +339,7 @@ line-height:100%;
   width:auto;
 }
 
-#link_flair {
+#link-flair {
   color:#{App.i.theme::COLOR::HTML_BG};
   background-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   margin-right:2px;
@@ -351,21 +351,21 @@ line-height:100%;
   margin-right:2px;
 }
 
-#link_fliar:empty {
+#link-flair:empty {
   display:none;
 }
 
-a#linked_title, a.link-title {
+a#linked-title, a.link-title {
   text-decoration:none;
   
 }
 
-a#linked_title, .post-in-list-inner .link-title {
+a#linked-title, .post-in-list-inner .link-title {
   font-size:110%;
   #{bold_style};
 }
 
-a#linked_title:hover, a.link-title:hover {
+a#linked-title:hover, a.link-title:hover {
   text-decoration:underline;
 }
 
@@ -379,7 +379,7 @@ a#linked_title:hover, a.link-title:hover {
 /* リンクをもうすこし明るくしないと見えない */
 
 
-#title_area {
+#title-area {
   margin: 8px;
 }
 
@@ -394,13 +394,13 @@ a#linked_title:hover, a.link-title:hover {
   display:none; // 開始時
 }
 
-#submission_switch_area {
+#submission-switch-area {
   margin-bottom:2px;
   font-size:90%;
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
-#submission_command {
+#submission-command {
   margin: 8px;
   padding: 5px;
 }
@@ -420,23 +420,23 @@ a#linked_title:hover, a.link-title:hover {
   margin-bottom: 0.5em;
 }
 
-.thumb_area {
+.thumb-area {
   padding: 2px;
   background-color: #{App.i.theme::COLOR::HTML_THUMB_AREA_BG};
 }
 
-.thumb_box {
+.thumb-box {
   padding: 4px;
   display:inline-block;
   max-height:98px;
 }
 
-.has_thumb {
+.has-thumb {
   // やっぱりちょっとうるさい
   // background-color: #{App.i.theme::COLOR::HTML_THUMB_AREA_BG};
 }
 
-.thumb_over {
+.thumb-over {
   background-color: #{App.i.theme::COLOR::RED}
 }
 
@@ -452,7 +452,7 @@ table, th, td {
     padding-right:6px;
 }
 
-.new_mark {
+.new-mark {
   // background-color: #{App.i.theme::COLOR::STRONG_YELLOW};
   // color:white;
   // padding:2px;
@@ -462,16 +462,16 @@ table, th, td {
   #{bold_style};
 }
 
-.userinfo_name {
+.userinfo-name {
   font-size:120%;
   #{bold_style}
 }
 
-.userinfo_karma {
+.userinfo-karma {
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 
-.userinfo_date {
+.userinfo-date {
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
 }
 

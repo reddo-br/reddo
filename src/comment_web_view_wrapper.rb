@@ -106,7 +106,7 @@ EOF
   end
 
   def set_title(title , link = nil , selftext = false)
-    dom_title = @doc.getElementById("linked_title")
+    dom_title = @doc.getElementById("linked-title")
     dom_title.setMember("innerHTML" , title )
 
     if selftext
@@ -140,7 +140,7 @@ EOF
     subreddit_info.appendChild( subreddit_link )
     subreddit_info.appendChild( @doc.createTextNode("]"))
 
-    #subm_switch = @doc.getElementById("submission_switch")
+    #subm_switch = @doc.getElementById("submission-switch")
     #subm_switch.setTextContent("[-]") #
     if @link_id
       subm_text_closed = ReadCommentDB.instance.get_closed( "st_" + @link_id )
@@ -158,8 +158,8 @@ EOF
                         obj[:selftext_html]
                       end
 
-      subm_text = @doc.getElementById("submission_text")
-      empty("#submission_text")
+      subm_text = @doc.getElementById("submission-text")
+      empty("#submission-text")
       text_wrapper = @doc.createElement("div")
 
       style_class = ""
@@ -180,16 +180,16 @@ EOF
 
     subm_head = make_post_head_element( obj , true )
     
-    sh = @doc.getElementById("subm_head")
-    empty("#subm_head")
+    sh = @doc.getElementById("subm-head")
+    empty("#subm-head")
     # sh.setMember("innerHTML" , "" )
     sh.appendChild( subm_head )
 
-    flair = @doc.getElementById("link_flair")
+    flair = @doc.getElementById("link-flair")
     flair.setMember("innerHTML" , html_decode(obj[:link_flair_text].to_s))
 
     img = @doc.getElementById("preview")
-    imgb = @doc.getElementById("preview_box")
+    imgb = @doc.getElementById("preview-box")
 
     if obj[:is_self]
       img.setAttribute("style" , "visibility:hidden")
@@ -220,15 +220,15 @@ EOF
     end
 
     foot = make_footer_element( nil , obj )
-    command = @doc.getElementById("submission_command")
+    command = @doc.getElementById("submission-command")
     # command.setMember("innerHTML" , "" )
-    empty("#submission_command")
+    empty("#submission-command")
     command.appendChild( foot )
   end
   
   def prepare_submission_switch
     if not @submission_switch_prepared
-      sw = @doc.getElementById("submission_switch")
+      sw = @doc.getElementById("submission-switch")
       set_event( sw , "click" , false , free_explicitly:false){
         if @link_id
           ReadCommentDB.instance.set_closed( "st_" + @link_id , @submission_expanded)
@@ -241,9 +241,9 @@ EOF
   end
 
   def submission_text_expand( expand )
-    text = @doc.getElementById( "submission_text")
-    sw = @doc.getElementById("submission_switch")
-    mes = @doc.getElementById("submission_switch_message")
+    text = @doc.getElementById( "submission-text")
+    sw = @doc.getElementById("submission-switch")
+    mes = @doc.getElementById("submission-switch-message")
     if expand
       @submission_expanded = true
       text.setAttribute("style","display:block")
@@ -274,7 +274,7 @@ EOF
   end
 
   def is_sticky_node_id( node_id )
-    nn = @e.executeScript("$(\"##{node_id} .sticky_mark\").length")
+    nn = @e.executeScript("$(\"##{node_id} .sticky-mark\").length")
     $stderr.puts "is_sticky_node #{nn}"
     nn > 0
   end
@@ -481,7 +481,7 @@ EOF
   
   # 結局使ってない
   def find_child_comments( name )
-    script = "$('##{name}').find('.comment_this').map(function(){return $(this).prop('id');});"
+    script = "$('##{name}').find('.comment-this').map(function(){return $(this).prop('id');});"
     jsarray = @e.executeScript( script )
     ret = []
     $stderr.puts "length:#{jsarray.getMember('length')}"
@@ -521,7 +521,7 @@ EOF
     # 高さを合わせる
     dummy_arrow_image = @doc.createElement("img")
     # dummy_arrow_image.setAttribute("src",@upvoted_img_url)
-    dummy_arrow_image.setAttribute("class","dummy_arrow image_for_resize")
+    dummy_arrow_image.setAttribute("class","dummy-arrow image_for_resize")
     comment_hidden.appendChild( dummy_arrow_image )
     
     comment_hidden
@@ -584,26 +584,26 @@ EOF
 
     # @div_comments.setMember("innerHTML" , "")
     # @div_submission.setMember("innerHTML","")
-    empty("#submission_text")
+    empty("#submission-text")
     empty("#comments")
     
-    #if t = @doc.getElementById("linked_title")
+    #if t = @doc.getElementById("linked-title")
     #  t.setMember("innerHTML" , "")
     #end
-    empty("#linked_title")
+    empty("#linked-title")
     empty("#domain")
     empty("#subreddit")
     # todo: submissionも複数に対応する
-    # @doc.getElementById("subm_head").setMember("innerHTML","")
+    # @doc.getElementById("subm-head").setMember("innerHTML","")
     if pv = @doc.getElementById("preview")
       pv.setAttribute("src","")
     end
-    # @doc.getElementById("link_flair").setMember("innerHTML","")
-    # @doc.getElementById("submission_command").setMember("innerHTML","")
+    # @doc.getElementById("link-flair").setMember("innerHTML","")
+    # @doc.getElementById("submission-command").setMember("innerHTML","")
 
-    empty("#subm_head")
-    empty("#link_flair")
-    empty("#submission_command")
+    empty("#subm-head")
+    empty("#link-flair")
+    empty("#submission-command")
 
   end
 
@@ -613,12 +613,12 @@ EOF
     #comment.setAttribute("class" , "comment")
 
     comment_this = @doc.createElement( "div")
-    comment_this.setAttribute("class" , "comment_this")
+    comment_this.setAttribute("class" , "comment-this")
     comment_this.setAttribute("id" , "ct_" + obj[:name].to_s )
 
     if @comment_post_list_mode
       link_area = @doc.createElement("div")
-      link_area.setAttribute("class","user_history_comment_header")
+      link_area.setAttribute("class","user-history-comment-header")
       post_link = @doc.createElement("a")
       post_link.setAttribute("href" , html_decode(obj[:link_url]))
       post_link.setMember("innerHTML", html_decode(obj[:link_title]))
@@ -753,11 +753,11 @@ EOF
       nil
     else
       thumb_area = @doc.createElement("div")
-      thumb_area.setAttribute("class" , "thumb_area")
+      thumb_area.setAttribute("class" , "thumb-area")
       thumb_box_pool = {}
 
       anchors_with_thumb.each{|anc , thumb_html|
-        anc.setAttribute("class" , "has_thumb")
+        anc.setAttribute("class" , "has-thumb")
         uuid = java.util.UUID.randomUUID().toString()
         thumb_id = "thumb_"+uuid
         float_thumb_id = "float_thumb_"+uuid
@@ -769,7 +769,7 @@ EOF
           thumb_id = thumb_box.getAttribute("id")
         else
           thumb_box = @doc.createElement("span")
-          thumb_box.setAttribute("class","thumb_box")
+          thumb_box.setAttribute("class","thumb-box")
           thumb_box.setMember("innerHTML" , thumb_html )
           thumb_box.setAttribute("id" , thumb_id)
           thumb_box_is_created = true
@@ -779,7 +779,7 @@ EOF
         mouseover_proc = Proc.new{|ev|
           if not is_element_in_view( thumb_id )
             float_thumb_box = @doc.createElement("span")
-            float_thumb_box.setAttribute("class","thumb_box thumb_over")
+            float_thumb_box.setAttribute("class","thumb-box thumb-over")
             float_thumb_box.setMember("innerHTML" , thumb_html )
             float_thumb_box.setAttribute("id" , float_thumb_id )
 
@@ -791,12 +791,12 @@ EOF
             float_thumb_box.setAttribute("style","position:absolute; top:#{p_top}px; left:#{p_left}px; z-index:2")
             thumb_area.appendChild( float_thumb_box )
           end
-          thumb_box.setAttribute("class", "thumb_box thumb_over")
-          anc.setAttribute("class", "has_thumb thumb_over")
+          thumb_box.setAttribute("class", "thumb-box thumb-over")
+          anc.setAttribute("class", "has-thumb thumb-over")
         }
         mouseout_proc = Proc.new{|ev|
-          thumb_box.setAttribute("class", "thumb_box")
-          anc.setAttribute("class", "has_thumb")
+          thumb_box.setAttribute("class", "thumb-box")
+          anc.setAttribute("class", "has-thumb")
           remove( "##{float_thumb_id}")
         }
         set_event( anc ,       "mouseover" , false , &mouseover_proc )
@@ -808,12 +808,12 @@ EOF
 
           mouseover_proc_thumb = Proc.new{|ev|
             # hrefで検索する
-            target_anchors.each{|a| a.setAttribute("class", "has_thumb thumb_over") }
-            thumb_box.setAttribute("class", "thumb_box thumb_over")
+            target_anchors.each{|a| a.setAttribute("class", "has-thumb thumb-over") }
+            thumb_box.setAttribute("class", "thumb-box thumb-over")
           }
           mouseout_proc_thumb = Proc.new{|ev|
-            target_anchors.each{|a| a.setAttribute("class", "has_thumb") }
-            thumb_box.setAttribute("class", "thumb_box")
+            target_anchors.each{|a| a.setAttribute("class", "has-thumb") }
+            thumb_box.setAttribute("class", "thumb-box")
           }
           set_event( thumb_box , "mouseover" , false , &mouseover_proc_thumb )
           set_event( thumb_box , "mouseout"  , false , &mouseout_proc_thumb )
@@ -839,7 +839,7 @@ EOF
 
   def make_footer_element( mouseover_element , obj )
     comment_foot = @doc.createElement("span")
-    comment_foot.setAttribute("class" , "comment_footer")
+    comment_foot.setAttribute("class" , "comment-footer")
     #if mouseover_element
     #  comment_foot.setAttribute("style", "font-size:90%;")
     #end
@@ -888,7 +888,7 @@ EOF
             if t_top
               parent_pop.setAttribute("style" , 
                                       "position:absolute; top:#{t_top+t_height+5}px; left:#{t_left};overflow:visible")
-              parent_pop.setAttribute("class" , "popup_comment")
+              parent_pop.setAttribute("class" , "popup-comment")
               parent_pop.setAttribute("id" , "pp_#{obj[:name]}")
               # parent_pop.setTextContent("ポップアップテスト")
               parent_pop.appendChild( parent.getChildNodes().item(0).cloneNode(true) );
@@ -898,7 +898,7 @@ EOF
           else
             # ハイライト化
             $stderr.puts "親コメントは画面内にある"
-            new_classes = parent.getAttribute("class").to_s + " comment_highlight"
+            new_classes = parent.getAttribute("class").to_s + " comment-highlight"
             parent.setAttribute("class",new_classes)
           end
         end
@@ -907,7 +907,7 @@ EOF
         $stderr.puts "親コメント用マウスアウト"
         remove( "#pp_#{obj[:name]}")
         if parent = @doc.getElementById(parent_ct)
-          new_classes = parent.getAttribute("class").split(/ /).reject{|c| c == 'comment_highlight' }.join(" ")
+          new_classes = parent.getAttribute("class").split(/ /).reject{|c| c == 'comment-highlight' }.join(" ")
           parent.setAttribute("class",new_classes)
         end
       }
@@ -1108,11 +1108,11 @@ EOF
     html = <<EOF
 <div class="userinfo">
 <div>
-<span class="userinfo_name">#{obj[:name]}</span>
-<span class="userinfo_karma">リンクカルマ:#{lc} コメントカルマ:#{cc}</span>
+<span class="userinfo-name">#{obj[:name]}</span>
+<span class="userinfo-karma">リンクカルマ:#{lc} コメントカルマ:#{cc}</span>
 </div>
 <div>
-<span class="userinfo_date">登録:#{created}</span>
+<span class="userinfo-date">登録:#{created}</span>
 </div>
 </div>
 EOF
@@ -1162,9 +1162,9 @@ EOF
   def make_post_head_element( obj , subm = false )
     comm_head = @doc.createElement("span")
     if subm
-      comm_head.setAttribute("class" , "subm_header")
+      comm_head.setAttribute("class" , "subm-header")
     else
-      comm_head.setAttribute("class" , "comment_header")
+      comm_head.setAttribute("class" , "comment-header")
     end
 
     time_str = @doc.createElement("span")
@@ -1256,7 +1256,7 @@ EOF
 
     if obj[:reddo_new]
       new_mark = @doc.createElement("span")
-      new_mark.setAttribute("class","new_mark")
+      new_mark.setAttribute("class","new-mark")
       new_mark.setMember("innerHTML","NEW")
       comm_head.appendChild( new_mark )
       comm_head.appendChild( @doc.createTextNode(" "))
@@ -1264,7 +1264,7 @@ EOF
     
     if obj[:stickied]
       sticky_mark = @doc.createElement("span")
-      sticky_mark.setAttribute("class","sticky_mark")
+      sticky_mark.setAttribute("class","sticky-mark")
       sticky_label_string = if obj[:kind] == 't3'
                               'Announcement'
                             else
@@ -1304,7 +1304,7 @@ EOF
     if obj[:gilded] and obj[:gilded].to_i > 0
       comm_head.appendChild( @doc.createTextNode(" ") )
       gilded = @doc.createElement("span")
-      gilded.setAttribute("class","gilded_mark")
+      gilded.setAttribute("class","gilded-mark")
       gilded_num = if obj[:gilded] == 1
                      ""
                    else
@@ -1347,13 +1347,13 @@ EOF
     deleted = (author == '[deleted]')
     ex_style = case obj[:distinguished]
                when "admin"
-                 " user_name_admin"
+                 " user-name-admin"
                when "moderator"
-                 " user_name_mod"
+                 " user-name-mod"
                else
                  op = obj[:link_author] || @original_poster # :link_authorはuser履歴の場合のみある
                  if obj[:kind] == 't1' and (not deleted) and author == op
-                   " user_name_op"
+                   " user-name-op"
                  else
                    ""
                  end
@@ -1367,7 +1367,7 @@ EOF
       user_name.setTextContent( author )
     else
       user_name = @doc.createElement("a")
-      user_name.setAttribute("class" , "user_name" + ex_style)
+      user_name.setAttribute("class" , "user-name" + ex_style)
       user_name.setTextContent( author )
       user_name.setAttribute("href" , "/u/" + author )
     end
@@ -1376,9 +1376,9 @@ EOF
     user_flair.setTextContent( flair_text )
     flair_class2 = flair_class.to_s.split.map{|c| "flair-" + c }.join(" ").strip
     flair_class3 = if @use_user_flair_style and flair_class2.length > 0
-                     "flair user_flair_styled " + flair_class2
+                     "flair user-flair-styled " + flair_class2
                    else
-                     "user_flair"
+                     "user-flair"
                    end
     user_flair.setAttribute("class" , flair_class3 )
 
@@ -1400,7 +1400,7 @@ EOF
   end
 
   def set_single_comment_highlight( name )
-    selector = "#t1_#{name} > .comment-shown > .comment_this > .comment_text"
+    selector = "#t1_#{name} > .comment-shown > .comment-this > .comment_text"
     # 旧:ffffc0
     @e.executeScript( <<EOF )
     var comm = $("#{selector}");
@@ -1418,10 +1418,10 @@ EOF
     @replying = name
 
     selector = if name =~ /^t1/
-                 # "##{name} > .comment-shown > .comment_this"
+                 # "##{name} > .comment-shown > .comment-this"
                  "#ct_#{name}"
                else
-                 "#submission_command"
+                 "#submission-command"
                end
 
     color = if mode == 'reply'
@@ -1438,7 +1438,7 @@ EOF
     
     if @smooth_scroll
       move_script = <<EOF
-    if(comm.hasClass("comment_this")){
+    if(comm.hasClass("comment-this")){
       // scrollElementInView( comm );  // うまくいかない
       $('html,body').animate({
         scrollTop: comm.offset().top + 'px'
@@ -1448,7 +1448,7 @@ EOF
     else
       # comment画面が縮むのを待つ。てきとう
       move_script = <<EOF
-    if(comm.hasClass("comment_this")){
+    if(comm.hasClass("comment-this")){
         setTimeout( function(){
           $('html,body').scrollTop( comm.offset().top );
         },200);
@@ -1495,11 +1495,11 @@ EOF
             else
               "visible"
             end
-      post = @doc.getElementById("post_area")
+      post = @doc.getElementById("post-area")
       post.setAttribute("style" , "visibility:#{vis}; height:0")
       
       #if users
-      #  remove( "#post_area")
+      #  remove( "#post-area")
       #end
     end
   end
@@ -1508,10 +1508,10 @@ EOF
   def clear_replying( name )
     
     selector = if name =~ /^t1/
-                 # "##{name} > .comment_this"
+                 # "##{name} > .comment-this"
                  "#ct_#{name}"
                else
-                 "#submission_command"
+                 "#submission-command"
                end
     
     @e.executeScript( <<EOF )
@@ -1528,7 +1528,7 @@ EOF
     @e.executeScript(<<EOF)
 (function(){
   var wtop = $(window).scrollTop();
-  var comm_id = $("#post_area, .comment_this, .post-in-list").filter(function(i,e){
+  var comm_id = $("#post-area, .comment-this, .post-in-list").filter(function(i,e){
     return($(this).offset().top + $(this).height() > wtop );
   }).prop("id");
   if( typeof comm_id == 'undefined' )
@@ -1601,15 +1601,15 @@ html = <<EOF
 <body id="top">
 <div id="message"></div>
 <div id="headline"></div>
-<div id="post_area">
-<div id="preview_box"><img src="" id="preview" /></div>
-<div id="title_area">
-<span id="subm_head"></span><br>
-<span id="link_flair"></span><a id="linked_title"></a> <span id="domain"></span> <span id="subreddit"></span>
-</div><!-- title_area -->
+<div id="post-area">
+<div id="preview-box"><img src="" id="preview" /></div>
+<div id="title-area">
+<span id="subm-head"></span><br>
+<span id="link-flair"></span><a id="linked-title"></a> <span id="domain"></span> <span id="subreddit"></span>
+</div><!-- title-area -->
 <div style="clear:both"></div>
-<div id="submission"><div id="submission_switch_area"><span id="submission_switch"></span><span id="submission_switch_message"></span></div><div id="submission_text"></div></div>
-<div id="submission_command"></div>
+<div id="submission"><div id="submission-switch-area"><span id="submission-switch"></span><span id="submission-switch-message"></span></div><div id="submission-text"></div></div>
+<div id="submission-command"></div>
 </div><!-- post area -->
 <div id="comments"></div>
 </body>
