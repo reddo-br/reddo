@@ -1328,6 +1328,15 @@ EOF
       comm_head.appendChild( edit_time )
     end
 
+    # スパムフィルタ
+    if obj[:banned_by] == true
+      spam_filtered = @doc.createElement("span")
+      spam_filtered.setAttribute("class" , "spam-filtered")
+      spam_filtered.setTextContent( "スパムフィルタ")
+      comm_head.appendChild( @doc.createTextNode(" ") )
+      comm_head.appendChild( spam_filtered )
+    end
+    
     comm_head
   end
 

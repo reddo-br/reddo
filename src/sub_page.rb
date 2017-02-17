@@ -1584,6 +1584,10 @@ class SubPage < Page
       @link_flair.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
       @link_flair.setWrapText(false)
 
+      @auto_banned = Label.new()
+      @auto_banned.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED};")
+      @auto_banned.setWrapText(false)
+
       @datetime = Label.new
       @datetime.setStyle( "-fx-padding:0 6px 0 0;")
       @datetime.setWrapText(false)
@@ -1620,6 +1624,7 @@ class SubPage < Page
       # @hbox = FlowPane.new(Orientation::HORIZONTAL)
       @hbox.setAlignment( Pos::CENTER_LEFT )
       
+      @hbox.getChildren().add( @auto_banned )
       @hbox.getChildren().add( @datetime )
       @hbox.getChildren().add( @author )
       @hbox.getChildren().add( @user_flair )
@@ -1739,6 +1744,14 @@ class SubPage < Page
         else
           @locked.setText("")
           @locked.setVisible(false)
+        end
+
+        if data[:banned_by] == true
+          @auto_banned.setText("スパムフィルタ")
+          @auto_banned.setVisible(true)
+        else
+          @auto_banned.setText("")
+          @auto_banned.setVisible(false)
         end
 
         author = data[:author].to_s

@@ -345,6 +345,12 @@ line-height:100%;
   margin-right:2px;
 }
 
+.spam-filtered {
+  color:#{App.i.theme::COLOR::HTML_BG};
+  background-color: #{App.i.theme::COLOR::STRONG_RED};
+  margin-right:2px;
+}
+
 #link_fliar:empty {
   display:none;
 }
