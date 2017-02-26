@@ -370,6 +370,10 @@ EOF
     @e.executeScript( "document.body.scrollTop + window.innerHeight / 2" )
   end
 
+  def page_height()
+    @e.executeScript( "document.body.clientHeight" )
+  end
+
   def highlight( word )
     if word.to_s.length > 0
       @e.executeScript( "$('body').removeHighlight().highlight('#{word}');" )

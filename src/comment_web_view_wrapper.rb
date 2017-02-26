@@ -884,15 +884,23 @@ EOF
           if not is_element_in_view( parent_ct )
             parent_pop = @doc.createElement("div")
             t_top , t_left , t_width , t_height = element_offset( "ct_#{obj[:name]}" )
-            # p t_top
-            if t_top
-              parent_pop.setAttribute("style" , 
-                                      "position:absolute; top:#{t_top+t_height+5}px; left:#{t_left};overflow:visible")
+            p_top , p_left , p_width , p_height = element_offset(parent_ct)
+
+            if t_top and p_top
+              if t_top  < current_pos_center()
+                parent_pop.setAttribute("style" , 
+                                        "position:absolute; top:#{t_top+t_height+6}px; left:#{p_left}px;overflow:visible")
+              else
+                parent_pop.setAttribute("style" , 
+                                        "position:absolute; top:#{t_top - p_height}px;left:#{p_left}px;overflow:visible")
+              end
+              
               parent_pop.setAttribute("class" , "popup-comment")
               parent_pop.setAttribute("id" , "pp_#{obj[:name]}")
               # parent_pop.setTextContent("ポップアップテスト")
               parent_pop.appendChild( parent.getChildNodes().item(0).cloneNode(true) );
               parent_pop.appendChild( parent.getChildNodes().item(1).cloneNode(true) );
+
               mouseover_element.appendChild( parent_pop )
             end
           else
