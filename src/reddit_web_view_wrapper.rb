@@ -268,6 +268,7 @@ div.comment p {
   border-style: solid;
   border-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   margin-left: 2px;
+  display:inline;
 }
 
 .user-flair-styled {
@@ -343,6 +344,7 @@ line-height:100%;
   color:#{App.i.theme::COLOR::HTML_BG};
   background-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   margin-right:2px;
+  display:inline;
 }
 
 .spam-filtered {
