@@ -59,7 +59,7 @@ EOF
   def style
     bold_style = if @artificial_bold
                    # "font-weight:normal; text-shadow: 1px 0px #222222;"
-                   "font-weight:normal; text-shadow: 0.083333em 0px 0px currentColor;"
+                   "font-weight:normal; text-shadow: 0.083333em 0px 0px currentColor; letter-spacing:+0.083333em;"
                  else
                    "font-weight:bold;"
                  end
