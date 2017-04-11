@@ -1831,21 +1831,23 @@ class SubPage < Page
         
       end
     }
-    open_external_r = MenuItem.new("リンクを開く(readability)")
-    open_external_r.setOnAction{|e|
-      if item = @table.getSelectionModel().getSelectedItem()
-        url = Html_entity.decode(item[:url])
+    
+    # open_external_r = MenuItem.new("リンクを開く(readability)")
+    # open_external_r.setOnAction{|e|
+    #   if item = @table.getSelectionModel().getSelectedItem()
+    #     url = Html_entity.decode(item[:url])
         
-        page_info = @url_handler.url_to_page_info( url )
-        if page_info[:type] == 'other'
-          url_r = Util.mobile_url( url )
-          App.i.open_external_browser(url_r)
-        else
-          App.i.open_by_page_info( page_info )
-        end
+    #     page_info = @url_handler.url_to_page_info( url )
+    #     if page_info[:type] == 'other'
+    #       url_r = Util.mobile_url( url )
+    #       App.i.open_external_browser(url_r)
+    #     else
+    #       App.i.open_by_page_info( page_info )
+    #     end
 
-      end
-    }
+    #   end
+    # }
+
     open_comment_external = MenuItem.new("コメントを外部ブラウザで開く")
     open_comment_external.setOnAction{|e|
       if item = @table.getSelectionModel().getSelectedItem()
@@ -1855,7 +1857,7 @@ class SubPage < Page
     }
 
     menu = ContextMenu.new
-    menu.getItems().addAll( open_external , open_external_r , open_comment_external )
+    menu.getItems().addAll( open_external , open_comment_external )
 
     if @url_handler.path_is_multireddit( @page_info[:name] )
       
@@ -2108,12 +2110,12 @@ class SubPage < Page
     end
   end
   
-  def key_open_link_alt
-    if item = @table.getSelectionModel().getSelectedItem()
-      url = Html_entity.decode(item[:url])
-      App.i.open_external_browser(Util.mobile_url(url))
-    end
-  end
+  # def key_open_link_alt
+  #  if item = @table.getSelectionModel().getSelectedItem()
+  #    url = Html_entity.decode(item[:url])
+  #    App.i.open_external_browser(Util.mobile_url(url))
+  #  end
+  # end
   
   def key_open_comment
     $stderr.puts "sub_page.rb:key_o()"

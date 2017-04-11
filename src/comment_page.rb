@@ -1130,11 +1130,11 @@ class CommentPage < CommentPageBase
     end
   end
 
-  def key_open_link_alt
-    if url = @links && @links[0] && @links[0][:url]
-      App.i.open_external_browser(Util.mobile_url(Html_entity.decode(url)))
-    end
-  end
+  # def key_open_link_alt
+  #   if url = @links && @links[0] && @links[0][:url]
+  #     App.i.open_external_browser(Util.mobile_url(Html_entity.decode(url)))
+  #   end
+  # end
 
   def key_open_sub
     open_sub
