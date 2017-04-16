@@ -36,24 +36,28 @@ class SubPage < Page
   include SubPrefMenuItems
 
   SORT_TYPES = [ # [ "注目" , "hot" , nil ],
-                 # [ "新着" , "new" , nil ],
+                # [ "新着" , "new" , nil ],
                 
                 [ "上昇中","rising" , nil],
-
+                
                 [ "トップ(時)" , "top" , :hour ],
                 [ "トップ(日)" , "top" , :day  ],
+                [ "トップ(週)" , "top" , :week],
                 [ "トップ(月)" , "top" , :month],
                 [ "トップ(年)" , "top" , :year ],
                 [ "トップ(全)" , "top" , :all  ],
-
+                
                 [ "論争中(時)" , "controversial" , :hour ],
                 [ "論争中(日)" , "controversial" , :day  ],
+                [ "論争中(週)" , "controversial" , :week  ],
                 [ "論争中(月)" , "controversial" , :month],
                 [ "論争中(年)" , "controversial" , :year ],
                 [ "論争中(全)" , "controversial" , :all  ],
                 
                ]
   
+  OPTION_SORT_TYPES_DEFAULT = SORT_TYPES.index{|e| e[0] == "トップ(週)" }
+
   def initialize( info )
     super(3.0)
     getStyleClass().add("sub-page")
@@ -270,7 +274,7 @@ class SubPage < Page
     # @sort_button_area.setStyle("-fx-margin: 3px 3px 0px 3px")
     @sort_buttons = []
 
-    @current_sort_other = SORT_TYPES[7]
+    @current_sort_other = SORT_TYPES[OPTION_SORT_TYPES_DEFAULT]
 
     @sort_buttons << @sort_hot = ToggleButton.new("注目")
     @sort_buttons << @sort_new = ToggleButton.new("新着")
