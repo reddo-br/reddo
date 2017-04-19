@@ -749,7 +749,11 @@ class SubPage < Page
       end
     else
       if @sub_info
-        @sub_info[:display_name]
+        if @sub_info[:subreddit_type] == 'user'
+          @sub_info[:display_name] + "[ユーザー投稿]"
+        else
+          @sub_info[:display_name]
+        end
       else
         subpath_to_name(@page_info[:name])
       end
@@ -1706,7 +1710,11 @@ class SubPage < Page
         @datetime.setText( time.strftime("%Y-%m-%d %H:%M:%S") )
 
         if @show_subreddit
-          @subreddit.setText( data[:subreddit] )
+          if data[:subreddit_type] == 'user'
+            @subreddit.setText( "[ユーザー投稿]" )
+          else
+            @subreddit.setText( data[:subreddit] )
+          end
         end
 
         fl = data[:link_flair_text_decoded].to_s.strip

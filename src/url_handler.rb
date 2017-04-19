@@ -214,6 +214,13 @@ class UrlHandler
           # この形式がコメントかどうかをクライアント側で判定することはできない。redirect先を見るしかない
           #  {:site => site ,:type=> "comment" , :name => m[2] }
 
+            ##### user投稿のcomment画面
+            # subreddit名はつけない u_xxxx 形式が維持されるかどうか不明
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/comments/(\w+)/[^/]*/(\w+)/?$!uo )
+            {:site => site ,:type => "comment" , :name => m[2] , :top_comment => m[3] } # part comment
+          elsif m = url_o.path.match( %r!^/u(?:ser)?/([\w\-]+)/comments/(\w+)!uo )
+            {:site => site ,:type=> "comment" , :name => m[2] }
+
             ##### ほか
           elsif url_o.path == '/' or url_o.path == ''
             {:site => site , :type => "sub" , :name => "../" , :title => "フロントページ" } # front
