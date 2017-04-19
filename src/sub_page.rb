@@ -2118,7 +2118,12 @@ class SubPage < Page
   def key_open_link
     if item = @table.getSelectionModel().getSelectedItem()
       url = Html_entity.decode(item[:url])
-      App.i.open_external_browser(url)
+      page_info = @url_handler.url_to_page_info( url )
+      if page_info[:type] == 'other'
+        App.i.open_external_browser(url)
+      else
+        App.i.open_by_page_info( page_info )
+      end
     end
   end
   
