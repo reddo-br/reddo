@@ -82,6 +82,17 @@ EOF
                                    "font-style:oblique;"
                                  end
 
+    underline_link = if App.i.pref["underline_link"]
+                       ""
+                     else
+".md a {
+  text-decoration:none;
+}
+.md a:hover{
+  text-decoration:underline;
+}"
+                     end
+
     style = <<EOF
 html {
   font-family:#{base_font};
@@ -357,9 +368,12 @@ line-height:100%;
   display:none;
 }
 
-a#linked-title, a.link-title {
+a#linked-title, a.link-title, a.title-subreddit-link {
   text-decoration:none;
-  
+}
+
+a#linked-title:hover, a.link-title:hover, a.title-subreddit-link:hover {
+  text-decoration:underline;
 }
 
 a#linked-title, .post-in-list-inner .link-title {
@@ -367,19 +381,7 @@ a#linked-title, .post-in-list-inner .link-title {
   #{bold_style};
 }
 
-a#linked-title:hover, a.link-title:hover {
-  text-decoration:underline;
-}
-
-/* 通常リンクも下線なしに */
-.md a {
-  text-decoration:none;
-}
-.md a:hover{
-  text-decoration:underline;
-}
-/* リンクをもうすこし明るくしないと見えない */
-
+#{underline_link}
 
 #title-area {
   margin: 8px;

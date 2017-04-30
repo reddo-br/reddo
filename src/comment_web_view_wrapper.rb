@@ -136,6 +136,7 @@ EOF
     subreddit_link = @doc.createElement("a")
     subreddit_link.setMember("innerHTML" , obj[:subreddit].to_s )
     subreddit_link.setAttribute("href" , subreddit_url )
+    subreddit_link.setAttribute("class" , "title-subreddit-link" )
     subreddit_info.appendChild( @doc.createTextNode("["))
     subreddit_info.appendChild( subreddit_link )
     subreddit_info.appendChild( @doc.createTextNode("]"))
@@ -631,6 +632,7 @@ EOF
       sub_link = @doc.createElement("a")
       sub_link.setMember("innerHTML" , obj[:subreddit].to_s )
       sub_link.setAttribute("href" , @uh.subname_to_url( obj[:subreddit]).to_s )
+      sub_link.setAttribute("class" , "title-subreddit-link" )
       link_area.appendChild( sub_link )
       
       link_area.appendChild( @doc.createTextNode("]"))
