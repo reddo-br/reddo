@@ -119,26 +119,10 @@ class ConfigPage < Page
 
     items << make_header("サブレディット画面")
 
-    # スクロール量
-    # sub_scroll_amount = App.i.pref["sub_scroll_amount"]
-    # @sub_scroll_amount_selector = ChoiceBox.new
-    # @sub_scroll_amount_selector.getItems().setAll( SUB_SCROLL_AMOUNT_CHOICES.map{|e| e[1] })
-    # @sub_scroll_amount_selector.getSelectionModel.select( SUB_SCROLL_AMOUNT_CHOICES.assoc(sub_scroll_amount)[1] )
-    # @sub_scroll_amount_selector.valueProperty.addListener{|ev|
-    #   am = SUB_SCROLL_AMOUNT_CHOICES.rassoc( ev.getValue )[0]
-    #   App.i.pref['sub_scroll_amount'] = am
-    # }
-
-    # items << [ Label.new("サブレディット画面でのホイールスクロール量") , @sub_scroll_amount_selector ]
-
-    items << make_choices_config( "サブレディット画面でのホイールスクロール量" ,
-                                    "sub_scroll_amount", nil,
-                                    SUB_SCROLL_AMOUNT_CHOICES )
-
     items << make_spinner_config( "一度に取得する投稿数(20〜100)",
                                   "sub_number_of_posts_to_get",
                                   20 , 100 , 100 , 10 )
-
+    
     ######################################
     items << make_header( "コメント画面" )
 
@@ -148,20 +132,6 @@ class ConfigPage < Page
     items << make_bool_config( "コメント内のリンクの下線を常時表示する" ,
                                "underline_link")
 
-    items << make_bool_config( "コメントページでスムーズスクロールを使用する" ,
-                               "enable_smooth_scroll")
-
-    # accel = App.i.pref['wheel_accel_max'] || 2.5
-    # @accel_spinner = Spinner.new( 1.0 , 5.0 , accel , 0.5 )
-    # @accel_spinner.getValueFactory.valueProperty.addListener{|ev|
-    #   App.i.pref['wheel_accel_max'] = ev.getValue
-    # }
-    # items << [ Label.new("コメントページでのマウスホイールスクロールの最大加速"),
-    #            @accel_spinner ]
-    items << make_spinner_config( "コメントページでのマウスホイールスクロールの最大加速",
-                                  "wheel_accel_max",
-                                  1.0 , 5.0 , 2.5 , 0.5 )
-    
     items << make_bool_config( "連続するunicode結合文字を省略する(コメントにより描画に非常に時間がかかる問題を回避する)" ,
                                "suppress_combining_mark")
 
@@ -185,6 +155,37 @@ class ConfigPage < Page
     items << make_choices_config( "コメントのデフォルトソート(サブレディットからの提案がない場合)",
                                   "default_comment_sort","new",
                                   sort_choices )
+
+    items << make_header( "スクロール関係" )
+
+    scrv2_lbl , scrv2_w = 
+      make_bool_config( "マウスホイールでのスクロール動作をカスタマイズする" ,
+                        "scroll_v2_enable")
+    items << [scrv2_lbl , scrv2_w]
+
+    scrv2_wa_lbl , scrv2_wa_w = 
+      make_spinner_config( "マウスホイールでの移動量(50px - 300px)",
+                           "scroll_v2_wheel_amount",
+                           50 , 300 , 100 , 10 )
+    items << [scrv2_wa_lbl , scrv2_wa_w]
+
+    scrv2_accel_lbl , scrv2_accel_w = 
+      make_spinner_config( "マウスホイールスクロールの最大加速倍率(1x - 10x)",
+                           "scroll_v2_wheel_accel_max",
+                           1.0 , 10.0 , 2.5 , 0.5 )
+    items << [ scrv2_accel_lbl , scrv2_accel_w]
+
+    scrv2_smooth_lbl , scrv2_smooth_w =  
+      make_bool_config( "スムーズスクロールを使用する(実験中)" ,
+                        "scroll_v2_smooth")
+    items << [ scrv2_smooth_lbl , scrv2_smooth_w ]
+
+    # ウィジェット無効化
+    scrv2_config_widgets = [ scrv2_wa_w , scrv2_accel_w ]
+    scrv2_config_widgets.each{|w| w.setDisable( (not scrv2_w.isSelected) ) }
+    scrv2_w.selectedProperty.addListener{|ev|
+        scrv2_config_widgets.each{|w| w.setDisable( (not ev.getValue) ) }
+    }
 
     items << make_header("情報")
     
@@ -227,6 +228,10 @@ class ConfigPage < Page
     self.class.setMargin( scroll_pane , Insets.new(3.0 , 3.0 , 3.0 , 3.0) )
 
     prepare_tab( "設定" )
+
+    if App.i.pref["scroll_v2_enable"]
+      scroll_setting(grid_pane,scroll_pane)
+    end
   end
 
   def checkbox_with_pref( pref_name )
@@ -332,5 +337,48 @@ class ConfigPage < Page
     end
   end
 
+  def scroll_setting(w,scroll_pane)
+    # 新ホイールスクロール機構の設定
+    @wheel_base_amount = App.i.pref["scroll_v2_wheel_amount"] || 100
+    @wheel_accel_max   = App.i.pref["scroll_v2_wheel_accel_max"] || 2.5
+
+    # w = scroll_pane.lookupAll(".scroll-bar").to_a[0]
+
+    w.setOnScroll{|ev|
+      if ev.eventType == ScrollEvent::SCROLL
+        puts "config_page scroll"
+        scroll_pane_scroll( scroll_pane , ev )
+      end
+      ev.consume
+    }
+  end
+  def scroll_pane_scroll(scroll_pane , ev)
+    mt = Time.now.to_f * 1000
+    accel = if @last_scroll_time_msec
+              dt = mt - @last_scroll_time_msec
+              # 250000 / (dt ** 2 ) # 500 ** 2 /
+              400 / dt
+            else
+              1
+            end
+    if accel > @wheel_accel_max
+      accel = @wheel_accel_max
+    elsif accel < 1
+      accel = 1
+    end
+
+    dir = if ev.getDeltaY < 0
+            1
+          else
+            -1
+          end
+
+    amount_pix = @wheel_base_amount * accel * dir
+    amount_ratio = amount_pix / scroll_pane.getContent.getHeight().to_f
+    amount_vval  = scroll_pane.getVmax * amount_ratio
+    puts "amount_pix=#{amount_pix} amount_ratio=#{amount_ratio} amount_vval = #{amount_vval}"
+    scroll_pane.setVvalue( scroll_pane.getVvalue + amount_vval)
+    @last_scroll_time_msec = mt
+  end
 
 end

@@ -604,10 +604,45 @@ class SubPage < Page
       # start_load_sub_info
     end
 
+    # 新ホイールスクロール機構の設定
+    @wheel_base_amount = App.i.pref["scroll_v2_wheel_amount"] || 100
+    @wheel_accel_max   = App.i.pref["scroll_v2_wheel_accel_max"] || 2.5
+    @smooth_scroll     = App.i.pref["scroll_v2_smooth"]
+
+    prepare_smooth_scroll_thread
+
     start_reload
   end # initialize
   attr_reader :is_user_submission_list
   attr_reader :pref , :list_style
+
+  FRAME_INT = 0.025
+  def prepare_smooth_scroll_thread
+    if @smooth_scroll
+      @smooth_scroll_queue = []
+      @smooth_scroll_queue_mutex = Mutex.new
+      @smooth_scroll_thread = Thread.new{
+        loop{
+          move = nil
+          @smooth_scroll_queue_mutex.synchronize{
+            move = @smooth_scroll_queue.shift
+          }
+          if move == "focus_top"
+            Platform.runLater{
+              select_row( get_scroll_top ) if not selection_is_in_view(true)
+            }
+          elsif move
+            if vf = get_virtual_flow
+              Platform.runLater{
+                vf.adjustPixels( move )
+              }
+            end
+          end
+          sleep( FRAME_INT )
+        }
+      }
+    end
+  end
 
   def calc_digit_width
     @@digit_width_4 ||= 
@@ -804,6 +839,7 @@ class SubPage < Page
     #   end
     #   @load_sub_info_thread = nil
     # end
+    @smooth_scroll_thread.kill if @smooth_scroll_thread
   end
   
   def subname_to_pathname(name)
@@ -1048,9 +1084,10 @@ class SubPage < Page
       if @table.getSelectionModel().getSelectedIndex == -1
         @table.getSelectionModel().select( old_top )
       end
-      am = App.i.pref['sub_scroll_amount']
       # virtualflow関係のhookはここで入れる、最初はvfが出きてないっぽいので
-      set_scroll_amount( am )
+      if App.i.pref['scroll_v2_enable']
+        set_scroll_amount()
+      end
       set_wheel_event_handler_to_more_post
 
       set_bottom_mark_state # とりあえず更新前状態で判定する
@@ -1117,6 +1154,32 @@ class SubPage < Page
     end
   end
 
+  def get_inview_height_forward
+    if vf = get_virtual_flow
+      cell = vf.getLastVisibleCellWithinViewPort()
+      if cell
+        cell.getLayoutY + cell.getHeight
+      else
+        vf.getHeight
+      end
+    else
+      nil
+    end
+  end
+
+  def get_inview_height_backward
+    if vf = get_virtual_flow
+      cell = vf.getFirstVisibleCellWithinViewPort()
+      if cell
+        vf.getHeight - cell.getLayoutY
+      else
+        vf.getHeight
+      end
+    else
+      nil
+    end
+  end
+
   def is_table_bottoming_out
     bot = get_scroll_bottom
     # $stderr.puts "is_table_bottoming_out: bot:#{bot}"
@@ -1132,7 +1195,9 @@ class SubPage < Page
     end
   end
 
-  def screen_scroll( forward , ratio = 1.0 )
+  # 一回でadjustPixelsしようとするとなぜかズレるので旧方式を使う もっともこれでもまだズレるが
+  def screen_scroll_not_animate( forward , do_focus_top = false , ratio = 1.0 )
+    # vf_scroll_animate_stop
     if @list_style == :medium_thumb and ratio > 0.7
       ratio = 0.7
     end
@@ -1150,24 +1215,134 @@ class SubPage < Page
                end
 
       target = first + amount
+      select_row( target ) if do_focus_top
       @table.scrollTo( target )
-      target
+      # puts "screen_scroll(not anime) target=#{target}"
+      nil
     end
   end
 
-  def set_scroll_amount( amount = 0.6 )
+  def screen_scroll_animate( forward , do_focus_top = false , ratio = 1.0)
     if vf = get_virtual_flow
-      if amount
-        vf.setOnScroll{|ev|
-          if ev.eventType == ScrollEvent::SCROLL
-            screen_scroll( ev.getDeltaY() < 0 , amount) # -1なら↓
+      h = if forward
+            get_inview_height_forward
+          else
+            get_inview_height_backward
           end
-          ev.consume
-        }
+      h ||= vf.getHeight
+      
+      amount = if forward
+                 h * ratio
+               else
+                 h * ratio * -1
+               end
+      # puts "screen_scroll height=#{vf.getHeight} h=#{h} ratio=#{ratio} amount=#{amount} "
+      if @smooth_scroll
+        vf_scroll_animate( amount - 1, 300 , vf , do_focus_top)
       else
-          
+        # あまりにもずれる
+        dev = case @list_style
+              when :medium_thumb
+                0.7
+              when :no_thumb
+                1
+              else
+                0.9
+              end
+
+        vf.adjustPixels( amount * dev)
+        select_row( get_scroll_top ) if do_focus_top and not selection_is_in_view(true)
       end
+    else
+      nil
     end
+  end
+
+  def screen_scroll(forward , do_focus_top = false , ratio = 1.0)
+    if @smooth_scroll
+      screen_scroll_animate(forward , do_focus_top , ratio)
+    else
+      screen_scroll_not_animate(forward , do_focus_top , ratio)
+    end
+  end
+
+  def set_scroll_amount( )
+    if vf = get_virtual_flow
+      vf.setOnScroll{|ev|
+        if ev.eventType == ScrollEvent::SCROLL
+          table_wheel_scroll( ev , vf )
+        end
+        ev.consume
+      }
+    end
+  end
+
+  def table_wheel_scroll( ev , vf)
+    vf ||= get_virtual_flow
+    mt = Time.now.to_f * 1000
+    accel = if @last_scroll_time_msec
+              dt = mt - @last_scroll_time_msec
+              # 250000 / (dt ** 2 ) # 500 ** 2 /
+              400 / dt
+            else
+              1
+            end
+    if accel > @wheel_accel_max
+      accel = @wheel_accel_max
+    elsif accel < 1
+      accel = 1
+    end
+
+    dir = if ev.getDeltaY < 0
+            1
+          else
+            -1
+          end
+
+    amount = @wheel_base_amount * accel * dir
+
+    # puts "sub wheel scroll: dt=#{dt} accel=#{accel} amout=#{amount}"
+
+    if @smooth_scroll
+      #if @last_animation_started and (mt - @last_animation_started) < FRAME_INT * 1000
+      #  puts "wheel event skip"
+      #else
+      #  @last_animation_started = mt
+        vf_scroll_animate( amount , 150 , vf)
+      #end
+    else
+      vf.adjustPixels( amount )
+    end
+    @last_scroll_time_msec = mt
+  end
+
+  def vf_scroll_animate( amount , duration , vf , do_focus_top = false)
+    times = (duration / (FRAME_INT * 1000.0)).to_i
+    step = amount.to_i / times
+    step_mod = amount % times
+    # puts "vf_scroll_animate: amount=#{amount} step=#{step} times=#{times} step_mod=#{step_mod}"
+    @smooth_scroll_queue_mutex.synchronize{
+      @smooth_scroll_queue.clear
+      times.times{
+        step1 = if step_mod > 0
+                  step_mod -=1
+                  step + 1
+                else
+                  step
+                end
+        @smooth_scroll_queue << step1
+      }
+
+      if do_focus_top
+        @smooth_scroll_queue << "focus_top"
+      end
+    }
+  end
+  
+  def vf_scroll_animate_stop
+    @smooth_scroll_queue_mutex.synchronize{
+      @smooth_scroll_queue.clear
+    }
   end
 
   def set_wheel_event_handler_to_more_post
@@ -1177,9 +1352,15 @@ class SubPage < Page
       target.each{|vf|
         if vf
           vf.addEventHandler( ScrollEvent::SCROLL ){|ev|
+
+            mt = Time.now
             if is_table_bottoming_out and ev.getDeltaY < 0
-              key_add
+              if not @wheel_load_last_check_time or @wheel_load_last_check_time < mt - 0.4
+                key_add
+              end
             end
+            @wheel_load_last_check_time = mt
+            
           }
         end
       }
@@ -2083,16 +2264,13 @@ class SubPage < Page
   #end
 
   def key_previous
-    new_top = screen_scroll( false )
-    # ついてこれない
-    select_row( new_top )
+    screen_scroll( false , true)
   end
   def key_next
     if is_table_bottoming_out
       key_add
     else
-      new_top = screen_scroll( true )
-      select_row( new_top )
+      screen_scroll( true , true)
     end
   end
   

@@ -60,7 +60,7 @@ class WebViewWrapper
       end
     }
     
-    @smooth_scroll = App.i.pref['enable_smooth_scroll']
+    @smooth_scroll = App.i.pref['scroll_v2_smooth']
     @event_listeners = []
   end 
   attr_reader :webview
@@ -186,7 +186,7 @@ class WebViewWrapper
     @doc = @e.getDocument()
     
     window = @e.executeScript("window")
-    # window.setMember( "cb" , CommentCB.new(self))
+    window.setMember( "cb" , CommentCB.new(self))
     
     f = App.res("/res/jquery-2.1.4.min.js").to_io
     @e.executeScript( f.read )
@@ -196,7 +196,9 @@ class WebViewWrapper
     @e.executeScript( f.read )
     f.close
 
-    @e.executeScript( scroll_script )
+    if App.i.pref["scroll_v2_enable"]
+      @e.executeScript( scroll_script )
+    end
 
     @dom_prepared_cb.call if @dom_prepared_cb
   end
@@ -274,9 +276,15 @@ class WebViewWrapper
       @wrapper = wvw
     end
 
-    java_signature 'void log(java.lang.String)'
-    def log(str)
-      $stderr.puts str
+    java_signature 'void log(java.lang.Object)'
+    def log(obj)
+      Platform.runLater{
+        begin
+          $stderr.puts( obj.to_s )
+        rescue
+          $stderr.puts $!
+        end
+      }
     end
     become_java!
   end
@@ -522,18 +530,21 @@ EOF
 ############# 加速度スクロール用スクリプト
   def scroll_script
 
-    accel_max = App.i.pref['wheel_accel_max'] || 2.5
+    amount    = App.i.pref['scroll_v2_wheel_amount'] || 100
+    accel_max = App.i.pref['scroll_v2_wheel_accel_max'] || 2.5
     
+    # stopでjumptoendするとうまくいかない
+
     if @smooth_scroll
       scroll = <<EOF
   nowAnim = true;
   $("body").stop().animate({
-      scrollTop: top
-    }, 300 , 'swing' , function(){ nowAnim = false});
+      scrollTop: target_top_fixed
+    }, duration , 'linear' , function(){ nowAnim = false});
 EOF
     else
       scroll = <<EOF
-  $("body").scrollTop( top );
+  $("body").scrollTop( target_top_fixed );
 EOF
     end
 
@@ -542,57 +553,57 @@ var lastScrollTime;
 var lastTargetPos = null;
 var nowAnim = false;
 var accel_max = #{accel_max};
-window.onmousewheel = function(e){
-  var dy = e.wheelDeltaY
-  // window.cb.log(dy.toString()); // 上4800 下-4800
+document.onmousewheel = function(e){
+
+  var dy = e.wheelDeltaY;
   
-  var amount = 100;
+  var amount = #{amount};
   var accel = 1;
-  var log_1000 = Math.log(1000);
-  var dt = 1000;
+  var dt = 400;
+  var eventTime;
+  
+  if(e.timeStamp == 0) // timeStampが取れない場合がある
+    eventTime = (new Date()).getTime();
+  else
+    eventTime = e.timeStamp;
+  
   if(lastScrollTime){
-    dt = e.timeStamp - lastScrollTime;
-    // window.cb.log( "dt=" + dt.toString());
+    dt = eventTime - lastScrollTime;
 
-    /* 
-    var log_dms = Math.min( Math.log( dt + 1) , log_1000);
-    accel = log_1000 / log_dms
-    */
-
-    accel = 500 / dt;
+    // accel = 250000 / Math.pow(dt, 2);
+    accel = 400 / dt;
 
     if(accel > accel_max)
       accel = accel_max;
-    if(accel < 1)
+    else if(accel < 1)
       accel = 1;
 
   }
-  lastScrollTime = e.timeStamp;
-
+  lastScrollTime = eventTime;
   amount *= accel;
 
-  // window.cb.log( "amount=" + amount.toString());
+  // window.cb.log( "accel:" + accel + " amount:" + amount); // ハンドラ内からは効かない…
+  // $("body").append( "lastScrollTime:" + lastScrollTime + " dt:" + dt + " accel:" + accel + " amount:" + amount +"<br>");
 
-  var top = lastTargetPos || document.body.scrollTop;
-  // var top = $("body").scrollTop();
+  var cur_top = lastTargetPos || document.body.scrollTop;
+  // var cur_top = document.body.scrollTop;
 
   if(dy > 0 )
-    top -= amount;
+    var target_top = cur_top - amount;
   else 
-    top += amount;
+    var target_top = cur_top + amount;
   
-  if( top < 0 )
-    top = 0;
-    
-  // window.cb.log( "document.height=" + document.height.toString());
-  // window.cb.log( "window.height="   + window.innerHeight.toString());
+  if( target_top < 0 )
+    var target_top_fixed = 0;
+  else if( target_top > (document.height - window.innerHeight))
+    var target_top_fixed = document.height - window.innerHeight;
+  else
+    var target_top_fixed = target_top;
 
-  if( top > document.height - window.innerHeight)
-    top = document.height - window.innerHeight;
-
-  // window.cb.log( "top=" + top.toString());
-  lastTargetPos = top;
-  // document.body.scrollTop = top;
+  var move_ratio = Math.abs(target_top_fixed - cur_top) / Math.abs(target_top - cur_top);
+  var duration = 150 * move_ratio;
+  
+  lastTargetPos = target_top_fixed;
 
   #{scroll}
 
