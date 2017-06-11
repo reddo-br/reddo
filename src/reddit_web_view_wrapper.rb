@@ -483,6 +483,10 @@ table, th, td {
   margin:8px;
 }
 
+.md ol, .md ul{
+  margin-bottom:0;
+}
+
 EOF
 
 

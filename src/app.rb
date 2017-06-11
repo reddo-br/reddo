@@ -218,7 +218,6 @@ class FXApp < JRubyFX::Application
       Image.new(App.res( "/res/app_icon.png" ) , size , size , true , true)
     }
   end
-
 end
 
 class App 

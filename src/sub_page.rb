@@ -356,7 +356,7 @@ class SubPage < Page
         display_subms
       end
     }
-    filters << @filter_read = ToggleButton.new("新着")
+    filters << @filter_read = ToggleButton.new("新着コメ")
     @filter_read.setOnAction{
       if not @on_clearing
         display_subms
@@ -1802,6 +1802,10 @@ class SubPage < Page
       @gilded.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_YELLOW};")
       @gilded.setWrapText(false)
 
+      @views = Label.new
+      @views.setWrapText(false)
+      # @views.setStyle("#{App.i.fx_bold_style(color)}")
+
       @domain = Label.new
       @domain.setWrapText(false)
       @domain.setStyle("-fx-padding:0 6px 0 6px;")
@@ -1828,7 +1832,8 @@ class SubPage < Page
       @hbox2.getChildren().add( @sticky )
       @hbox2.getChildren().add( @link_flair )
       @hbox2.getChildren().add( @domain )
-
+      @hbox2.getChildren().add( @views )
+      
       @box = VBox.new
       @box.setAlignment( Pos::TOP_LEFT )
 
@@ -1976,6 +1981,16 @@ class SubPage < Page
           @gilded.setText("★" + data[:gilded].to_s )
         else
           @gilded.setText("")
+        end
+
+        if data[:view_count]
+          if data[:view_count] == 1
+            @views.setText("[1 view]")
+          else
+            @views.setText("[#{data[:view_count]} views]")
+          end
+        else
+          @views.setText("")
         end
 
         @domain.setText( "(" + data[:domain].to_s + ")" )

@@ -187,7 +187,14 @@ EOF
     sh.appendChild( subm_head )
 
     flair = @doc.getElementById("link-flair")
-    flair.setMember("innerHTML" , html_decode(obj[:link_flair_text].to_s))
+    lf = html_decode(obj[:link_flair_text].to_s)
+    flair.setMember("innerHTML" , lf)
+    # :emptyがうまく動作しない
+    if(lf.length > 0)
+      flair.setAttribute("style","display:inline")
+    else
+      flair.setAttribute("style","display:none")
+    end
 
     img = @doc.getElementById("preview")
     imgb = @doc.getElementById("preview-box")
@@ -723,7 +730,8 @@ EOF
     subreddit_link.setMember("innerHTML" , obj[:subreddit].to_s )
     subreddit_url = @uh.subname_to_url( obj[:subreddit] ).to_s
     subreddit_link.setAttribute("href" , subreddit_url )
-    
+    subreddit_link.setAttribute("class" , "title-subreddit-link" )
+
     linked_title_area.appendChild( @doc.createTextNode(" ["))
     linked_title_area.appendChild( subreddit_link )
     linked_title_area.appendChild( @doc.createTextNode("]"))
@@ -1306,6 +1314,17 @@ EOF
     if is_votable(obj)
       comm_head.appendChild( upvote )
       comm_head.appendChild( downvote )
+    end
+
+    if obj[:view_count]
+      comm_head.appendChild( @doc.createTextNode(" ") )
+      view_count = @doc.createElement("span")
+      if obj[:view_count] == 1
+        view_count.setTextContent("[1 view]")
+      else
+        view_count.setTextContent("[#{obj[:view_count]} views]")
+      end
+      comm_head.appendChild( view_count )
     end
 
     comm_head.appendChild( @doc.createTextNode(" ") )
