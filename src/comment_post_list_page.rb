@@ -630,4 +630,10 @@ class CommentPostListPage < CommentPageBase
     set_current_sort( "new" )
   end
 
+  def key_web
+    if url = make_page_url
+      App.i.open_external_browser( url )
+    end
+  end
+
 end

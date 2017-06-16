@@ -92,6 +92,9 @@ module AppKey
       when [ KeyCode::A , false , false , false]
         key_send( page, :key_add )
         
+      when [ KeyCode::W , false , false , false]
+        key_send( page, :key_web )
+        
       when [ KeyCode::H , false , true , false]
         key_send( page, :key_hot )
         

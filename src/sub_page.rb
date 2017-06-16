@@ -2436,4 +2436,11 @@ class SubPage < Page
     kw.start("フィルタ選択")
   end
 
+  def key_web
+    url = get_sub_url
+    if url.to_s.length > 0
+      App.i.open_external_browser( url.to_s )
+    end
+  end
+
 end
