@@ -5,7 +5,7 @@ class ArchiveIsThumbnail < ThumbnailScript
   end
   
   def get_thumb(url)
-    if url.match( %r!https?://archive\.(is|fo)/.*! )
+    if url.match( %r!https?://archive\.(is|fo)/[^/]+$! )
       url + "/thumb.png"
     else
       nil
