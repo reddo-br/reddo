@@ -26,6 +26,7 @@ require 'singleton'
 require 'mutex_m'
 
 require 'drb_wrapper'
+require 'addressable/uri'
 
 # widget
 require 'sub_page'
@@ -310,10 +311,13 @@ class App
   end
 
   def open_external_browser(url)
+    if not url.kind_of?(Addressable::URI)
+      url = Addressable::URI.parse(url.to_s)
+    end
+    url = url.normalize
+    
     if @pref['specify_browser_in_command']
       com = @pref['browser_command']
-      # p com
-      # p url
       begin
         process = java.lang.ProcessBuilder.new( com , url.to_s ).start()
       rescue
