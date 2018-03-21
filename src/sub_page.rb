@@ -965,8 +965,11 @@ class SubPage < Page
             cl.get_new( @page_info[:name] , limit:count , after:after)
           when 'rising'
             path = @url_handler.subname_to_url( @page_info[:name]).path.to_s
-            rpath = path + "/rising.json"
-            $stderr.puts "rising用パス #{rpath}"
+            rpath = path + if path =~ /\/$/
+                             ""
+                           else
+                             "/"
+                           end + "rising.json"
             raw = cl.get( rpath , limit:count , after:after).body
             cl.object_from_body( raw )
           when 'controversial'
@@ -977,7 +980,11 @@ class SubPage < Page
                             {:limit => count , :t => timespan , after:after})
           when 'gilded'
             path = @url_handler.subname_to_url( @page_info[:name]).path.to_s
-            rpath = path + "/gilded.json"
+            rpath = path + if path =~ /\/$/
+                             ""
+                           else
+                             "/"
+                           end + "gilded.json"
             raw = cl.get( rpath , limit:count , after:after).body
             cl.object_from_body( raw )
           end
