@@ -387,6 +387,14 @@ a#linked-title, .post-in-list-inner .link-title {
   margin: 8px;
 }
 
+#crosspost-links{
+  margin-top: 0.6em;
+  font-size:90%;
+}
+#crosspost-links:empty{
+  display:none;
+}
+
 #submission {
   word-wrap:break-word;
   margin: 8px;

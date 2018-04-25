@@ -148,6 +148,35 @@ EOF
       submission_text_expand( (not subm_text_closed))
     end
     
+    crosspost_link_area = @doc.getElementById("crosspost-links")
+    empty("#crosspost-links")
+    if obj[:crosspost_parent_list] and obj[:crosspost_parent_list].length > 0
+      # p "＊＊ crosspost_parent_list #{obj[:crosspost_parent_list]}"
+      crosspost_link_area.setMember("innerHTML" , "クロスポスト:<br>")
+      obj[:crosspost_parent_list].each{|ln|
+        cl = @doc.createElement("span")
+        # cl.setAttribute("style","padding-left:1em;")
+        cl_t = @doc.createElement("a")
+        cl_t.setMember("innerHTML" , ln[:title].to_s )
+        cl_t.setAttribute("href" , ln[:permalink] )
+        cl_t.setAttribute("class" , "link-title" )
+
+        cl_r = @doc.createElement("a")
+        cl_r.setMember("innerHTML" , ln[:subreddit].to_s )
+        subreddit_url = @uh.subname_to_url( ln[:subreddit] ).to_s
+        cl_r.setAttribute("href" , subreddit_url )
+        cl_r.setAttribute("class" , "title-subreddit-link" )
+
+        cl.appendChild( cl_t )
+        cl.appendChild( @doc.createTextNode("["))
+        cl.appendChild( cl_r )
+        cl.appendChild( @doc.createTextNode("]"))
+        cl.appendChild( @doc.createElement("br"))
+        crosspost_link_area.appendChild( cl )
+      }
+      
+    end
+    
     subm = @doc.getElementById("submission")
     if obj[:is_self] and @self_text_visible and obj[:selftext_html].to_s.length > 0
       # $stderr.puts "*** selfテキスト表示"
@@ -1635,6 +1664,7 @@ html = <<EOF
 <div id="title-area">
 <span id="subm-head"></span><br>
 <span id="link-flair"></span><a id="linked-title"></a> <span id="domain"></span> <span id="subreddit"></span>
+<div id="crosspost-links"></div>
 </div><!-- title-area -->
 <div style="clear:both"></div>
 <div id="submission"><div id="submission-switch-area"><span id="submission-switch"></span><span id="submission-switch-message"></span></div><div id="submission-text"></div></div>
