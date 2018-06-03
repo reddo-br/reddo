@@ -1024,13 +1024,32 @@ class SubPage < Page
           end
           
           tu , tw , th = Util.decoded_thumbnail_url(obj)
-          #tu , tw , th = Util.find_submission_preview( obj,
-          #                                             min_width:216,
-          #                                             prefer_large:true)
           obj[:reddo_thumbnail_decoded] = tu
           if tw and th
             obj[:reddo_thumbnail_ratio] = th / tw.to_f
           end
+
+          # previewは別に取る
+          if LINK_FOR_PREVIEW_RXP.find{|r|
+              file = Addressable::URI.parse( obj[:url] ).path
+              file =~ r
+            } or
+              obj[:reddo_thumbnail_decoded] == nil
+            tu , tw , th = Util.find_submission_preview( obj,
+                                                         min_width:216,
+                                                         prefer_large:true)
+            if tu
+              ra = th / tw.to_f
+              if 1.0 < ra and ra <= 4.0 # 縦長すぎるのは使わない,thumbで間に合うのも使わない
+                tu = Html_entity.decode(tu) if tu
+                obj[:reddo_preview] = tu
+                if tw and th
+                  obj[:reddo_preview_ratio] = ra
+                end
+              end # ra
+            end # tu
+          end
+          
           set_num_comments_new( obj )
           
         }
@@ -1055,6 +1074,9 @@ class SubPage < Page
 
   end # subs
 
+  LINK_FOR_PREVIEW_RXP = [ /\.jpg$/ , /\.png$/,/\.gif$/,/\.avi$/ , /\.mp4$/ , /^https?:\/\/imgur\.com\// ]
+                     
+  
   def set_num_comments_new( obj )
     fetched = ReadCommentDB.instance.get_count( obj[:id] )
     if fetched
@@ -1672,7 +1694,11 @@ class SubPage < Page
       @obj = data
       if data and data[:reddo_thumbnail_decoded] and not is_empty_col and not data[:spoiler]
         adjust_image_size
-        url = data[:reddo_thumbnail_decoded]
+        url = if @sub_page.list_style == :medium_thumb 
+                data[:reddo_preview] || data[:reddo_thumbnail_decoded]
+              else
+                data[:reddo_thumbnail_decoded] || data[:reddo_preview]
+              end
         # p url
         # i = @@cache[ url ] || Image.new( url, @image_width, @image_height ,true,true,true) # ratio,smooth,background # なんでこれ止めたんだっけ？ リサイズ処理がしょぼいから？
         i = @@cache[ url ] || Image.new( url ,true) # background
