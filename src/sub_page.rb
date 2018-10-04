@@ -484,6 +484,15 @@ class SubPage < Page
     @thumb_column.setResizable(false)
     @thumb_column.setSortable(false)
 
+    @subreddit_column = TableColumn.new
+    @subreddit_column.setText("Sub")
+    @subreddit_column.setMinWidth( @@subreddit_name_width )
+    @subreddit_column.setMaxWidth( @@subreddit_name_width )
+    @subreddit_column.setPrefWidth( @@subreddit_name_width )
+    @subreddit_column.set_cell_value_factory( MapValueFactory.new( :subreddit ) )
+    @subreddit_column.set_cell_factory{|col| SubredditCell.new }
+    @subreddit_column.setSortable(false)
+    
     comm_column = TableColumn.new
     comm_column.setText("ｺﾒﾝﾄ数")
     comm_column.setMinWidth( @@digit_width_5 )
@@ -511,13 +520,13 @@ class SubPage < Page
     }
 
     
-    title_column.prefWidthProperty().bind( @table.widthProperty.subtract(rank_column.widthProperty).subtract( @vote_column.widthProperty).subtract( score_column.widthProperty ).subtract(@thumb_column.widthProperty).subtract( comm_column.widthProperty ).subtract( comm_new_column.widthProperty ).subtract(20))
+    title_column.prefWidthProperty().bind( @table.widthProperty.subtract(rank_column.widthProperty).subtract( @vote_column.widthProperty).subtract( score_column.widthProperty ).subtract(@thumb_column.widthProperty).subtract(@subreddit_column.widthProperty).subtract( comm_column.widthProperty ).subtract( comm_new_column.widthProperty ).subtract(20))
 
     title_column.setSortable(false)
 
     # @table.setColumnResizePolicy(TableView::CONSTRAINED_RESIZE_POLICY)
     @table.setPrefHeight( 10000 )
-    @table.getColumns.setAll( rank_column , @vote_column , score_column , comm_column , comm_new_column , @thumb_column , title_column)
+    @table.getColumns.setAll( rank_column , @vote_column , score_column , comm_column , comm_new_column , @thumb_column , @subreddit_column , title_column)
     
     adjust_column_width
 
@@ -651,6 +660,8 @@ class SubPage < Page
       [App.i.calc_string_width( "00000" ,"-fx-font-size:150%;") , 40 ].max + 8
     @@digit_width_6 ||= 
       [App.i.calc_string_width( "000000" ,"-fx-font-size:150%;"), 40 ].max + 8
+    @@subreddit_name_width ||=
+      [App.i.calc_string_width( "wwwwwwwwww" ,"-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::STRONG_GREEN)};"), 40 ].max + 8
   end
 
   def set_bottom_mark_state( visible = nil )
@@ -692,6 +703,15 @@ class SubPage < Page
       @vote_column.setMinWidth( 0 )
       @vote_column.setPrefWidth( 75 )
 
+      if @is_multireddit
+        @subreddit_column.setVisible(true)
+        @subreddit_column.setMaxWidth( 100 )
+        @subreddit_column.setMinWidth( 100 )
+      else
+        @subreddit_column.setVisible(false)
+        @subreddit_column.setMaxWidth( 0 )
+        @subreddit_column.setMinWidth( 0 )
+      end 
     else
 
       #if not @table.getColumns.contains( @thumb_column)
@@ -701,6 +721,10 @@ class SubPage < Page
       @thumb_column.setMinWidth( thumb_width + 6)
       @thumb_column.setMaxWidth( thumb_width + 6)
 
+      @subreddit_column.setVisible(false)
+      @subreddit_column.setMaxWidth( 0 )
+      @subreddit_column.setMinWidth( 0 )
+      
       @vote_column.setMinWidth( 0 )
       @vote_column.setPrefWidth( 40 )
 
@@ -1714,6 +1738,26 @@ class SubPage < Page
 
     end
 
+  end
+  
+  class SubredditCell < Java::JavafxSceneControl::TableCell
+    include JRubyFX::DSLControl
+
+    def initialize
+      super()
+      @sub = Label.new
+      @sub.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::STRONG_GREEN)};-fx-padding:0 6px 0 0;")
+      setAlignment( Pos::CENTER_LEFT )
+      setGraphic(@sub)
+    end
+
+    def updateItem( data , is_empty_col )
+      if data and not is_empty_col
+        @sub.setText(data.to_s)
+      else
+        @sub.setText("")
+      end
+    end
   end
 
   class NumberCell < Java::JavafxSceneControl::TableCell
