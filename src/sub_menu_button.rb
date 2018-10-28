@@ -123,7 +123,8 @@ class SubMenuButton < Java::JavafxSceneControl::MenuButton
 
   def text_field_binding( user_subs )
     if tf = App.i.root.lookup("#url-text")
-      TextFields.bindAutoCompletion( tf , user_subs.subscribes.to_java )
+      s = user_subs.subscribes + user_subs.multis
+      TextFields.bindAutoCompletion( tf , s.to_java )
     end
   end
 
