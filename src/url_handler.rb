@@ -68,6 +68,8 @@ class UrlHandler
       true
     elsif path == "popular"
       true
+    elsif path == "mod"
+      true
     else
       false
     end
