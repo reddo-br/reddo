@@ -623,7 +623,7 @@ class SubPage < Page
     start_reload
   end # initialize
   attr_reader :is_user_submission_list
-  attr_reader :pref , :list_style
+  attr_reader :pref , :list_style , :table
 
   FRAME_INT = 0.025
   def prepare_smooth_scroll_thread
