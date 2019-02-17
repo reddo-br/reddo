@@ -426,10 +426,13 @@ a#linked-title, .post-in-list-inner .link-title {
 
 }
 
-.md p,
 #submission p {
   margin-top: 0;
   margin-bottom: 0.5em;
+}
+.md p {
+  margin-top: 0;
+  margin-bottom: 0.5em !important;
 }
 
 .thumb-area {
