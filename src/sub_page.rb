@@ -1875,9 +1875,17 @@ class SubPage < Page
       @user_flair.setMaxWidth( 200 )
       @user_flair.setWrapText(false)
 
+      @gilded_s = Label.new
+      @gilded_s.setStyle("-fx-text-fill:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
+      @gilded_s.setWrapText(false)
+
       @gilded = Label.new
       @gilded.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_YELLOW};")
       @gilded.setWrapText(false)
+
+      @gilded_p = Label.new
+      @gilded_p.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
+      @gilded_p.setWrapText(false)
 
       @views = Label.new
       @views.setWrapText(false)
@@ -1898,7 +1906,9 @@ class SubPage < Page
       @hbox.getChildren().add( @datetime )
       @hbox.getChildren().add( @author )
       @hbox.getChildren().add( @user_flair )
+      @hbox.getChildren().add( @gilded_s )
       @hbox.getChildren().add( @gilded )
+      @hbox.getChildren().add( @gilded_p )
 
       @hbox2 = HBox.new()
       @hbox2.setAlignment( Pos::CENTER_LEFT )
@@ -2059,7 +2069,23 @@ class SubPage < Page
         else
           @gilded.setText("")
         end
-
+        gildings_silver = data[:gildings][:gid_1]
+        if gildings_silver == 1
+          @gilded_s.setText("⚬")
+        elsif gildings_silver > 1
+          @gilded_s.setText("⚬" + gildings_silver.to_s )
+        else
+          @gilded_s.setText("")
+        end
+        gildings_platinum = data[:gildings][:gid_3]
+        if gildings_platinum == 1
+          @gilded_p.setText("★")
+        elsif gildings_platinum > 1
+          @gilded_p.setText("★" + gildings_platinum.to_s )
+        else
+          @gilded_p.setText("")
+        end
+         
         if data[:view_count]
           if data[:view_count] == 1
             @views.setText("[1 view]")

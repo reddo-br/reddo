@@ -1359,6 +1359,19 @@ EOF
     comm_head.appendChild( @doc.createTextNode(" ") )
     comm_head.appendChild( author )
 
+    if obj[:gildings] and obj[:gildings][:gid_1].to_i > 0
+      gs = obj[:gildings][:gid_1].to_i
+      comm_head.appendChild( @doc.createTextNode(" ") )
+      gilded_s = @doc.createElement("span")
+      gilded_s.setAttribute("class","gilded-mark-s")
+      gilded_num = if gs == 1
+                     ""
+                   else
+                     gs.to_s
+                   end
+      gilded_s.setTextContent( "⚬" + gilded_num )
+      comm_head.appendChild(gilded_s)
+    end
     if obj[:gilded] and obj[:gilded].to_i > 0
       comm_head.appendChild( @doc.createTextNode(" ") )
       gilded = @doc.createElement("span")
@@ -1370,6 +1383,19 @@ EOF
                    end
       gilded.setTextContent( "★" + gilded_num )
       comm_head.appendChild(gilded)
+    end
+    if obj[:gildings] and obj[:gildings][:gid_3].to_i > 0
+      gp = obj[:gildings][:gid_3].to_i
+      comm_head.appendChild( @doc.createTextNode(" ") )
+      gilded_p = @doc.createElement("span")
+      gilded_p.setAttribute("class","gilded-mark-p")
+      gilded_num = if gp == 1
+                     ""
+                   else
+                     gp.to_s
+                   end
+      gilded_p.setTextContent( "★" + gilded_num )
+      comm_head.appendChild(gilded_p)
     end
 
     comm_head.appendChild( @doc.createTextNode(" ") )
