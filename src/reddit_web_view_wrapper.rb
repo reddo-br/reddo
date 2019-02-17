@@ -202,6 +202,14 @@ div.comment p {
   color: #{App.i.theme::COLOR::STRONG_YELLOW};
   #{bold_style};
 }
+.gilded-mark-s {
+  color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
+  #{bold_style};
+}
+.gilded-mark-p {
+  color: #{App.i.theme::COLOR::STRONG_BLUE};
+  #{bold_style};
+}
 
 .comment-footer {
   padding:0px 3px 0px 3px;
@@ -428,11 +436,11 @@ a#linked-title, .post-in-list-inner .link-title {
 
 #submission p {
   margin-top: 0;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.4em;
 }
 .md p {
   margin-top: 0;
-  margin-bottom: 0.5em !important;
+  margin-bottom: 0.4em !important;
 }
 
 .thumb-area {
