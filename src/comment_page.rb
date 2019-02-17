@@ -578,7 +578,12 @@ class CommentPage < CommentPageBase
     copy_url_md.setOnAction{|e|
       if url = make_page_url
         title_escaped = Util.escape_md( @title )
-        App.i.copy( "[#{title_escaped}](#{url})" )
+        subname = if @subname
+                    " : #{@subname}"
+                  else
+                    ""
+                  end
+        App.i.copy( "[#{title_escaped}#{subname}](#{url})" )
       end
     }
     menu.getItems.add( copy_url_md )
