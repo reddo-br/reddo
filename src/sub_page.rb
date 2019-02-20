@@ -1896,6 +1896,10 @@ class SubPage < Page
       @domain.setStyle("-fx-padding:0 6px 0 6px;")
       #####
 
+      @crosspost = Label.new
+      @crosspost.setWrapText(false)
+      @crosspost.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::STRONG_GREEN)};-fx-padding:0 6px 0 0;")
+      
       # setPrefHeight( 1 ) # これをやるとwrapできなくなる
 
       @hbox = HBox.new()
@@ -1919,6 +1923,7 @@ class SubPage < Page
       @hbox2.getChildren().add( @sticky )
       @hbox2.getChildren().add( @link_flair )
       @hbox2.getChildren().add( @domain )
+      @hbox2.getChildren().add( @crosspost )
       @hbox2.getChildren().add( @views )
       
       @box = VBox.new
@@ -2098,6 +2103,14 @@ class SubPage < Page
 
         @domain.setText( "(" + data[:domain].to_s + ")" )
 
+        cps = if data[:crosspost_parent_list] and
+                  data[:crosspost_parent_list].length > 0
+                " ↜ " + data[:crosspost_parent_list][0][:subreddit].to_s
+              else
+                ""
+              end
+        @crosspost.setText( cps )
+        
         # @subm_title.setText( data[:title_decoded].to_s.strip  )
         @subm_title.setText( Util.cjk_nobreak(data[:title_decoded].to_s.strip) )
         # height = calc_title_height( @subm_title.getWidth(),
