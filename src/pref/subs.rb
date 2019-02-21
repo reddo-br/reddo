@@ -12,6 +12,10 @@ class Subs < Prefbase
     file = subs_dir + ( pref_subname(subname) + ".json")
     super(file)
   end
+
+  def default
+    {"dont_use_user_flair_style" => true}
+  end
   
   def pref_subname(subname)
     if subname.to_s == "../"

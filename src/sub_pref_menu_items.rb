@@ -15,13 +15,14 @@ module SubPrefMenuItems
       subpref['dont_use_user_flair_style'] = (not use_user_flair_style_item.isSelected)
     }
 
-    sjis_art_item = CheckMenuItem.new("整形済テキストにAA用フォントを使う")
+    sjis_art_item = CheckMenuItem.new("整形済テキストにAA(SJISアート)用フォントを使う")
     sjis_art_item.setOnAction{|ev|
       subpref['dont_use_sjis_art'] = (not sjis_art_item.isSelected)
     }
     
     parent_menu.setOnShowing{|ev|
       use_link_style_item.setSelected( (not subpref['dont_use_link_style'] ))
+      
       use_user_flair_style_item.setSelected( (not subpref['dont_use_user_flair_style'] ))
       sjis_art_item.setSelected( (not subpref['dont_use_sjis_art'] ))
     }

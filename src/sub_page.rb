@@ -205,7 +205,7 @@ class SubPage < Page
       @sub_menu_button.getItems.add( @subscribed_check_item )
 
       @sub_menu_button.getItems.add( SeparatorMenuItem.new )
-      sub_css_menu = Menu.new("subredditのcss再現")
+      sub_css_menu = Menu.new("subredditのcss(旧UI系)再現")
       create_sub_pref_menu_items( sub_css_menu , @page_info[:name] )
       @sub_menu_button.getItems.add( sub_css_menu )
     end

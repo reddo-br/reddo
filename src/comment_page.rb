@@ -593,7 +593,7 @@ class CommentPage < CommentPageBase
     menu.getItems.add( zoom_menu )
     
 
-    sub_css_pref_menu = Menu.new("subredditのcss再現")
+    sub_css_pref_menu = Menu.new("subredditのcss(旧UI系)再現")
     menu.getItems.add( SeparatorMenuItem.new )
     menu.getItems.add( sub_css_pref_menu )
     @sub_css_pref_menus ||= []
