@@ -454,6 +454,22 @@ class App
     @text_for_width.applyCss
     @text_for_width.getLayoutBounds().getWidth()
   end
+  
+  def calc_string_height( string , css = "")
+    if not @text_for_width
+      @text_for_width ||= Java::JavafxSceneText::Text.new
+      dummy_group = Java::JavafxScene::Group.new( @text_for_width )
+      dummy_scene = Java::JavafxScene::Scene.new( dummy_group )
+      base_font = App.i.pref["fonts"]
+      if base_font
+        dummy_group.setStyle("-fx-font-family:\"#{base_font}\"")
+      end
+    end
+    @text_for_width.setText(string)
+    @text_for_width.setStyle(css)
+    @text_for_width.applyCss
+    @text_for_width.getLayoutBounds().getHeight()
+  end
 
   def set_labeled_min_size( labeled)
     labeled.setMinWidth( calc_string_width( labeled.getText()) )

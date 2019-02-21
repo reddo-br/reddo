@@ -216,13 +216,30 @@ EOF
     sh.appendChild( subm_head )
 
     flair = @doc.getElementById("link-flair")
-    lf = html_decode(obj[:link_flair_text].to_s)
+    
+    lf = if obj[:link_flair_type] == 'richtext'
+           flair_richtext_to_html( obj[:link_flair_richtext] )
+         else
+           html_decode(obj[:link_flair_text].to_s)
+         end
     flair.setMember("innerHTML" , lf)
+    color_style = ""
+    if obj[:link_flair_background_color].to_s.length > 0
+      color_style = "background-color: #{obj[:link_flair_background_color]};"
+      # この色はreddoテーマに依存してはならない…
+      if obj[:link_flair_text_color] == 'light'
+        color_style += "color: #eeeeee; "
+      elsif obj[:link_flair_text_color] == 'dark'
+        color_style += "color: #222222; "
+      end
+    end
+    puts "☆☆☆ #{color_style}"
+    
     # :emptyがうまく動作しない
     if(lf.length > 0)
-      flair.setAttribute("style","display:inline")
+      flair.setAttribute("style","display:inline; #{color_style}")
     else
-      flair.setAttribute("style","display:none")
+      flair.setAttribute("style","display:none; #{color_style}")
     end
 
     img = @doc.getElementById("preview")
@@ -1424,9 +1441,24 @@ EOF
     comm_head
   end
 
+  def flair_richtext_to_html( richtext_ary )
+    richtext_ary.map{|h|
+      if h[:e] == 'text'
+        html_decode( h[:t] )
+      elsif h[:e] == 'emoji'
+        "<img class=\"reddit-emoji\" src=\"#{h[:u]}\" alt=\"#{h[:a]}\" />"
+      end
+    }.join
+  end
+  
   def make_user_element( obj )
     author      = obj[:author]
-    flair_text  = html_decode(obj[:author_flair_text])
+    flair_text  = if obj[:author_flair_type] == "richtext"
+                    flair_richtext_to_html( obj[:author_flair_richtext] )
+                  else
+                    html_decode(obj[:author_flair_text])
+                  end
+    
     flair_class = obj[:author_flair_css_class] # nilや""あり
     deleted = (author == '[deleted]')
     ex_style = case obj[:distinguished]
@@ -1457,7 +1489,10 @@ EOF
     end
     
     user_flair = @doc.createElement("span")
-    user_flair.setTextContent( flair_text )
+    # user_flair.setTextContent( flair_text )
+    if flair_text
+      user_flair.setMember("innerHTML",flair_text)
+    end
     flair_class2 = flair_class.to_s.split.map{|c| "flair-" + c }.join(" ").strip
     flair_class3 = if @use_user_flair_style and flair_class2.length > 0
                      "flair user-flair-styled " + flair_class2
@@ -1465,7 +1500,24 @@ EOF
                      "user-flair"
                    end
     user_flair.setAttribute("class" , flair_class3 )
+    
+    # 最近のflair background設定で上書く
+    if flair_class3 == 'user-flair'
+      style = ""
+      if obj[:author_flair_background_color].to_s.length > 0
+        style += "background-color: #{obj[:author_flair_background_color]};"
 
+        # この色はreddoテーマに依存してはならない…
+        if obj[:author_flair_text_color] == 'light'
+          style += "color: #eeeeee; "
+        elsif obj[:author_flair_text_color] == 'dark'
+          style += "color: #222222; "
+        end
+        
+      end
+      user_flair.setAttribute("style" , style )
+    end
+    
     user.appendChild( user_name )
     user.appendChild( user_flair )
     

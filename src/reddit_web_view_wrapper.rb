@@ -264,7 +264,8 @@ div.comment p {
 
 .sticky-mark {
   color:#{App.i.theme::COLOR::HTML_COMMENT_BG};
-  background-color: #{App.i.theme::COLOR::STRONG_GREEN}
+  background-color: #{App.i.theme::COLOR::STRONG_GREEN};
+  #{bold_style}
 }
 
 .upvote , .downvote , .dummy-arrow {
@@ -285,7 +286,7 @@ div.comment p {
   color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   border-width: 1px;
   border-style: solid;
-  border-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
+  border-color: #{App.i.theme::COLOR::HTML_COMMENT_BORDER};
   margin-left: 2px;
   display:inline;
 }
@@ -363,6 +364,9 @@ line-height:100%;
   color:#{App.i.theme::COLOR::HTML_BG};
   background-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
   margin-right:2px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #{App.i.theme::COLOR::HTML_COMMENT_BORDER};
   display:inline;
 }
 
@@ -505,6 +509,10 @@ table, th, td {
 .md ol, .md ul{
   margin-bottom:0;
   margin-top:0;
+}
+
+.reddit-emoji {
+  height: 0.95em;
 }
 
 EOF

@@ -30,6 +30,7 @@ import 'javafx.beans.property.SimpleMapProperty'
 import 'javafx.beans.property.SimpleObjectProperty'
 import 'javafx.scene.control.cell.TextFieldTableCell'
 import 'javafx.scene.text.TextFlow'
+import 'javafx.scene.text.Text'
 import 'javafx.application.Platform'
 import 'javafx.util.StringConverter'
 class SubPage < Page
@@ -1046,6 +1047,21 @@ class SubPage < Page
           if obj[:author_flair_text]
             obj[:author_flair_text_decoded] = Html_entity.decode( obj[:author_flair_text] )
           end
+          [ [:link_flair_richtext , :link_flair_richtext_decoded] ,
+            [:author_flair_richtext , :author_flair_richtext_decoded] ].each{
+            |key_from,key_to|
+            
+            if obj[key_from]
+              rd = obj[key_from].map{|h|
+                h2 = h.dup
+                if h2[:e] == 'text'
+                  h2[:t] = Html_entity.decode(h[:t])
+                end
+                h2
+              }
+              obj[key_to] = rd
+            end
+          }
           
           tu , tw , th = Util.decoded_thumbnail_url(obj)
           obj[:reddo_thumbnail_decoded] = tu
@@ -1815,13 +1831,17 @@ class SubPage < Page
     @@dummy_label = nil
     @@dummy_scene = nil
 
+    @@cache = {} # emoji
+    
     def initialize(page , col = nil , artificial_bold:false, show_subreddit:false)
       super()
       getStyleClass().add("title-cell")
-
+      
       @page = page
       @show_subreddit = show_subreddit
-
+      
+      @@emoji_height ||= App.i.calc_string_height( "0" , "-fx-font-size:100%;")
+      
       # @subm_title = Label.new
       @subm_title = Text.new
       color = if App.i.pref['use_dark_theme']
@@ -1839,16 +1859,17 @@ class SubPage < Page
       end
 
       @nsfw = Label.new("NSFW")
-      @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
+      # @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
+      @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};#{App.i.fx_bold_style(App.i.theme::COLOR::REVERSE_TEXT)}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
       @nsfw.setWrapText(false)
 
       @spoiler = Label.new("Spoiler")
-      @spoiler.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
+      @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};#{App.i.fx_bold_style(App.i.theme::COLOR::REVERSE_TEXT)}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
       @spoiler.setWrapText(false)
 
-      @link_flair = Label.new
+      @link_flair = HBox.new
       @link_flair.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
-      @link_flair.setWrapText(false)
+      @link_flair.setMaxWidth(150)
 
       @auto_banned = Label.new()
       @auto_banned.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED};")
@@ -1859,21 +1880,20 @@ class SubPage < Page
       @datetime.setWrapText(false)
 
       @sticky = Label.new("Announcement")
-      @sticky.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_GREEN}")
+      @sticky.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};#{App.i.fx_bold_style(App.i.theme::COLOR::REVERSE_TEXT)}; -fx-background-color:#{App.i.theme::COLOR::STRONG_GREEN}")
       @sticky.setWrapText(false)
 
       @locked = Label.new("Locked")
-      @locked.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT}; -fx-background-color:#{App.i.theme::COLOR::STRONG_YELLOW}")
+      @locked.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};#{App.i.fx_bold_style(App.i.theme::COLOR::REVERSE_TEXT)}; -fx-background-color:#{App.i.theme::COLOR::STRONG_YELLOW}")
       @locked.setWrapText(false)
 
       @author = Label.new
       @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
       @author.setWrapText(false)
       
-      @user_flair = Label.new
+      @user_flair = HBox.new
       @user_flair.setStyle( "-fx-border-color:#{App.i.theme::COLOR::BASE}; -fx-border-width: 1 1 1 1" )
-      @user_flair.setMaxWidth( 200 )
-      @user_flair.setWrapText(false)
+      @user_flair.setMaxWidth( 300 )
 
       @gilded_s = Label.new
       @gilded_s.setStyle("-fx-text-fill:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
@@ -1979,6 +1999,64 @@ class SubPage < Page
       end
     end
 
+    def set_richtext_to_box( box, richtext , text , color , bgcolor ,
+                             color_default , bgcolor_default , base_style)
+      style_tx = nil
+      if bgcolor.to_s.length > 0 # :*_flair_background_color 空白もある
+        style_bg = "-fx-background-color:#{ bgcolor };"
+        box.setStyle( style_bg + base_style)
+        if color == 'light'
+          style_tx = "-fx-text-fill:#eeeeee;"
+        elsif color == 'dark'
+          style_tx = "-fx-text-fill:#222222;"
+        else
+          style_tx = "-fx-text-fill:#{color_default};" if color_default
+        end
+      else
+        style_bg = if bgcolor_default
+                     "-fx-background-color:#{bgcolor_default};"
+                   else
+                     ""
+                   end
+        box.setStyle( style_bg + base_style)
+        puts "box style:#{style_bg + base_style}"
+
+        style_tx = "-fx-text-fill:#{color_default};" if color_default
+      end
+      
+      if richtext.to_a.length > 0
+        box.getChildren.clear()
+        richtext.each{|h|
+          if h[:e] == 'text'
+            l = Label.new( h[:t] )
+            l.setStyle( style_tx ) if style_tx
+            box.getChildren.add( l )
+          elsif h[:e] == 'emoji'
+            iv = ImageView.new
+            iv.setSmooth(true)
+            iv.setFitHeight( @@emoji_height )
+            iv.setPreserveRatio(true)
+            i = @@cache[ h[:u] ] || Image.new( h[:u] , true)
+            @@cache[ h[:u] ] = i
+            iv.setImage( i )
+            box.getChildren.add( iv )
+          end
+        }
+        box.setVisible(true)
+      else
+        if text and text.to_s.length > 0
+          box.getChildren.clear()
+          l = Label.new( text )
+          l.setStyle( style_tx ) if style_tx
+          box.getChildren.add( l )
+          box.setVisible(true)
+        else
+          box.getChildren.clear()
+          box.setVisible(false)
+        end
+      end
+    end
+    
     def updateItem( data , is_empty_col )
 
       if( data and not is_empty_col )
@@ -1995,15 +2073,16 @@ class SubPage < Page
           end
         end
 
-        fl = data[:link_flair_text_decoded].to_s.strip
-        if fl.length > 0
-          @link_flair.setVisible(true)
-          @link_flair.setText( fl )
-        else
-          @link_flair.setVisible(false)
-          @link_flair.setText("")
-        end
-
+        set_richtext_to_box( @link_flair ,
+                             data[:link_flair_richtext_decoded],
+                             data[:link_flair_text_decoded],
+                             data[:link_flair_text_color],
+                             data[:link_flair_background_color],
+                             App.i.theme::COLOR::REVERSE_TEXT, # default text
+                             App.i.theme::COLOR::HTML_TEXT_THIN, # default bg
+                             "-fx-border-color:#{App.i.theme::COLOR::HTML_COMMENT_BORDER}; -fx-border-width: 1 1 1 1;"
+                             )
+        
         if data[:over_18]
           @nsfw.setText(" NSFW ")
           @nsfw.setVisible(true)
@@ -2059,13 +2138,17 @@ class SubPage < Page
         end
         @author.setText( author )
 
-        if afl = data[:author_flair_text_decoded] and afl.to_s.length > 0
-          @user_flair.setText( afl )
-          @user_flair.setVisible(true)
-        else
-          @user_flair.setText( "" )
-          @user_flair.setVisible(false)
-        end
+        # p data[:author_flair_richtext_decoded]
+
+        set_richtext_to_box( @user_flair ,
+                             data[:author_flair_richtext_decoded],
+                             data[:author_flair_text_decoded],
+                             data[:author_flair_text_color],
+                             data[:author_flair_background_color] ,
+                             nil ,
+                             nil ,
+                             "-fx-border-color:#{App.i.theme::COLOR::HTML_COMMENT_BORDER}; -fx-border-width: 1 1 1 1;"
+                             )
         
         if data[:gilded] == 1
           @gilded.setText("★")
