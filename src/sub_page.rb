@@ -1864,7 +1864,7 @@ class SubPage < Page
       @nsfw.setWrapText(false)
 
       @spoiler = Label.new("Spoiler")
-      @nsfw.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};#{App.i.fx_bold_style(App.i.theme::COLOR::REVERSE_TEXT)}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
+      @spoiler.setStyle("-fx-text-fill:#{App.i.theme::COLOR::REVERSE_TEXT};#{App.i.fx_bold_style(App.i.theme::COLOR::REVERSE_TEXT)}; -fx-background-color:#{App.i.theme::COLOR::STRONG_RED}")
       @spoiler.setWrapText(false)
 
       @link_flair = HBox.new
