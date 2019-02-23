@@ -1705,10 +1705,11 @@ class SubPage < Page
 
     @@cache = {}
 
-    def adjust_image_size
+    def adjust_image_size(img_type = :thmub )
       list_style = @sub_page.list_style
 
-      if @current_list_style != list_style
+      # 
+      if @current_img_type != img_type or @current_list_style != list_style
         image_width = @sub_page.thumb_width
         image_height = @sub_page.thumb_height
 
@@ -1726,25 +1727,39 @@ class SubPage < Page
           setMinWidth( image_width + 6)
           # setMinHeight( image_height + 6 ) # middleでも固定してみる → スクロールのズレには効果なし なにがまずい？
         end
-        @current_list_style = list_style
       end
+      @current_list_style = list_style
+      @current_img_type = img_type
     end
 
     def updateItem( data , is_empty_col )
       @obj = data
-      if data and data[:reddo_thumbnail_decoded] and not is_empty_col and not data[:spoiler]
-        adjust_image_size
-        url = if @sub_page.list_style == :medium_thumb 
-                data[:reddo_preview] || data[:reddo_thumbnail_decoded]
+      if data
+        
+        if data[:reddo_thumbnail_decoded] and not is_empty_col and not data[:spoiler]
+          adjust_image_size( :thumb )
+          url = if @sub_page.list_style == :medium_thumb 
+                  data[:reddo_preview] || data[:reddo_thumbnail_decoded]
+                else
+                  data[:reddo_thumbnail_decoded] || data[:reddo_preview]
+                end
+          # p url
+          # i = @@cache[ url ] || Image.new( url, @image_width, @image_height ,true,true,true) # ratio,smooth,background # なんでこれ止めたんだっけ？ リサイズ処理がしょぼいから？
+          i = @@cache[ url ] || Image.new( url ,true) # background
+          @@cache[ url ] = i
+          @image_view.setImage( i )
+        else
+          adjust_image_size( :mark )
+          i = if data[:is_self]
+                @@cache[ "is_self" ] ||= Image.new( App.res( "/res/thumb_text.png"))
               else
-                data[:reddo_thumbnail_decoded] || data[:reddo_preview]
+                @@cache[ "none" ] ||= Image.new( App.res( "/res/thumb_none.png"))
               end
-        # p url
-        # i = @@cache[ url ] || Image.new( url, @image_width, @image_height ,true,true,true) # ratio,smooth,background # なんでこれ止めたんだっけ？ リサイズ処理がしょぼいから？
-        i = @@cache[ url ] || Image.new( url ,true) # background
-        @@cache[ url ] = i
-        @image_view.setImage( i )
-      else
+          @image_view.setFitHeight( 50 )
+          @image_view.setImage( i )
+          
+        end
+      else # 空の列
         @image_view.setImage(nil)
       end
       
