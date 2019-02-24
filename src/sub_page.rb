@@ -1162,6 +1162,7 @@ class SubPage < Page
       set_bottom_mark_state # とりあえず更新前状態で判定する
       set_virtualflow_listeners_to_set_bottom_mark
       set_scrollbar_listeners_to_set_bottom_mark # javafx8 tableのscrollbarは実際にitemがあふれるまで取れない
+      ThumbCell.shrink_cache
     }
   end
 
@@ -1702,8 +1703,16 @@ class SubPage < Page
 
       setGraphic( @image_view)
     end
-
     @@cache = {}
+    def self.shrink_cache
+      if @@cache.length > 100
+        n = Time.now.to_i - 1800
+        @@cache.delete_if{|k,v|
+          $stderr.puts "remove cache:#{v[0]}"
+          v[1] and (v[1] < n)
+        } # たぶんスレッドセーフ
+      end
+    end
 
     def adjust_image_size(img_type = :thmub )
       list_style = @sub_page.list_style
@@ -1745,16 +1754,17 @@ class SubPage < Page
                 end
           # p url
           # i = @@cache[ url ] || Image.new( url, @image_width, @image_height ,true,true,true) # ratio,smooth,background # なんでこれ止めたんだっけ？ リサイズ処理がしょぼいから？
-          i = @@cache[ url ] || Image.new( url ,true) # background
-          @@cache[ url ] = i
+          i,t = ( @@cache[ url ] ||= [ Image.new( url ,true) , nil ] )
+          @@cache[url][1] = Time.now.to_i
+
           @image_view.setImage( i )
         else
           adjust_image_size( :mark )
-          i = if data[:is_self]
-                @@cache[ "is_self" ] ||= Image.new( App.res( "/res/thumb_text.png"))
-              else
-                @@cache[ "none" ] ||= Image.new( App.res( "/res/thumb_none.png"))
-              end
+          i,t = if data[:is_self]
+                  @@cache[ "is_self" ] ||= [Image.new( App.res( "/res/thumb_text.png")),nil]
+                else
+                  @@cache[ "none" ] ||= [Image.new( App.res( "/res/thumb_none.png")),nil]
+               end
           @image_view.setFitHeight( 50 )
           @image_view.setImage( i )
           
