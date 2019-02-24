@@ -2044,7 +2044,6 @@ class SubPage < Page
                      ""
                    end
         box.setStyle( style_bg + base_style)
-        puts "box style:#{style_bg + base_style}"
 
         style_tx = "-fx-text-fill:#{color_default};" if color_default
       end

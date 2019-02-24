@@ -233,7 +233,6 @@ EOF
         color_style += "color: #222222; "
       end
     end
-    puts "☆☆☆ #{color_style}"
     
     # :emptyがうまく動作しない
     if(lf.length > 0)
