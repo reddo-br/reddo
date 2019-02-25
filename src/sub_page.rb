@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# -*- coding: utf-8 -*-
+
 require 'java'
 require 'jrubyfx'
 
@@ -834,6 +836,7 @@ class SubPage < Page
           active = Util.comma_separated_int( @sub_info[:accounts_active].to_i )
           subscribers = Util.comma_separated_int(@sub_info[:subscribers].to_i )
           @active_label.setText("ユーザー数: #{active} / #{subscribers}")
+          set_tab_icon2_url( @sub_info[:icon_img] ) if @sub_info[:icon_img].to_s.length > 0
         }
       end
     rescue
@@ -1705,11 +1708,16 @@ class SubPage < Page
     end
     @@cache = {}
     def self.shrink_cache
+      $stderr.puts "thumb cache length: #{@@cache.length}"
       if @@cache.length > 100
         n = Time.now.to_i - 1800
         @@cache.delete_if{|k,v|
-          $stderr.puts "remove cache:#{v[0]}"
-          v[1] and (v[1] < n)
+          if v[1] and (v[1] < n)
+            $stderr.puts "remove cache:#{k}:#{v}"
+            true
+          else
+            false
+          end
         } # たぶんスレッドセーフ
       end
     end
@@ -1741,6 +1749,19 @@ class SubPage < Page
       @current_img_type = img_type
     end
 
+    def size_for_image_obj
+      list_style = @sub_page.list_style
+      image_width = @sub_page.thumb_width
+      image_height = @sub_page.thumb_height
+      if list_style == :""
+        [ image_width , image_height ]
+      elsif list_style == :medium_thumb
+        [ image_width , 0 ]
+      else
+        nil
+      end
+    end
+    
     def updateItem( data , is_empty_col )
       @obj = data
       if data
@@ -1754,10 +1775,21 @@ class SubPage < Page
                 end
           # p url
           # i = @@cache[ url ] || Image.new( url, @image_width, @image_height ,true,true,true) # ratio,smooth,background # なんでこれ止めたんだっけ？ リサイズ処理がしょぼいから？
-          i,t = ( @@cache[ url ] ||= [ Image.new( url ,true) , nil ] )
-          @@cache[url][1] = Time.now.to_i
-
+          i,t=nil,nil
+          if false # App.i.pref["image_reduction_with_image_object"] and wh = size_for_image_obj
+            # Imageクラスの縮小はいまいち、別のライブラリを使うべき
+            i,t = ( @@cache[ [url , wh] ] ||= [ Image.new( url ,wh[0],wh[1],true,true,true) , nil ] )
+            @@cache[ [url,wh] ][1] = Time.now.to_i
+            @image_view.setFitWidth(nil)
+            @image_view.setFitHeight(nil)
+            @image_view.setSmooth(false)
+          else
+            i,t = ( @@cache[ [url , :general] ] ||= [ Image.new( url ,true) , nil ] )
+            @@cache[ [url,:general] ][1] = Time.now.to_i
+            @image_view.setSmooth(true)
+          end
           @image_view.setImage( i )
+
         else
           adjust_image_size( :mark )
           i,t = if data[:is_self]
@@ -2060,8 +2092,15 @@ class SubPage < Page
             iv.setSmooth(true)
             iv.setFitHeight( @@emoji_height )
             iv.setPreserveRatio(true)
-            i = @@cache[ h[:u] ] || Image.new( h[:u] , true)
-            @@cache[ h[:u] ] = i
+            i = @@cache[ h[:u] ]
+            if not i
+              i = if App.i.pref["image_reduction_with_image_object"]
+                    Image.new( h[:u] , 0 , @@emoji_height , true,true,true)
+                  else
+                    Image.new( h[:u] , true )
+                  end
+              @@cache[ h[:u] ] = i
+            end
             iv.setImage( i )
             box.getChildren.add( iv )
           end

@@ -210,6 +210,28 @@ class Page < Java::JavafxSceneLayout::VBox
     end
   end
 
+  def set_tab_icon2_url( url )
+    # @im = @im_icon = Image.new( url )
+    # @iv.setImage(@im) unless @rt
+
+    size = 20
+    if not @icon2
+      @icon2 = ImageView.new
+      @icon2.setSmooth(true) # 効かない
+      if App.i.pref["image_reduction_with_image_object"]
+        @icon2.setImage( Image.new(url,size,size,true,true,true) ) #
+      else
+        @icon2.setImage( Image.new(url,true) ) #
+      end
+      @icon2.setPreserveRatio(true)
+      @icon2.setFitWidth(size)
+      @icon2.setFitHeight(size)
+      @icon2.relocate( 20 , 16 - (size - 16) / 2 )
+      @leftside.setPrefSize( 20 + size + 2 , 38 ) # 変更
+      @leftside.getChildren.add(@icon2)
+    end
+  end
+  
   def set_number(num)
     if num
       @tab_number.setText(num.to_s)

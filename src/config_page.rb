@@ -86,6 +86,12 @@ class ConfigPage < Page
 
     items << make_bool_config( "サブピクセルレンダリングではなく、グレースケール・アンチエイリアシングを使用する(環境によっては、変化ありません)",
                                "grayscale_antialiasing" )
+
+    ####################################
+    items << make_header("画像")
+
+    items << make_bool_config( "アイコン等の画質を改善(高DPI環境では、ぼけます)",
+                               "image_reduction_with_image_object")
     
     ####################################
     items << make_header("外部ブラウザ")
