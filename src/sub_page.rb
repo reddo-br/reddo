@@ -1342,6 +1342,7 @@ class SubPage < Page
   def set_scroll_amount( )
     if vf = get_virtual_flow
       vf.setOnScroll{|ev|
+        # $stderr.puts "sub_page scrollイベント"
         if ev.eventType == ScrollEvent::SCROLL
           table_wheel_scroll( ev , vf )
         end
@@ -1374,7 +1375,7 @@ class SubPage < Page
 
     amount = @wheel_base_amount * accel * dir
 
-    # puts "sub wheel scroll: dt=#{dt} accel=#{accel} amout=#{amount}"
+    $stderr.puts "sub wheel scroll: dt=#{dt} accel=#{accel} amout=#{amount}"
 
     if @smooth_scroll
       #if @last_animation_started and (mt - @last_animation_started) < FRAME_INT * 1000

@@ -238,6 +238,7 @@ class ConfigPage < Page
     if App.i.pref["scroll_v2_enable"]
       scroll_setting(grid_pane,scroll_pane)
     end
+    grid_pane.requestFocus
   end
 
   def checkbox_with_pref( pref_name )
