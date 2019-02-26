@@ -1890,6 +1890,50 @@ class SubPage < Page
     @@dummy_scene = nil
 
     @@cache = {} # emoji
+
+    def set_color_normal
+      color = if App.i.pref['use_dark_theme']
+                'white'
+              else
+                'black'
+              end
+
+      @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-word-wrap:break-word; #{App.i.fx_bold_style(color)}")
+      
+      if @show_subreddit
+        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::STRONG_GREEN)};-fx-padding:0 6px 0 0;")
+      end
+
+      @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
+      @gilded_s.setStyle("-fx-text-fill:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
+      @gilded_p.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
+      @gilded.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_YELLOW};")
+      
+      @crosspost.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::STRONG_GREEN)};-fx-padding:0 6px 0 0;")
+      
+    end
+
+    def set_color_reverse
+      color = if App.i.pref['use_dark_theme']
+                'black'
+              else
+                'white'
+              end
+
+      @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-word-wrap:break-word; #{App.i.fx_bold_style(color)}")
+      
+      if @show_subreddit
+        @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::THIN_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::THIN_GREEN)};-fx-padding:0 6px 0 0;")
+      end
+
+      @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::THIN_BLUE};")
+      @gilded_s.setStyle("-fx-text-fill:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
+      @gilded_p.setStyle("-fx-text-fill:#{App.i.theme::COLOR::THIN_BLUE};")
+      @gilded.setStyle("-fx-text-fill:#{App.i.theme::COLOR::THIN_YELLOW};")
+      
+      @crosspost.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::THIN_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::THIN_GREEN)};-fx-padding:0 6px 0 0;")
+      
+    end
     
     def initialize(page , col = nil , artificial_bold:false, show_subreddit:false)
       super()
@@ -1902,14 +1946,7 @@ class SubPage < Page
       
       # @subm_title = Label.new
       @subm_title = Text.new
-      color = if App.i.pref['use_dark_theme']
-                'white'
-              else
-                'black'
-              end
       
-      @subm_title.setStyle( "-fx-fill:#{color}; -fx-font-size:115%; -fx-word-wrap:break-word; #{App.i.fx_bold_style(color)}")
-
       if @show_subreddit
         @subreddit = Label.new
         @subreddit.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::STRONG_GREEN)};-fx-padding:0 6px 0 0;")
@@ -1946,7 +1983,6 @@ class SubPage < Page
       @locked.setWrapText(false)
 
       @author = Label.new
-      @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
       @author.setWrapText(false)
       
       @user_flair = HBox.new
@@ -1954,15 +1990,12 @@ class SubPage < Page
       @user_flair.setMaxWidth( 300 )
 
       @gilded_s = Label.new
-      @gilded_s.setStyle("-fx-text-fill:#{App.i.theme::COLOR::HTML_TEXT_THIN};")
       @gilded_s.setWrapText(false)
 
       @gilded = Label.new
-      @gilded.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_YELLOW};")
       @gilded.setWrapText(false)
 
       @gilded_p = Label.new
-      @gilded_p.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
       @gilded_p.setWrapText(false)
 
       @views = Label.new
@@ -1976,10 +2009,13 @@ class SubPage < Page
 
       @crosspost = Label.new
       @crosspost.setWrapText(false)
-      @crosspost.setStyle( "-fx-text-fill:#{App.i.theme::COLOR::STRONG_GREEN};#{App.i.fx_bold_style(App.i.theme::COLOR::STRONG_GREEN)};-fx-padding:0 6px 0 0;")
       
       # setPrefHeight( 1 ) # これをやるとwrapできなくなる
-
+      
+      # todo:反転カラーを動的に設定するには、結局TableCell#updateSelectedで
+      # いちいち設定するしかないだろう
+      set_color_normal
+      
       @hbox = HBox.new()
       # @hbox = FlowPane.new(Orientation::HORIZONTAL)
       @hbox.setAlignment( Pos::CENTER_LEFT )
