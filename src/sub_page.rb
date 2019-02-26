@@ -1787,7 +1787,7 @@ class SubPage < Page
           else
             i,t = ( @@cache[ [url , :general] ] ||= [ Image.new( url ,true) , nil ] )
             @@cache[ [url,:general] ][1] = Time.now.to_i
-            @image_view.setSmooth(true)
+            # @image_view.setSmooth(true)
           end
           @image_view.setImage( i )
 
@@ -2119,6 +2119,7 @@ class SubPage < Page
           box.setVisible(false)
         end
       end
+      box.applyCss # 事前に描画しちらつき防止?
     end
     
     def updateItem( data , is_empty_col )
