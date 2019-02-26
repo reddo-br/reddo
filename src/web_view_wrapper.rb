@@ -290,7 +290,7 @@ class WebViewWrapper
   end
 
   CSS_PATH = Util.get_appdata_pathname + "webview/comment.css"
-  JS_PATH  = Util.get_appdata_pathname + "webview/jquery-2.1.4.min.js"
+  # JS_PATH  = Util.get_appdata_pathname + "webview/jquery-2.1.4.min.js"
   
   # 廃止: 完了までの時間がわからない
   def html_decode_by_dom( enc_str )

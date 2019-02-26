@@ -66,7 +66,11 @@ EOF
 
     code_style = "font-size:16px; font-family:#{SJIS_ART_FONT};"
 
-    base_font = "\"#{App.i.pref["fonts"]}\",sans-serif" || '"DejaVu Sans",Tahoma,Arial,"Helvetica Neue","Lucida Grande",sans-serif'
+    base_font = if App.i.pref["fonts"].to_s.length > 0
+                  "\"#{App.i.pref["fonts"]}\",sans-serif"
+                else
+                  '"DejaVu Sans",Tahoma,Arial,"Helvetica Neue","Lucida Grande",sans-serif'
+                end
 
     line_height = App.i.pref["line_height"] || 140
 
@@ -516,7 +520,6 @@ table, th, td {
 }
 
 EOF
-
 
     return( super() + "\n" + style )
   end

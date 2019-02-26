@@ -1727,7 +1727,7 @@ html = <<EOF
 <html >
 <head>
 <meta charset="UTF-8">
-<!--<link rel="stylesheet" type="text/css" href="file://#{CSS_PATH}">-->
+<link rel="stylesheet" type="text/css" href="file://#{CSS_PATH}">
 <style>
 #{style()}
 </style>
