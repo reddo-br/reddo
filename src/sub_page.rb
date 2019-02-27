@@ -1083,7 +1083,8 @@ class SubPage < Page
                                                          prefer_large:true)
             if tu
               ra = th / tw.to_f
-              if 1.0 < ra and ra <= 4.0 # 縦長すぎるのは使わない,thumbで間に合うのも使わない
+              if 1.0 < ra and ra <= 3.0 # 縦長すぎるのは使わない,thumbで間に合うのも使わない
+                # 2019 実はraは2倍以上にはならない。この値は表示上の推奨値のようだ…
                 tu = Html_entity.decode(tu) if tu
                 obj[:reddo_preview] = tu
                 if tw and th
@@ -1723,29 +1724,60 @@ class SubPage < Page
       end
     end
 
-    def adjust_image_size(img_type = :thmub )
+    def adjust_image_size(img_type = :thmub , data = nil)
       list_style = @sub_page.list_style
+      
+      image_width = @sub_page.thumb_width
+      image_height = @sub_page.thumb_height
+      @image_view.setFitWidth( image_width )
 
-      # 
-      if @current_img_type != img_type or @current_list_style != list_style
-        image_width = @sub_page.thumb_width
-        image_height = @sub_page.thumb_height
+      # :medium_thumbなど可変列モードでは毎回替えなければいけない
+      if list_style == :medium_thumb
 
-        @image_view.setFitWidth( image_width )
-        if list_style == :""
-          @image_view.setFitHeight( image_height )
-        elsif list_style == :no_thumb
-          @image_view.setFitHeight( 1 )
-        else
+        if img_type == :mark
+          setPrefHeight(nil)
+          @image_view.setFitHeight( 50 )
+        elsif data
+          ratio = data[:reddo_preview_ratio] || data[:reddo_thumbnail_ratio]
+          if ratio
+             setPrefHeight( image_width * ratio + 6)
+            # self.setMaxHeight( image_width * ratio ) # 効かない
+            if ratio >= 2.0
+              @image_view.setFitHeight( image_width * ratio )
+            else
+              @image_view.setFitHeight( nil )
+            end
+          else
+            setPrefHeight( nil )
+            @image_view.setFitHeight( nil )
+          end
+        else # dataなし 初期など
+          setPrefHeight( nil )
           @image_view.setFitHeight( nil )
         end
-        if list_style == :no_thumb
-          setMinWidth( 1 )
-        else
-          setMinWidth( image_width + 6)
-          # setMinHeight( image_height + 6 ) # middleでも固定してみる → スクロールのズレには効果なし なにがまずい？
+      else # :medium_thumb以外では、モードが変わった時だけサイズを替える
+        
+        if @current_list_style != list_style or @current_img_type != img_type
+          
+          setPrefHeight(nil)
+          if img_type == :mark
+            @image_view.setFitHeight( 50 )
+          elsif list_style == :""
+            @image_view.setFitHeight( image_height )
+          elsif list_style == :no_thumb
+            @image_view.setFitHeight( 1 )
+          end
+          
+          if list_style == :no_thumb
+            setMinWidth( 1 )
+          else
+            setMinWidth( image_width + 6)
+          end
+
         end
-      end
+
+      end # medium or others
+      
       @current_list_style = list_style
       @current_img_type = img_type
     end
@@ -1766,9 +1798,11 @@ class SubPage < Page
     def updateItem( data , is_empty_col )
       @obj = data
       if data
+
+
         
         if data[:reddo_thumbnail_decoded] and not is_empty_col and not data[:spoiler]
-          adjust_image_size( :thumb )
+          adjust_image_size( :thumb , data )
           url = if @sub_page.list_style == :medium_thumb 
                   data[:reddo_preview] || data[:reddo_thumbnail_decoded]
                 else
@@ -1798,7 +1832,6 @@ class SubPage < Page
                 else
                   @@cache[ "none" ] ||= [Image.new( App.res( "/res/thumb_none.png")),nil]
                end
-          @image_view.setFitHeight( 50 )
           @image_view.setImage( i )
           
         end
@@ -2238,7 +2271,7 @@ class SubPage < Page
           @author.setStyle("-fx-text-fill:#{App.i.theme::COLOR::STRONG_BLUE};")
         end
         @author.setText( author )
-
+        
         # p data[:author_flair_richtext_decoded]
 
         set_richtext_to_box( @user_flair ,
