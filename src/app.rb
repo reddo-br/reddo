@@ -164,7 +164,8 @@ class FXApp < JRubyFX::Application
       if infos.length > 0
         App.i.session.get_page_infos.each{|pi|
           p pi
-          App.i.open_by_page_info( pi , false)
+          # @pref['new_tab_after_current'] によらず常に最後に追加
+          App.i.open_by_page_info( pi , false, false) 
         }
       else
         # 何もなければfrontを開く
@@ -338,7 +339,8 @@ class App
     end
   end
 
-  def open_by_page_info( page_info , selection = true)
+  def open_by_page_info( page_info , selection = true ,
+                         after_current = @pref['new_tab_after_current'])
     if page_info[:type] == 'other'
       if page_info[:url].to_s.length > 0
         open_external_browser( page_info[:url] )
@@ -364,7 +366,7 @@ class App
                       end
         if target_page
           target_tab = target_page.tab_widget
-          if @pref['new_tab_after_current']
+          if after_current
             cur = tabpane.getSelectionModel.getSelectedIndex || -1
             tabpane.getTabs().add( cur + 1 , target_tab )
           else
