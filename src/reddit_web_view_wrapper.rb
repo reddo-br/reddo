@@ -17,6 +17,18 @@ class RedditWebViewWrapper < WebViewWrapper
   end
   attr_accessor :use_link_style
 
+  def set_spoiler_open_event
+    if @e
+      @e.executeScript( <<EOF )
+$(".md-spoiler-text").each(function(){
+  $(this).click(function(){
+    $(this).addClass("spoiler-open");
+  });
+});
+EOF
+    end
+  end
+  
   def enable_sjis_art( sjis )
     @sjis_art = sjis
     # ここで動的にclassを変えようとしても、うまくいかなかった
@@ -517,6 +529,27 @@ table, th, td {
 
 .reddit-emoji {
   height: 0.95em;
+}
+
+.md-spoiler-text {
+  border-radius: 0.2em;
+  background-color:#{App.i.theme::COLOR::HTML_TEXT_THIN};
+  color:#{App.i.theme::COLOR::HTML_TEXT_THIN};
+  -webkit-animation-iteration-count: -1;
+  cursor:pointer;
+  
+}
+.md-spoiler-text.spoiler-open {
+   -webkit-animation: spoiler-open 2s ease 0s 1 normal;
+   -webkit-animation-fill-mode: forwards; /* stop at end */
+   cursor:inherit;
+} 
+@-webkit-keyframes spoiler-open {
+  0%   {
+         color:  #{App.i.theme::COLOR::HTML_TEXT_THIN};
+         background-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
+        }
+  100% {color:inherit;background-color: inherit;}
 }
 
 EOF

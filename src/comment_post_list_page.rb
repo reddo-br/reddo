@@ -607,6 +607,7 @@ class CommentPostListPage < CommentPageBase
 
       comment_fetched.each{|c| @comment_view.add_comment( c ) }
       @comment_view.line_image_resize( @font_zoom )
+      @comment_view.set_spoiler_open_event
       # puts @comment_view.dump
       if comment_fetched.length >= COMMENT_FETCH_LIMIT
         @comment_view.add_list_more_button

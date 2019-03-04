@@ -486,6 +486,7 @@ class CommentPage < CommentPageBase
                 @comment_view.add_comment(c , more.parent_id ) 
               }
               @comment_view.set_link_hook
+              @comment_view.set_spoiler_open_event
               # @comment_view.adjust_overflowing_user_flair
               highlight_word()
 
@@ -1094,6 +1095,7 @@ class CommentPage < CommentPageBase
       @title_label.setText( title )
       @comments.each{|c| @comment_view.add_comment( c ) }
       @comment_view.line_image_resize( @font_zoom )
+      @comment_view.set_spoiler_open_event
       # puts @comment_view.dump
       @comment_view.set_link_hook
       @comment_view.set_single_comment_highlight( @top_comment ) if @top_comment
