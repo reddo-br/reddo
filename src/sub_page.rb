@@ -1836,6 +1836,7 @@ class SubPage < Page
           
         end
       else # 空の列
+        adjust_image_size( :thumb )
         @image_view.setImage(nil)
       end
       
