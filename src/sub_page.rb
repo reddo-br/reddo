@@ -2287,12 +2287,12 @@ class SubPage < Page
         
         if data[:gilded] == 1
           @gilded.setText("★")
-        elsif data[:gilded] > 1
+        elsif data[:gilded].to_i > 1
           @gilded.setText("★" + data[:gilded].to_s )
         else
           @gilded.setText("")
         end
-        gildings_silver = data[:gildings][:gid_1]
+        gildings_silver = (data[:gildings] && data[:gildings][:gid_1]).to_i
         if gildings_silver == 1
           @gilded_s.setText("⚬")
         elsif gildings_silver > 1
@@ -2300,7 +2300,7 @@ class SubPage < Page
         else
           @gilded_s.setText("")
         end
-        gildings_platinum = data[:gildings][:gid_3]
+        gildings_platinum = (data[:gildings] && data[:gildings][:gid_3]).to_i
         if gildings_platinum == 1
           @gilded_p.setText("★")
         elsif gildings_platinum > 1
