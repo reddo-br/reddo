@@ -539,17 +539,25 @@ table, th, td {
   cursor:pointer;
   
 }
+
 .md-spoiler-text.spoiler-open {
    -webkit-animation: spoiler-open 2s ease 0s 1 normal;
    -webkit-animation-fill-mode: forwards; /* stop at end */
    cursor:inherit;
-} 
+}
+
+.md-spoiler-text:hover {
+   -webkit-animation: spoiler-open 2s ease 0s 1 normal;
+   -webkit-animation-fill-mode: forwards; /* stop at end */
+   cursor:pointer;
+}
+
 @-webkit-keyframes spoiler-open {
   0%   {
          color:  #{App.i.theme::COLOR::HTML_TEXT_THIN};
          background-color: #{App.i.theme::COLOR::HTML_TEXT_THIN};
         }
-  100% {color:inherit;background-color: inherit;}
+  100% {color:#{App.i.theme::COLOR::HTML_TEXT}; background-color: inherit;}
 }
 
 EOF
