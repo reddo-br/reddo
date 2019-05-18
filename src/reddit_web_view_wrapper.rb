@@ -109,6 +109,12 @@ EOF
 }"
                      end
 
+    top_comment_margin = if App.i.pref["collapse_comment_margin"]
+                           "margin: 0px 12px -1px 12px;"
+                         else
+                           "margin: 12px 12px 0px 12px;"
+                         end
+    
     style = <<EOF
 html {
   font-family:#{base_font};
@@ -130,7 +136,7 @@ a:link { color: #{App.i.theme::COLOR::HTML_LINK}; }
 div.comment, div.post-in-list { 
   word-wrap:break-word;
   padding: 6px 6px 0px 6px;
-  margin: 12px 12px 0px 12px;
+  #{top_comment_margin}
   border-width: 1px 1px 1px 1px;
   border-style: solid;
   border-color: #{App.i.theme::COLOR::HTML_COMMENT_BORDER};
@@ -138,7 +144,7 @@ div.comment, div.post-in-list {
 }
 
 div.post-in-list {
-  border-style: dotted;
+  /* border-style: dotted; */
   background-color: #{App.i.theme::COLOR::HTML_BG};
 }
 

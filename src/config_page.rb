@@ -162,6 +162,9 @@ class ConfigPage < Page
                                   "default_comment_sort","new",
                                   sort_choices )
 
+    items << make_bool_config( "トップコメントの枠の間隔を詰める" ,
+                               "collapse_comment_margin" )
+
     items << make_header( "スクロール関係" )
 
     scrv2_lbl , scrv2_w = 

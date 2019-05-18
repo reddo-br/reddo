@@ -31,7 +31,7 @@ module AppColor
   # HTML_BG = "#f5f5f5"# uiと同じでちょっと
   HTML_BG = "#fdfdfd"
   HTML_LINK = "#0022AA"
-  HTML_COMMENT_BORDER = "#cccccc"
+  HTML_COMMENT_BORDER = "#c5c5c5"
   HTML_COMMENT_BG = "#eeeeee"
   
   HTML_TEXT = "#000000"
