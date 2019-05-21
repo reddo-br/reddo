@@ -86,6 +86,7 @@ EOF
 
     line_height = App.i.pref["line_height"] || 140
 
+    
     inline_oblique_style = if App.i.pref["artificial_oblique"]
                              "font-style:normal; display:inline-block; -webkit-transform:skew(-15deg);"
                            else
@@ -114,7 +115,9 @@ EOF
                          else
                            "margin: 12px 12px 0px 12px;"
                          end
-    
+
+    comment_tree_line_image_url = App.res_url( App.i.theme::COMMENT_TREE_LINE)
+    treeline_pos_calcstr = "#{0.5 * line_height / 100.0 }em + 0.9em + 12px" # なかなかぴったりいかない
     style = <<EOF
 html {
   font-family:#{base_font};
@@ -150,10 +153,35 @@ div.post-in-list {
 
 /* lv2 */
 div.comment div.comment {
+  /*
   border-width: 0px 0px 0px 5px ;
   border-style: solid none none solid;
+  */
+
+  /* background-imageによる実装 */
+  border-width: 0 0 0 0 ;  
+
+  background-image: url("#{comment_tree_line_image_url}"),  url("#{comment_tree_line_image_url}") ;
+  background-size: 5px 100% , 15px 5px;
+  background-position: top left , top calc(#{treeline_pos_calcstr}) left;
+  background-repeat: no-repeat , no-repeat;
+
   margin: 0px 0px 0px 10px;
-  padding: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 15px;
+}
+
+div.comment div.comment:last-of-type {
+  background-size: 5px calc(#{treeline_pos_calcstr}), 15px 5px;
+  background-position: top left , top calc(#{treeline_pos_calcstr}) left;
+  background-repeat: no-repeat , no-repeat;
+}
+div.comment div.comment.tree_closed {
+  background-size: 5px 100%, 15px 5px;
+  background-position: top left , top 50% left;
+}
+div.comment div.comment:last-of-type.tree_closed {
+  background-size: 5px 50%, 15px 5px;
+  background-position: top left , top 50% left;
 }
 
 /* 縞々 */
@@ -190,7 +218,6 @@ div.comment p {
 
 .comment-this, .post-in-list-inner , .comment-hidden {
   padding:6px 6px 6px 6px;
-
 }
 
 .popup-comment {

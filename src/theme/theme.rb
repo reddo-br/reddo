@@ -15,4 +15,6 @@ module Theme
   HTML_UPVOTED = "/res/upvoted.png"
   HTML_DOWNVOTED = "/res/downvoted.png"
 
+  COMMENT_TREE_LINE = "/res/comment-tree-line-light.png"
+  
 end

@@ -15,4 +15,6 @@ module ThemeDark
   HTML_UPVOTED = "/res/upvoted-dark.png"
   HTML_DOWNVOTED = "/res/downvoted-dark.png"
   
+  COMMENT_TREE_LINE = "/res/comment-tree-line-dark.png"
+
 end

@@ -262,6 +262,16 @@ class WebViewWrapper
     @event_listeners = []
   end
 
+  def add_class(elem,  klass )
+    elem.setAttribute("class" ,
+                      elem.getAttribute("class") + " " + klass)
+  end
+  def remove_class(elem , klass)
+    cls = elem.getAttribute("class").split(" ")
+    cls.delete( klass )
+    elem.setAttribute("class", cls.join(" ") )
+  end
+  
   def nl2a( nodelist )
     ret = []
     0.upto( nodelist.getLength() - 1){|n|

@@ -521,12 +521,14 @@ EOF
         if st
           st[:folded] = false
         end
+        remove_class( comment , "tree_closed" )
       else
         hidden.setAttribute("style","display:block")
         shown.setAttribute("style","display:none")
         if st
           st[:folded] = true
         end
+        add_class( comment , "tree_closed" )
       end
 
     end
@@ -893,12 +895,14 @@ EOF
   end
 
   def make_footer_element( mouseover_element , obj )
-    comment_foot = @doc.createElement("span")
-    comment_foot.setAttribute("class" , "comment-footer")
+    comment_foot_outer = @doc.createElement("span")
+    comment_foot_outer.setAttribute("class" , "comment-footer")
     #if mouseover_element
     #  comment_foot.setAttribute("style", "font-size:90%;")
     #end
-
+    comment_foot = @doc.createElement("span")
+    comment_foot_outer.appendChild( comment_foot ) # 将来footerに何か常時表示する場合に備えて入れ子にしてある
+    
     parmalink_this = 
       if obj[:kind] == 't1'
         if @permalink
@@ -1103,7 +1107,7 @@ EOF
       }
     end
     
-    comment_foot
+    comment_foot_outer
   end
 
   def is_comment_hidden?( name )
