@@ -97,6 +97,10 @@ EOF
     @account_name = name
   end
 
+  def set_account_is_moderator( b )
+    @account_is_moderator = b
+  end
+  
   def set_user_suspended( suspended )
     @user_suspended = suspended
   end
@@ -1191,7 +1195,8 @@ EOF
     (obj[:author] == @account_name) and (not is_deleted(obj)) and (not obj[:archived])
   end
   def is_repliable(obj)
-    (not @locked) and @account_name and (not obj[:archived]) and (not @user_suspended ) and
+    (not @locked) and (not obj[:locked] or @account_is_moderator) and
+      @account_name and (not obj[:archived]) and (not @user_suspended ) and
       (not @comment_post_list_mode)
   end
   def is_editable(obj)
@@ -1339,6 +1344,13 @@ EOF
                             end
       sticky_mark.setMember("innerHTML",sticky_label_string)
       comm_head.appendChild( sticky_mark )
+      comm_head.appendChild( @doc.createTextNode(" ") )
+    end
+    if obj[:locked]
+      locked_mark = @doc.createElement("span")
+      locked_mark.setAttribute("class","locked-mark")
+      locked_mark.setMember("innerHTML","Locked")
+      comm_head.appendChild( locked_mark )
       comm_head.appendChild( @doc.createTextNode(" ") )
     end
 
